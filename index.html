@@ -7,36 +7,10 @@
     <link rel="icon" type="image/png" href="images/church-logo.png">
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="module" src="scripts/script.js"></script>
 </head>
 <body>
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal active">
-        <div class="modal-content login-form-container">
-            <div class="login-header">
-                <img src="images/church-logo.png" alt="The Church of Jesus Christ of Latter-day Saints" class="login-logo">
-                <h2>Bishopric Dashboard</h2>
-                <p>Sign In to Your Account</p>
-            </div>
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="text" id="email" name="email" list="emailList" required placeholder="Enter or select your email">
-                    <datalist id="emailList">
-                        <!-- Populated by JavaScript -->
-                    </datalist>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
-                </div>
-                <button type="submit" class="btn-login">Sign In</button>
-                <div class="demo-users">
-                    <p>Demo Accounts:</p>
-                    <small>Use any email from the dropdown with password: demo</small>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <div class="container" id="mainContainer" style="display: none;">
         <!-- Header -->
@@ -53,11 +27,13 @@
             </div>
             <div class="user-menu">
                 <span id="userName">John Smith</span>
-                <select id="roleSelector" class="role-selector" onchange="updateRole()" style="display: none;">
+                <!--<select id="roleSelector" class="role-selector" onchange="updateRole()" style="display: none;">-->
+                <select id="roleSelector" class="role-selector" style="display: none;">
                     <option value="">Select Role</option>
                 </select>
                 <div id="selectedRoles" class="user-roles"></div>
-                <button class="btn-logout" onclick="logout()">Logout</button>
+                <!--<button id="logout" class="btn-logout" onclick="logout()">Logout</button>-->
+                <button id="logout" class="btn-logout">Logout</button>
             </div>
         </header>
 
@@ -504,7 +480,5 @@
         </div>
     </div>
     </div>
-
-    <script src="scripts/script.js"></script>
 </body>
 </html>

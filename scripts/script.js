@@ -1,252 +1,56 @@
-// ===== Authentication Management =====
-let allUsers = [];
-let currentUser = null;
+import { Callings } from "../modules/callings.mjs";
+import { Members } from "../modules/members.mjs";
+import { Roles } from "../modules/roles.mjs";
+import { Users } from "../modules/users.mjs";
+import { Auth } from "../modules/auth.mjs";
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // Load all users from JSON
-        const response = await fetch('data/users.json');
-        allUsers = await response.json();
-        
-        // Populate email datalist
-        populateEmailList();
-    } catch (error) {
-        console.error('Error loading users:', error);
-        allUsers = { users: [] };
-    }
-    
-    // Check if user is already logged in
-    const loggedInUser = sessionStorage.getItem('currentUser');
-    if (loggedInUser) {
-        try {
-            currentUser = JSON.parse(loggedInUser);
-            showDashboard();
-        } catch (error) {
-            console.error('Error restoring session:', error);
-            showLoginForm();
-        }
-    } else {
-        showLoginForm();
+const auth = Auth.Factory({
+    login: {
+        target:'body:prepend',
+        destinationID:'loginModal',
+        formID:'loginForm',
+        emailInputID:'email',
+        emailListID:'emailList',
+        passwordInputID:'password'
+    },
+    main: {
+        container: 'mainContainer',
+        roleSelector: 'roleSelector',
+        selectedRoles: 'selectedRoles',
+        logout: 'logout'
     }
 });
 
-// Populate email datalist with users from JSON
-function populateEmailList() {
-    const emailList = document.getElementById('emailList');
-    if (!emailList || !allUsers.users) return;
-    
-    // Clear existing options
-    emailList.innerHTML = '';
-    
-    // Add each user's email as an option
-    allUsers.users.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user.email;
-        emailList.appendChild(option);
-    });
-}
-
-// Show login form
-function showLoginForm() {
-    const loginModal = document.getElementById('loginModal');
-    const mainContainer = document.getElementById('mainContainer');
-    
-    if (loginModal) loginModal.classList.add('active');
-    if (mainContainer) mainContainer.style.display = 'none';
-}
-
-// Show dashboard
-function showDashboard() {
-    const loginModal = document.getElementById('loginModal');
-    const mainContainer = document.getElementById('mainContainer');
-    
-    if (loginModal) loginModal.classList.remove('active');
-    if (mainContainer) mainContainer.style.display = 'block';
-    
-    // Initialize dashboard
-    if (currentUser) {
-        initializeDashboard();
-    }
-}
-
-// Handle login form submission
-async function handleLogin(event) {
-    event.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    // Find user by email
-    const user = allUsers.users.find(u => u.email === email);
-    
-    if (!user) {
-        alert('Email not found. Please check and try again.');
-        return;
-    }
-    
-    // Verify password against stored password in JSON
-    if (password !== user.password) {
-        alert('Invalid password. Please try again.');
-        return;
-    }
-    
-    // Store user session
-    currentUser = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        roles: user.roles,
-        active: user.active
-    };
-    
-    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-    
-    // Clear form
-    document.getElementById('loginForm').reset();
-    
-    // Show dashboard
-    showDashboard();
-}
-
-// Logout function
-function logout() {
-    if (confirm('Are you sure you want to log out?')) {
-        // Clear session
-        sessionStorage.removeItem('currentUser');
-        currentUser = null;
-        
-        // Show login form
-        showLoginForm();
-        
-        // Clear any form data
-        const form = document.getElementById('loginForm');
-        if (form) form.reset();
-    }
-}
-
-// Initialize dashboard with user data
-function initializeDashboard() {
-    updateUserDisplay();
-    loadRoleSelector();
-}
-
-// Update user display in header
-function updateUserDisplay() {
-    if (!currentUser) return;
-    
-    const userName = document.getElementById('userName');
-    if (userName) {
-        userName.textContent = currentUser.name;
-    }
-}
-
-// Load and configure role selector
-async function loadRoleSelector() {
-    if (!currentUser) return;
-    
-    const roleSelector = document.getElementById('roleSelector');
-    const selectedRoles = document.getElementById('selectedRoles');
-    
-    if (currentUser.roles.length > 1) {
-        // Show role selector for multiple roles
-        if (roleSelector) {
-            roleSelector.style.display = 'block';
-            
-            // Clear existing options except the first one
-            while (roleSelector.options.length > 1) {
-                roleSelector.remove(1);
-            }
-            
-            // Add only the user's roles to the dropdown
-            currentUser.roles.forEach(role => {
-                const option = document.createElement('option');
-                option.value = role;
-                option.textContent = getRoleDisplayName(role);
-                roleSelector.appendChild(option);
-            });
-            
-            // Set first role as selected
-            roleSelector.value = currentUser.roles[0];
-            updateRole();
-        }
-    } else {
-        // Hide selector and show single role as badge
-        if (roleSelector) roleSelector.style.display = 'none';
-        if (selectedRoles) {
-            selectedRoles.innerHTML = '';
-            const badge = document.createElement('span');
-            const roleValue = currentUser.roles[0];
-            const roleText = getRoleDisplayName(roleValue);
-            badge.className = `role-badge ${roleValue}`;
-            badge.textContent = roleText;
-            selectedRoles.appendChild(badge);
-        }
-    }
-}
-
-// Role display update function
-function updateRole() {
-    const selector = document.getElementById('roleSelector');
-    const selectedRoles = document.getElementById('selectedRoles');
-    
-    if (!selector) return;
-    
-    const selectedValue = selector.value;
-    
-    // Clear previous roles
-    if (selectedRoles) selectedRoles.innerHTML = '';
-    
-    if (selectedValue) {
-        // Get the role text from the selected option
-        const roleText = selector.options[selector.selectedIndex].text;
-        
-        // Create and add the role badge
-        const badge = document.createElement('span');
-        badge.className = `role-badge ${selectedValue}`;
-        badge.textContent = roleText;
-        if (selectedRoles) selectedRoles.appendChild(badge);
-        
-        // Update current user's active role
-        if (currentUser) {
-            currentUser.activeRole = selectedValue;
-        }
-    }
-}
-
-// Get display name for role value
-function getRoleDisplayName(roleValue) {
-    const roleMap = {
-        'bishop': 'Bishop',
-        'counselor-1': 'First Counselor',
-        'counselor-2': 'Second Counselor',
-        'secretary': 'Secretary',
-        'asst-secretary': 'Assistant Secretary',
-        'clerk': 'Clerk',
-        'asst-clerk-membership': 'Assistant Clerk - Membership',
-        'asst-clerk-finance': 'Assistant Clerk - Finance'
-    };
-    return roleMap[roleValue] || roleValue;
-}
 
 // Section navigation
 function showSection(sectionId) {
     // Hide all sections
     const sections = document.querySelectorAll('.section');
     sections.forEach(section => section.classList.remove('active'));
-    
+
     // Show the selected section
     const selectedSection = document.getElementById(sectionId);
     if (selectedSection) {
         selectedSection.classList.add('active');
     }
-    
+
     // Update active nav button
-    const navButtons = document.querySelectorAll('.nav-btn');
-    navButtons.forEach(btn => btn.classList.remove('active'));
-    event.target.closest('.nav-btn').classList.add('active');
+    // Use document.activeElement to find the button if event is not available
+    let navBtn = null;
+    if (window.event && window.event.target) {
+        navBtn = window.event.target.closest('.nav-btn');
+    } else if (document.activeElement && document.activeElement.classList.contains('nav-btn')) {
+        navBtn = document.activeElement;
+    }
+    if (navBtn) {
+        const navButtons = document.querySelectorAll('.nav-btn');
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        navBtn.classList.add('active');
+    }
 }
+
+// Expose showSection to global scope for HTML inline event handler
+window.showSection = showSection;
 
 // Quick action handler
 function quickAction(action) {

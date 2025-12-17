@@ -2,10 +2,7 @@
   "users": [
     {
       "id": 1,
-      "name": "John Smith",
-      "email": "john.smith@email.com",
       "password": "demo",
-      "phone": "(801) 555-0100",
       "roles": [
         "bishop"
       ],
@@ -13,10 +10,7 @@
     },
     {
       "id": 2,
-      "name": "James Johnson",
-      "email": "james.johnson@email.com",
       "password": "demo",
-      "phone": "(801) 555-0101",
       "roles": [
         "counselor-1"
       ],
@@ -24,10 +18,7 @@
     },
     {
       "id": 3,
-      "name": "Michael Brown",
-      "email": "michael.brown@email.com",
       "password": "demo",
-      "phone": "(801) 555-0102",
       "roles": [
         "counselor-2"
       ],
@@ -35,10 +26,7 @@
     },
     {
       "id": 4,
-      "name": "David Lee",
-      "email": "david.lee@email.com",
       "password": "demo",
-      "phone": "(801) 555-0103",
       "roles": [
         "secretary"
       ],
@@ -46,10 +34,7 @@
     },
     {
       "id": 5,
-      "name": "Robert Wilson",
-      "email": "robert.wilson@email.com",
       "password": "demo",
-      "phone": "(801) 555-0104",
       "roles": [
         "asst-secretary"
       ],
@@ -57,10 +42,7 @@
     },
     {
       "id": 6,
-      "name": "William Taylor",
-      "email": "william.taylor@email.com",
       "password": "demo",
-      "phone": "(801) 555-0105",
       "roles": [
         "clerk"
       ],
@@ -68,10 +50,7 @@
     },
     {
       "id": 7,
-      "name": "Charles Anderson",
-      "email": "charles.anderson@email.com",
       "password": "demo",
-      "phone": "(801) 555-0106",
       "roles": [
         "asst-clerk-membership"
       ],
@@ -79,10 +58,7 @@
     },
     {
       "id": 8,
-      "name": "Thomas Martinez",
-      "email": "thomas.martinez@email.com",
       "password": "demo",
-      "phone": "(801) 555-0107",
       "roles": [
         "asst-clerk-finance"
       ],
@@ -90,10 +66,7 @@
     },
     {
       "id": 9,
-      "name": "Tracy Mann",
-      "email": "tracy.mann1@adusa.com",
       "password": "demo",
-      "phone": "(801) 555-0107",
       "roles": [
         "asst-clerk-membership",
         "asst-clerk-finance"

@@ -1,0 +1,76 @@
+{
+  "members": [
+    {
+      "id": 1,
+      "name": "Robert Wallace",
+      "email": "rdw.engineer@gmail.com",
+      "phone": "(864) 607-2777",
+      "callings": [ 9 ],
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "Jacob Alan Bunting",
+      "email": "jacobalanbunting@gmail.com",
+      "phone": "(864) 354-5916",
+      "callings": [ 10 ],
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Cameron Powell",
+      "email": "cameronpowell8@gmail.com",
+      "phone": "(801) 616-6480",
+      "callings": [ 11 ],
+      "active": true
+    },
+    {
+      "id": 4,
+      "name": "Jake Lindsey",
+      "email": "15jlindsey@gmail.com",
+      "phone": "(801) 946-5060",
+      "callings": [ 12 ],
+      "active": true
+    },
+    {
+      "id": 5,
+      "name": "Jon Cloe",
+      "email": "jon.cloe@gmail.com",
+      "phone": "(540) 239-0952",
+      "callings": [ 13 ],
+      "active": true
+    },
+    {
+      "id": 6,
+      "name": "Craig Milham",
+      "email": "craig.milham@hotmail.com",
+      "phone": "(678) 294-8578",
+      "callings": [ 14 ],
+      "active": true
+    },
+    {
+      "id": 7,
+      "name": "Charles Anderson",
+      "email": "charles.anderson@email.com",
+      "phone": "(801) 555-0106",
+      "callings": [ 15 ],
+      "active": true
+    },
+    {
+      "id": 8,
+      "name": "Thomas Martinez",
+      "email": "thomas.martinez@email.com",
+      "phone": "(801) 555-0107",
+      "callings": [ 16 ],
+      "active": true
+    },
+    {
+      "id": 9,
+      "name": "Tracy Robert Mann",
+      "email": "tracy.mann1@adusa.com",
+      "phone": "(864) 505-0724",
+      "callings": [ 15, 16 ],
+      "active": true
+    }
+  ]
+}
