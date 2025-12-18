@@ -1,0 +1,60 @@
+@media (max-width: 600px) {
+	/* Mobile-specific styles go here */
+    html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+    .container, .main-content {
+        width: 100vw;
+        min-width: 0;
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+    .modal-content, .login-form-container {
+        width: 98vw !important;
+        min-width: 0;
+        max-width: 98vw;
+        box-sizing: border-box;
+        padding: 10px !important;
+    }
+    .members-table, .members-table table {
+        display: block;
+        width: 100vw;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    .members-table table {
+        min-width: 400px;
+    }
+    .header-content h1 {
+        font-size: 1.2em;
+    }
+
+    .section h2 {
+        font-size: 1.3em;
+    }
+
+    .dashboard-section h3 {
+        font-size: 1.1em;
+    }
+
+    .nav-btn {
+        padding: 12px 10px;
+        font-size: 0.8em;
+    }
+
+    .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+    }
+
+    .stat-item .value {
+        font-size: 1.4em;
+    }
+
+    .report-stats {
+        grid-template-columns: 1fr;
+    }
+}
+/* Intentionally left blank: styles now in styles.css */
