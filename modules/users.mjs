@@ -128,10 +128,18 @@ export class Users {
     let members = await Members.Factory();
     let membersData = await members.GetMembers(); 
     return this._usersArray.map(user => {
-      const member = membersData.filter(member => {return member.id === user.id;})[0];
+      const member = membersData.filter(member => member.id === user.id)[0];
       return {
         id: user.id,
         name: member.name,
+        firstName: member.firstName,
+        middleName: member.middleName,
+        maidenName: member.maidenName,
+        maternalLastName: member.maternalLastName,
+        paternalLastName: member.paternalLastName,
+        maidenNameMaternal: member.maidenNameMaternal,
+        genderMale: member.genderMale,
+        gender: member.gender,
         password: user.password,
         email: member.email,
         phone: member.phone,
@@ -147,8 +155,7 @@ export class Users {
         memberID: member.id,
         levels: member.levels,
         memberactive: member.active,
-        active: user.active,
-        roles: user.roles
+        active: user.active
       };
     });
   }

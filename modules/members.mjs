@@ -168,22 +168,40 @@ export class Members{
                 const allSubRoles = role.allSubRoleNames;
                 return allSubRoles;
             });
+
+            // Build name from components, only include maidenName for female members
+            const nameParts = [];
+            if (member.firstName) nameParts.push(member.firstName);
+            if (member.middleName) nameParts.push(member.middleName);
+            if (member.maidenName && member.genderMale === false) nameParts.push(member.maidenName);
+            if (member.maternalLastName) nameParts.push(member.maternalLastName);
+            if (member.paternalLastName) nameParts.push(member.paternalLastName);
+            const name = nameParts.filter(Boolean).join(' ');
+
             return {
-                "id": member.id,
-                "name": member.name,
-                "email": member.email,
-                "phone": member.phone,
-                "callingIDs": member.callings,
-                "callingNames": callingNames,
-                "levels": callingLevels,
-                "callingsActive": callingsActive,
-                "callingRoleIDs": callingsRoleId,
-                "callingRoleNames": callingsRoleName,
-                "callingsSubRoles": callingSubRoles,
-                "callingsSubRoleNames": callingSubRoleNames,
-                "callingsAllSubRoles": callingAllSubRoles,
-                "callingsAllSubRoleNames": callingAllSubRoleNames,
-                "active": member.active
+                id: member.id,
+                name: name,
+                firstName: member.firstName,
+                middleName: member.middleName,
+                maidenName: member.maidenName,
+                maternalLastName: member.maternalLastName,
+                paternalLastName: member.paternalLastName,
+                maidenNameMaternal: member.maidenNameMaternal,
+                genderMale: member.genderMale,
+                gender: member.genderMale === true ? "Male" : "Female",
+                email: member.email,
+                phone: member.phone,
+                callingIDs: member.callings,
+                callingNames: callingNames,
+                levels: callingLevels,
+                callingsActive: callingsActive,
+                callingRoleIDs: callingsRoleId,
+                callingRoleNames: callingsRoleName,
+                callingsSubRoles: callingSubRoles,
+                callingsSubRoleNames: callingSubRoleNames,
+                callingsAllSubRoles: callingAllSubRoles,
+                callingsAllSubRoleNames: callingAllSubRoleNames,
+                active: member.active
             };
         });
     }

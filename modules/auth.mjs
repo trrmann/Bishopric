@@ -177,7 +177,7 @@ export class Auth {
             name: user.name,
             email: user.email,
             phone: user.phone,
-            roles: user.roles,
+            roleNames: user.roleNames,
             active: user.memberactive !== undefined ? user.memberactive : user.active
         };
         sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
@@ -255,30 +255,26 @@ export class Auth {
     // Load and configure role selector
     async LoadRoleSelector() {
         if (!this.currentUser) return;
-        
         const roleSelector = document.getElementById(this.roleSelectorID);
         const selectedRoles = document.getElementById(this.selectedRolesID);
-        
-        if (this.currentUser.roles.length > 1) {
+        const roleNames = this.currentUser.roleNames || [];
+        if (roleNames.length > 1) {
             // Show role selector for multiple roles
             if (roleSelector) {
                 roleSelector.style.display = 'block';
-                
                 // Clear existing options except the first one
                 while (roleSelector.options.length > 1) {
                     roleSelector.remove(1);
                 }
-                
-                // Add only the user's roles to the dropdown
-                this.currentUser.roles.forEach(role => {
+                // Add only the user's roleNames to the dropdown
+                roleNames.forEach((roleName, idx) => {
                     const option = document.createElement('option');
-                    option.value = role;
-                    option.textContent = this.GetRoleDisplayName(role);
+                    option.value = roleName;
+                    option.textContent = roleName;
                     roleSelector.appendChild(option);
                 });
-                
                 // Set first role as selected
-                roleSelector.value = this.currentUser.roles[0];
+                roleSelector.value = roleNames[0];
                 this.UpdateRole();
             }
         } else {
@@ -287,10 +283,9 @@ export class Auth {
             if (selectedRoles) {
                 selectedRoles.innerHTML = '';
                 const badge = document.createElement('span');
-                const roleValue = this.currentUser.roles[0];
-                const roleText = this.GetRoleDisplayName(roleValue);
-                badge.className = `role-badge ${roleValue}`;
-                badge.textContent = roleText;
+                const roleName = roleNames[0] || '';
+                badge.className = `role-badge`;
+                badge.textContent = roleName;
                 selectedRoles.appendChild(badge);
             }
         }
@@ -299,24 +294,16 @@ export class Auth {
     UpdateRole() {
         const selector = document.getElementById(this.roleSelectorID);
         const selectedRoles = document.getElementById(this.selectedRolesID);
-        
         if (!selector) return;
-        
         const selectedValue = selector.value;
-        
         // Clear previous roles
         if (selectedRoles) selectedRoles.innerHTML = '';
-        
         if (selectedValue) {
-            // Get the role text from the selected option
-            const roleText = selector.options[selector.selectedIndex].text;
-            
-            // Create and add the role badge
+            // Create and add the role badge using roleNames
             const badge = document.createElement('span');
-            badge.className = `role-badge ${selectedValue}`;
-            badge.textContent = roleText;
+            badge.className = `role-badge`;
+            badge.textContent = selectedValue;
             if (selectedRoles) selectedRoles.appendChild(badge);
-            
             // Update current user's active role
             if (this.currentUser) {
                 this.currentUser.activeRole = selectedValue;

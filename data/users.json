@@ -3,74 +3,55 @@
     {
       "id": 1,
       "password": "demo",
-      "roles": [
-        "bishop"
-      ],
+      
       "active": true
     },
     {
       "id": 2,
       "password": "demo",
-      "roles": [
-        "counselor-1"
-      ],
+      
       "active": true
     },
     {
       "id": 3,
       "password": "demo",
-      "roles": [
-        "counselor-2"
-      ],
+      
       "active": true
     },
     {
       "id": 4,
       "password": "demo",
-      "roles": [
-        "secretary"
-      ],
+      
       "active": true
     },
     {
       "id": 5,
       "password": "demo",
-      "roles": [
-        "asst-secretary"
-      ],
+      
       "active": true
     },
     {
       "id": 6,
       "password": "demo",
-      "roles": [
-        "clerk"
-      ],
+      
       "active": true
     },
     {
       "id": 7,
       "password": "demo",
-      "roles": [
-        "asst-clerk-membership"
-      ],
+      
       "active": true
     },
     {
       "id": 8,
       "password": "demo",
-      "roles": [
-        "asst-clerk-finance"
-      ],
+      
       "active": true
     },
     {
       "id": 9,
       "password": "demo",
-      "roles": [
-        "asst-clerk-membership",
-        "asst-clerk-finance"
-      ],
+
       "active": true
     }
   ]
