@@ -363,6 +363,10 @@ export class Auth {
             const badge = document.createElement('span');
             badge.className = `role-badge`;
             badge.textContent = selectedValue;
+            // If selector has multiple roles, add 'hidden' class
+            if (selector.options.length > 2) {
+                badge.classList.add('hidden');
+            }
             if (selectedRoles) selectedRoles.appendChild(badge);
             // Update current user's active role
             if (this.currentUser) {
