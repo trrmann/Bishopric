@@ -177,9 +177,6 @@
     }
     .user-menu-toggle {
         display: block !important;
-    }
-    .user-menu-toggle {
-        display: none !important;
         background: var(--danger-color, #c00);
         color: #fff;
         border: none;
