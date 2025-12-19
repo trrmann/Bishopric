@@ -81,6 +81,7 @@ export class Members{
         this.callings = await Callings.Factory();
         this.roles = await Roles.Factory();
         this.org = await Org.Factory();
+        let fetched = false;
         const isFetched = this.IsFetched();
         if(!isFetched) {
             const key = this.GetLocalStoreKey();
@@ -101,13 +102,18 @@ export class Members{
                     this.members = await response.json();
                     const newLastFetchDate = Date.now();
                     this.SetLastFetched(newLastFetchDate);
+                    fetched = true;
                 } catch (error) {
                     console.error('There has been a problem with your fetch operation:', error);
                 }
             }
             SetPreferenceObject(key, this);
         }
+        // Always rebuild cache after fetch or local load
         this._buildCache();
+        // if (fetched) {
+        //     console.log('Fetched members from remote:', this.members);
+        // }
     }
     async GetCallings() {
         return await this.callings;
@@ -142,42 +148,42 @@ export class Members{
         const roles = await this.GetRoles();
         const org = await this.GetOrg();
         return this._membersArray.map(member => {
-            // Pre-resolve all callings for this member
-            const callingsResolved = member.callings.map(callingid => callings.GetCallingById(callingid));
-            const callingNames = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].name : null);
-            const callingLevels = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].level : null);
-            const callingsActive = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].active === true : false);
-            const callingHaveTitles = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].hasTitle : null);
-            const callingTitles = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].title : null);
-            const callingTitleOrdinals = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].titleOrdinal : null);
+            // Allow members with no callings
+            const memberCallings = Array.isArray(member.callings) ? member.callings : [];
+            const callingsResolved = memberCallings.length > 0 ? memberCallings.map(callingid => callings.GetCallingById(callingid)) : [];
+            const callingNames = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].name : null) : [];
+            const callingLevels = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].level : null) : [];
+            const callingsActive = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].active === true : false) : [];
+            const callingHaveTitles = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].hasTitle : null) : [];
+            const callingTitles = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].title : null) : [];
+            const callingTitleOrdinals = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].titleOrdinal : null) : [];
             // Add callings-role-id: single array of unique role ids for all callings
-            const rawCallingsRoles = callingsResolved
-                .map(callingArr => {return roles.filter(function(r){return callingArr.map(call => {return call.id;}).includes(r.callingID);});})
-                .filter(role => {return role !== null && role !== undefined;});
+            const rawCallingsRoles = callingsResolved.length > 0
+                ? callingsResolved.map(callingArr => {return roles.filter(function(r){return callingArr.map(call => {return call.id;}).includes(r.callingID);});})
+                    .filter(role => {return role !== null && role !== undefined;})
+                : [];
             const callingsRoles = [];
-            rawCallingsRoles.forEach(roleArray => {roleArray.forEach(role => {if(!callingsRoles.includes(role)) {callingsRoles.push(role);}})});
-            const callingsRoleId = callingsRoles.map(role => {return role.id;});
-            const callingsRoleName = callingsRoles.map(role => {return role.name;});
-            const callingSubRoles = callingsRoleId.map(callingRoleId => {
+            if (rawCallingsRoles.length > 0) {
+                rawCallingsRoles.forEach(roleArray => {roleArray.forEach(role => {if(!callingsRoles.includes(role)) {callingsRoles.push(role);}})});
+            }
+            const callingsRoleId = callingsRoles.length > 0 ? callingsRoles.map(role => {return role.id;}) : [];
+            const callingsRoleName = callingsRoles.length > 0 ? callingsRoles.map(role => {return role.name;}) : [];
+            const callingSubRoles = callingsRoleId.length > 0 ? callingsRoleId.map(callingRoleId => {
                 const role = roles.filter(role => {return role.id === callingRoleId})[0];
-                const subRoles = role.subRoles;
-                return subRoles;
-            });
-            const callingSubRoleNames = callingsRoleId.map(callingRoleId => {
+                return role ? role.subRoles : undefined;
+            }) : [];
+            const callingSubRoleNames = callingsRoleId.length > 0 ? callingsRoleId.map(callingRoleId => {
                 const role = roles.filter(role => {return role.id === callingRoleId})[0];
-                const subRoles = role.subRoleNames;
-                return subRoles;
-            });
-            const callingAllSubRoles = callingsRoleId.map(callingRoleId => {
+                return role ? role.subRoleNames : undefined;
+            }) : [];
+            const callingAllSubRoles = callingsRoleId.length > 0 ? callingsRoleId.map(callingRoleId => {
                 const role = roles.filter(role => {return role.id === callingRoleId})[0];
-                const allSubRoles = role.allSubRoles;
-                return allSubRoles;
-            });
-            const callingAllSubRoleNames = callingsRoleId.map(callingRoleId => {
+                return role ? role.allSubRoles : undefined;
+            }) : [];
+            const callingAllSubRoleNames = callingsRoleId.length > 0 ? callingsRoleId.map(callingRoleId => {
                 const role = roles.filter(role => {return role.id === callingRoleId})[0];
-                const allSubRoles = role.allSubRoleNames;
-                return allSubRoles;
-            });
+                return role ? role.allSubRoleNames : undefined;
+            }) : [];
 
             // Build full name with title or default prefix
             let prefix = null;
