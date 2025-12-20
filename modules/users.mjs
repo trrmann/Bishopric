@@ -1,8 +1,9 @@
 import { Members } from "./members.mjs";
+import { LocalStorage } from "./localStorage.mjs";
 export class Users {
   static local = true;
   constructor() {
-    this.users = null;
+    this.users = { users: [] };
     this.lastFetched = null;
     this._usersArray = null; // cache array
     this._idMap = null; // cache id lookup
@@ -81,9 +82,9 @@ export class Users {
     const isFetched = this.IsFetched();
     if (!isFetched) {
       const key = this.GetLocalStoreKey();
-      const hasPreference = window.HasPreference ? window.HasPreference(key) : false;
-      if (hasPreference && window.GetPreferenceObject) {
-        const preferenceData = window.GetPreferenceObject(key);
+      const hasPreference = LocalStorage.HasPreference(key);
+      if (hasPreference) {
+        const preferenceData = await LocalStorage.GetPreferenceObject(key);
         Users.CopyFromObject(this, preferenceData);
       }
       const isLastFetchedExpired = this.IsLastFetchedExpired();
@@ -102,7 +103,7 @@ export class Users {
           console.error('There has been a problem with your fetch operation:', error);
         }
       }
-      if (window.SetPreferenceObject) window.SetPreferenceObject(key, this);
+      await LocalStorage.SetPreferenceObject(key, this);
     }
     this._buildCache();
   }

@@ -1,0 +1,3 @@
+# Ignore Neon environment file
+neon.env
+data/googleDrive.json
