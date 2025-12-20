@@ -76,14 +76,35 @@ export class GoogleDrive {
     async Fetch() {
         if (this._isLoaded) return;
         try {
+            // Load Google Drive data
             const response = await fetch('data/googleDrive.json');
             if (!response.ok) throw new Error('Failed to load googleDrive.json');
             const json = await response.json();
+
+            // Load secrets from local secrets.json
+            let secretKey = null;
+            try {
+                const secretResp = await fetch('data/secrets.json');
+                if (secretResp.ok) {
+                    const secretJson = await secretResp.json();
+                    if (secretJson && secretJson.googleDrive && secretJson.googleDrive.client_secret) {
+                        secretKey = secretJson.googleDrive.client_secret;
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not load secrets.json:', err);
+            }
+
             // If config is present in the JSON, seed API config
-            if ((await json) && (await json.web)) {
+            if (json && json.web) {
                 const cfg = json.web;
                 if (cfg.client_id) this.CLIENT_ID = cfg.client_id;
-                if (cfg.client_secret) this.API_KEY = cfg.client_secret;
+                // Prefer secret from secrets.json if available
+                if (secretKey) {
+                    this.API_KEY = secretKey;
+                } else if (cfg.client_secret) {
+                    this.API_KEY = cfg.client_secret;
+                }
                 if (cfg.scopes) this.SCOPES = cfg.scopes;
                 if (cfg.discovery_docs) this.DISCOVERY_DOCS = cfg.discovery_docs;
             }
