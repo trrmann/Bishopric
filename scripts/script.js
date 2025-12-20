@@ -1,4 +1,76 @@
 
+import { GoogleDrive } from "../modules/googleDrive.mjs";
+import { Auth } from "../modules/auth.mjs";
+import { PublicKeyCrypto } from "../modules/crypto.mjs";
+
+// --- Public/Private Key Encryption Usage Example ---
+(async () => {
+    // 1. Generate a key pair
+    const keyPair = await PublicKeyCrypto.generateKeyPair();
+    // 2. Export public and private keys as base64 strings (for storage or sharing)
+    const publicKeyBase64 = await PublicKeyCrypto.exportKey(keyPair.publicKey, "public");
+    const privateKeyBase64 = await PublicKeyCrypto.exportKey(keyPair.privateKey, "private");
+    console.log("Public Key (base64):", publicKeyBase64);
+    console.log("Private Key (base64):", privateKeyBase64);
+
+    // 3. Encrypt a message with the public key
+    const message = "Hello, this is a secret!";
+    const encrypted = await PublicKeyCrypto.encrypt(keyPair.publicKey, message);
+    console.log("Encrypted (base64):", encrypted);
+
+    // 4. Decrypt the message with the private key
+    const decrypted = await PublicKeyCrypto.decrypt(keyPair.privateKey, encrypted);
+    console.log("Decrypted message:", decrypted);
+
+    // 5. Import keys from base64 (if needed)
+    const importedPublicKey = await PublicKeyCrypto.importKey(publicKeyBase64, "public");
+    const importedPrivateKey = await PublicKeyCrypto.importKey(privateKeyBase64, "private");
+    const decrypted2 = await PublicKeyCrypto.decrypt(importedPrivateKey, encrypted);
+    console.log("Decrypted with imported key:", decrypted2);
+})();
+// --- End Encryption Example ---
+
+const masterStore = await GoogleDrive.Factory();
+//await masterStore.signIn();
+try {
+    let fileList = await masterStore.listFiles();
+} catch(error) {
+    console.log(error);
+}
+const myData = { foo: "bar", baz: 123 };
+try {
+    const uploadResult = await masterStore.uploadFile("mydata.json", JSON.stringify(myData), "application/json");
+} catch(error) {
+    console.log(error);
+}
+try {
+    fileList = await masterStore.listFiles();
+} catch(error) {
+    console.log(error);
+}
+try {
+    // Use uploadResult.id for downloadFile
+    const fileDownload = await masterStore.downloadFile(uploadResult.id);
+    console.log(fileDownload);
+} catch(error) {
+    console.log(error);
+}
+try {
+    for (const file of fileList) {
+        if (file.name === "") {
+            file.deleteResult = await masterStore.deleteFile(file.id);
+        }
+    }
+    console.log(await fileList);
+} catch(error) {
+    console.log(error);
+}
+try {
+    fileList = await masterStore.listFiles();
+    console.log(fileList);
+} catch(error) {
+    console.log(error);
+}
 
 // Hamburger toggle for user menu in mobile
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-import { Auth } from "../modules/auth.mjs";
 // Pagination state
 window.membersCurrentPage = 1;
 window.membersPerPage = 10;

@@ -1,4 +1,4 @@
-import { HasPreference, GetPreferenceObject, SetPreferenceObject } from "./localStorage.mjs";
+import { LocalStorage } from "./localStorage.mjs";
 export class Callings{
     static local = true;
     constructor() {
@@ -76,9 +76,9 @@ export class Callings{
         const isFetched = this.IsFetched();
         if(!isFetched) {
             const key = this.GetLocalStoreKey();
-            const hasPreference = HasPreference(key);
+            const hasPreference = LocalStorage.HasPreference(key);
             if(hasPreference) {
-                const preferenceData = GetPreferenceObject(key);
+                const preferenceData = await LocalStorage.GetPreferenceObject(key);
                 Callings.CopyFromObject(this, preferenceData);
             }
             const isLastFetchedExpired = this.IsLastFetchedExpired();
@@ -97,7 +97,7 @@ export class Callings{
                     console.error('There has been a problem with your fetch operation:', error);
                 }
             }
-            SetPreferenceObject(key, this);
+            await LocalStorage.SetPreferenceObject(key, this);
             this._buildCache();
         }
     }
