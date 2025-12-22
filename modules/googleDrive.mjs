@@ -29,12 +29,19 @@ export class GoogleDrive {
             try {
                 secrets = await drive._gitHubDataObj.fetchJsonFile("secrets.json");
             } catch(error) {
-
+                // If fetch from GitHub fails, try to load from local file
+                try {
+                    const response = await fetch("data/secrets.json");
+                    if (!response.ok) throw new Error("Local secrets.json not found");
+                    secrets = await response.json();
+                } catch(localError) {
+                    secrets = undefined;
+                }
             }
             drive.CLIENT_ID = googleConfig.web.client_id;
             drive.DISCOVERY_DOCS = googleConfig.web.discovery_docs;
             drive.SCOPES = googleConfig.web.scopes;
-            //drive.API_KEY = googleConfig.API_KEY;
+            if(secrets) drive.API_KEY = secrets.googleDrive.client_secret;
         }
         //await drive.Fetch();
         await drive.loadGisScript();
