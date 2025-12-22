@@ -1,118 +1,59 @@
-import { PublicKeyCrypto } from "./crypto.mjs";
 // Google Drive data module, modeled after Callings class, using googleDrive.json as the data source
 // Maintains Google Drive API methods for interaction
 
 export class GoogleDrive {
-    static _fileRegistry = new Set(); // Set of { filename, googleId } objects
-    static _secureFileRegistry = new Set(); // Set of { filename, googleId } objects
-        // Register a secure file with filename and googleId
-        static registerSecureFile(filename, googleId) {
-            GoogleDrive._secureFileRegistry.add(JSON.stringify({ filename, googleId }));
-        }
-
-        // Unregister a secure file by filename and googleId
-        static unregisterSecureFile(filename, googleId) {
-            GoogleDrive._secureFileRegistry.delete(JSON.stringify({ filename, googleId }));
-        }
-
-        // Get all registered secure files as array of { filename, googleId }
-        static getAllSecureFiles() {
-            return Array.from(GoogleDrive._secureFileRegistry).map(str => JSON.parse(str));
-        }
-            // Register a file with filename and googleId
-            static registerFile(filename, googleId) {
-                GoogleDrive._fileRegistry.add(JSON.stringify({ filename, googleId }));
-            }
-
-            // Unregister a file by filename and googleId
-            static unregisterFile(filename, googleId) {
-                GoogleDrive._fileRegistry.delete(JSON.stringify({ filename, googleId }));
-            }
-
-            // Get all registered files as array of { filename, googleId }
-            static getAllFiles() {
-                return Array.from(GoogleDrive._fileRegistry).map(str => JSON.parse(str));
-            }
-    constructor() {
+    static DefaultUnitManagementToolsKey = "AIzaSyCNEotTLr9DV2nkqPixdmcRZArDwltryh0";
+    static DefaultDiscoveryDocEntry = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest";
+    static DefaultScope = "https://www.googleapis.com/auth/drive.file";
+    constructor(gitHubDataObject) {
         this._data = [];
-        this._cache = {};
+        this._gitHubDataObj = gitHubDataObject;
         this._isLoaded = false;
         // Google Drive API config
-        this.UnitManagementToolsKey = "AIzaSyCNEotTLr9DV2nkqPixdmcRZArDwltryh0";
+        this.UnitManagementToolsKey = GoogleDrive.DefaultUnitManagementToolsKey;
         this.CLIENT_ID = null;
         this.API_KEY = null;
-        this.DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
-        this.SCOPES = "https://www.googleapis.com/auth/drive.file";
+        this.DISCOVERY_DOCS = [GoogleDrive.DefaultDiscoveryDocEntry];
+        this.SCOPES = GoogleDrive.DefaultScope;
         this.isInitialized = false;
     }
-
-    static async Factory(config) {
-        const drive = new GoogleDrive();
+    static async Factory(gitHubDataObject, config) {
+        const drive = new GoogleDrive(gitHubDataObject);
         if (config) {
             drive.CLIENT_ID = config.CLIENT_ID;
             drive.API_KEY = config.API_KEY;
             if (config.SCOPES) drive.SCOPES = config.SCOPES;
+        } else {
+            const googleConfig = await drive._gitHubDataObj.fetchJsonFile("googleDrive.json");
+            let secrets = null;
+            try {
+                secrets = await drive._gitHubDataObj.fetchJsonFile("secrets.json");
+            } catch(error) {
+
+            }
+            drive.CLIENT_ID = googleConfig.web.client_id;
+            drive.DISCOVERY_DOCS = googleConfig.web.discovery_docs;
+            drive.SCOPES = googleConfig.web.scopes;
+            //drive.API_KEY = googleConfig.API_KEY;
         }
-        await drive.Fetch();
+        //await drive.Fetch();
         await drive.loadGisScript();
+        await drive.signIn();
         return drive;
     }
     // (Removed loadGapiScript, not needed for GIS OAuth2)
-        // Dynamically load Google Identity Services script
-        async loadGisScript() {
-            if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = "https://accounts.google.com/gsi/client";
-                script.async = true;
-                script.defer = true;
-                script.onload = () => resolve();
-                script.onerror = () => reject("Failed to load Google Identity Services script");
-                document.body.appendChild(script);
-            });
-        }
-
-    // Loads googleDrive.json data
-    async Fetch() {
-        if (this._isLoaded) return;
-        try {
-            // Load Google Drive data
-            const response = await fetch('data/googleDrive.json');
-            if (!response.ok) throw new Error('Failed to load googleDrive.json');
-            const json = await response.json();
-
-            // Load secrets from local secrets.json
-            let secretKey = null;
-            try {
-                const secretResp = await fetch('data/secrets.json');
-                if (secretResp.ok) {
-                    const secretJson = await secretResp.json();
-                    if (secretJson && secretJson.googleDrive && secretJson.googleDrive.client_secret) {
-                        secretKey = secretJson.googleDrive.client_secret;
-                    }
-                }
-            } catch (err) {
-                console.warn('Could not load secrets.json:', err);
-            }
-
-            // If config is present in the JSON, seed API config
-            if (json && json.web) {
-                const cfg = json.web;
-                if (cfg.client_id) this.CLIENT_ID = cfg.client_id;
-                // Prefer secret from secrets.json if available
-                if (secretKey) {
-                    this.API_KEY = secretKey;
-                } else if (cfg.client_secret) {
-                    this.API_KEY = cfg.client_secret;
-                }
-                if (cfg.scopes) this.SCOPES = cfg.scopes;
-                if (cfg.discovery_docs) this.DISCOVERY_DOCS = cfg.discovery_docs;
-            }
-            this.CopyFromJSON(json);
-            this._isLoaded = true;
-        } catch (e) {
-            console.error('GoogleDrive.Fetch error:', e);
-        }
+    // Dynamically load Google Identity Services script
+    async loadGisScript() {
+        if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = "https://accounts.google.com/gsi/client";
+            script.async = true;
+            script.defer = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject("Failed to load Google Identity Services script");
+            document.body.appendChild(script);
+        });
     }
 
     CopyFromJSON(json) {
@@ -130,29 +71,21 @@ export class GoogleDrive {
         this.CopyFromJSON(obj);
     }
 
-    _buildCache() {
-        this._cache = {};
-        for (const item of this._data) {
-            if (item.id) this._cache[item.id] = item;
-            if (item.name) this._cache[item.name] = item;
-        }
-    }
-
     // Accessors
     GetItemById(id) {
-        return this._cache[id] || null;
+        return this._data.find(item => item.id === id) || null;
     }
 
     GetItemByName(name) {
-        return this._cache[name] || null;
+        return this._data.find(item => item.name === name) || null;
     }
 
     HasItemById(id) {
-        return !!this._cache[id];
+        return this._data.some(item => item.id === id);
     }
 
     HasItemByName(name) {
-        return !!this._cache[name];
+        return this._data.some(item => item.name === name);
     }
 
     GetAll() {
@@ -201,6 +134,13 @@ export class GoogleDrive {
         // if (this._gisToken) fetch(`https://oauth2.googleapis.com/revoke?token=${this._gisToken}`, { method: 'POST', headers: { 'Content-type': 'application/x-www-form-urlencoded' } });
     }
 
+    // Fetch method: loads or refreshes data from Google Drive (stub for now)
+    async Fetch() {
+        // TODO: Implement actual Google Drive data fetch logic here
+        // For now, just mark as loaded
+        this._isLoaded = true;
+        return true;
+    }
 
     // Upload a raw text file
     async uploadRawFile(name, content, mimeType = 'text/plain') {
@@ -322,5 +262,4 @@ export class GoogleDrive {
             throw new Error('downloadFile method not implemented');
         }
     }
-
 }

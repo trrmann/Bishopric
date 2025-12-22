@@ -87,7 +87,7 @@ export class Members{
             const key = this.GetLocalStoreKey();
             const hasPreference = await LocalStorage.HasPreference(key);
             if(hasPreference) {
-                const preferenceData = await LocalStorage.GetPreferenceObject(key);
+                const preferenceData = await LocalStorage.GetObject(key);
                 Members.CopyFromObject(this, preferenceData);
             }
             const isLastFetchedExpired = this.IsLastFetchedExpired();
@@ -107,7 +107,7 @@ export class Members{
                     console.error('There has been a problem with your fetch operation:', error);
                 }
             }
-            await LocalStorage.SetPreferenceObject(key, this);
+            await LocalStorage.SetObject(key, this);
         }
         // Always rebuild cache after fetch or local load
         this._buildCache();

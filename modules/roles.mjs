@@ -1,5 +1,5 @@
 import { Callings } from "./callings.mjs";
-import { LocalStorage } from "./localStorage.mjs";
+import { Storage } from "./storage.mjs";
 export class Roles{
     static local = true;
     constructor() {
@@ -22,9 +22,9 @@ export class Roles{
         destination.lastFetched = source.lastFetched;
         destination._buildCache();
     }
-    static async Factory() {
+    static async Factory(storageInstance = null) {
         const roles = new Roles();
-        await roles.Fetch();
+        await roles.Fetch(storageInstance);
         roles._buildCache();
         return roles;
     }
@@ -74,35 +74,25 @@ export class Roles{
         const fetchedDatetimeIn = fetchedDatetime;
         this.lastFetched = fetchedDatetimeIn;
     }
-    async Fetch() {
-        this.callings = await Callings.Factory();
-        const isFetched = this.IsFetched();
-        if(!isFetched) {
-            const key = this.GetLocalStoreKey();
-            const hasPreference = LocalStorage.HasPreference(key);
-            if(hasPreference) {
-                const preferenceData = await LocalStorage.GetPreferenceObject(key);
-                Roles.CopyFromObject(this, preferenceData);
-            }
-            const isLastFetchedExpired = this.IsLastFetchedExpired();
-            if(isLastFetchedExpired){
-                try {
-                    const url = this.GetRolesURL(Roles.local);
-                    const response = await fetch(url);
-                    const responseOk = response.ok;
-                    if (!responseOk) {
-                        throw new Error('Network response was not ok');
-                    }
-                    this.roles = await response.json();
-                    const newLastFetchDate = Date.now();
-                    this.SetLastFetched(newLastFetchDate);
-                } catch (error) {
-                    console.error('There has been a problem with your fetch operation:', error);
-                }
-            }
-            LocalStorage.SetPreferenceObject(key, this);
-            this._buildCache();
+    async Fetch(storageInstance = null) {
+        // Use Storage class for all data access
+        this.callings = await Callings.Factory(storageInstance);
+        const storage = storageInstance || new Storage();
+        const key = this.GetLocalStoreKey();
+        const githubFilename = "roles.json";
+        const cacheTtlMs = this.GetFetchExpireMS();
+        // Try to get from storage (cache/session/local/google/github)
+        let rolesObj = await storage.get(key, {
+            cacheTtlMs,
+            githubFilename
+        });
+        if (rolesObj) {
+            Roles.CopyFromObject(this, rolesObj);
+        } else {
+            // If not found, fallback to empty
+            this.roles = null;
         }
+        this._buildCache();
     }
     GetCallings() {
         return this.callings;

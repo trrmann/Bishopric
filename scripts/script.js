@@ -2,6 +2,7 @@
 import { GoogleDrive } from "../modules/googleDrive.mjs";
 import { Auth } from "../modules/auth.mjs";
 import { PublicKeyCrypto } from "../modules/crypto.mjs";
+import { Storage } from "../modules/storage.mjs";
 
 // --- Public/Private Key Encryption Usage Example ---
 (async () => {
@@ -29,6 +30,8 @@ import { PublicKeyCrypto } from "../modules/crypto.mjs";
     console.log("Decrypted with imported key:", decrypted2);
 })();
 // --- End Encryption Example ---
+
+const store = await Storage.Factory();
 
 const masterStore = await GoogleDrive.Factory();
 //await masterStore.signIn();

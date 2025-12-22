@@ -1,65 +1,104 @@
-import { PublicKeyCrypto } from "./crypto.mjs";
-
 export class LocalStorage {
-    static _keyRegistry = new Set();
-    static _secureKeyRegistry = new Set();
-
-    static async HasPreference(key) {
-        const pref = await LocalStorage.GetPreference(key);
-        const result = (pref != null);
-        if(result) {
-            if(!LocalStorage._keyRegistry.has(key)) {
-                LocalStorage._keyRegistry.add(key);
-            }
+    static DefaultLocalStoragePruneIntervalMS = 180000;//default storage prune interval is 3 minutes
+    static DefaultLocalStorageValueExpireMS = 2700000;//default storage value life is 45 minutes
+    constructor(localStoragePruneIntervalMs = DefaultLocalStoragePruneIntervalMS) { 
+        // registry of keys
+        this._keyRegistry = new Set();
+        this._localStoragePruneTimer = null;
+        this._localStoragePruneIntervalMs = null;
+        if (localStoragePruneIntervalMs > 0) {
+            this.StartLocalStoragePruneTimer(localStoragePruneIntervalMs);
+        }
+    }
+    Set(key, value, ttlMs = DefaultLocalStorageValueExpireMS) { 
+        if(ttlMs > 0) {
+            const expires = Date.now() + ttlMs;
+            const payload = JSON.stringify({ value, expires });
+            localStorage.setItem(key, payload);
         } else {
-            if(LocalStorage._keyRegistry.has(key)) {
-                LocalStorage._keyRegistry.remove(key);
-            }
+            localStorage.setItem(key, value);
         }
-        return result;
+        this._keyRegistry.add(key);
     }
-    static SetPreference(key, value) {
-        LocalStorage._keyRegistry.add(key);
-        localStorage.setItem(key, value);
+    SetObject(key, value, ttlMs = DefaultLocalStorageValueExpireMS) {
+        this.Set(key, JSON.stringify(value), ttlMs);
     }
-    // GetPreference is now async to support decryption
-    static async GetPreference(key, privateKey = null) {
-        let value = localStorage.getItem(key);
-        if (LocalStorage._secureKeyRegistry.has(key) && value != null) {
-            // Decrypt if secure and privateKey is provided
-            if (privateKey) {
-                try {
-                    value = await PublicKeyCrypto.decrypt(privateKey, value);
-                } catch (e) {
-                    // If decryption fails, return the raw value
-                }
-            }
-        }
-        return value;
+    GetAllKeys() {
+        return Object.keys(this._keyRegistry);
     }
-    static async SetPreferenceObject(key, value) {
-        LocalStorage.SetPreference(key, JSON.stringify(value));
+    HasKey(key) {
+        return this.GetAllKeys().includes(key);
     }
-    static async GetPreferenceObject(key, privateKey = null) {
-        const val = await LocalStorage.GetPreference(key, privateKey);
-        return JSON.parse(val);
-    }
-    static GetAllKeys() {
-        return Array.from(LocalStorage._keyRegistry);
-    }
-    static DeletePreference(key) {
+    Delete(key) {
         localStorage.removeItem(key);
-        LocalStorage._keyRegistry.delete(key);
+        this._keyRegistry.delete(key);
     }
-    // Set a secure preference using public key encryption
-    static async SetSecurePreference(key, value, publicKey) {
-        // Encrypt value with the provided publicKey (must be a CryptoKey)
-        const encrypted = await PublicKeyCrypto.encrypt(publicKey, value);
-        LocalStorage.SetPreference(key, encrypted);
-        LocalStorage._secureKeyRegistry.add(key);
+    Get(key) {
+        if(this.HasKey(key)) {
+            let payload = localStorage.getItem(key);
+            if (!payload) return null;
+            let value, expires;
+            try {
+                ({ value, expires } = JSON.parse(payload));
+                if (expires && Date.now() > expires) {
+                    this.Delete(key);
+                    return null;
+                }
+            } catch {
+                // fallback for non expiring values
+                value = payload;
+            }
+            return value;
+        }
+        else {
+            return undefined;
+        }
     }
-
-    static GetAllSecureKeys() {
-        return Array.from(LocalStorage._secureKeyRegistry);
+    GetObject(key) {
+        const val = this.Get(key);
+        if(val) {
+            return JSON.parse(val);
+        } else {
+            return val;
+        }
+    }
+    Clear() {
+        this.GetAllKeys().forEach(key =>{
+            this.Delete(key);
+        });
+    }
+    LocalStoragePrune() {
+        this.GetAllKeys().forEach(key =>{
+            this.Get(key);
+        });
+    }
+    StartLocalStoragePruneTimer(intervalMs = null) {
+        this._localStoragePruneIntervalMs = intervalMs || DefaultLocalStoragePruneIntervalMS;
+        if (this._localStoragePruneTimer) {
+            clearInterval(this._localStoragePruneTimer);
+        }
+        this._localStoragePruneIntervalMs = this._localStoragePruneIntervalMs;
+        this._localStoragePruneTimer = setInterval(() => this.LocalStoragePrune(), this._localStoragePruneIntervalMs);
+    }
+    PauseLocalStoragePruneTimer() {
+        if(this._localStoragePruneTimer) {
+            clearInterval(this._localStoragePruneTimer);
+            this._localStoragePruneTimer = null;
+        }
+    }
+    ResumeLocalStoragePruneTimer() {
+        if(this._localStoragePruneIntervalMs) {
+            if (this._localStoragePruneTimer) {
+                clearInterval(this._localStoragePruneTimer);
+            }
+            this._localStoragePruneTimer = setInterval(() => this.LocalStoragePrune(), this._localStoragePruneIntervalMs);
+        }
+    }
+    StopLocalStoragePruneTimer() {
+        if (this._localStoragePruneTimer) {
+            clearInterval(this._localStoragePruneTimer);
+            this._localStoragePruneTimer = null;
+            this._localStoragePruneIntervalMs = null;
+        }
     }
 }

@@ -1,73 +1,104 @@
 export class SessionStorage {
-    static _keyRegistry = new Set();
-    static _secureKeyRegistry = new Set();
-
-    constructor() {
-        // You can initialize any properties here if needed
-    }
-
-    // Set a value in sessionStorage
-    setItem(key, value) {
-        SessionStorage._keyRegistry.add(key);
-        sessionStorage.setItem(key, value);
-    }
-
-    // Set a secure value in sessionStorage using public key encryption
-    async setSecureItem(key, value, publicKey) {
-        const encrypted = await PublicKeyCrypto.encrypt(publicKey, value);
-        this.setItem(key, encrypted);
-        SessionStorage._secureKeyRegistry.add(key);
-    }
-
-    // Get a value from sessionStorage
-    getItem(key) {
-        return sessionStorage.getItem(key);
-    }
-
-    // Get a secure value from sessionStorage using private key decryption
-    async getSecureItem(key, privateKey) {
-        let value = this.getItem(key);
-        if (SessionStorage._secureKeyRegistry.has(key) && value != null) {
-            if (privateKey) {
-                try {
-                    value = await PublicKeyCrypto.decrypt(privateKey, value);
-                } catch (e) {
-                    // If decryption fails, return the raw value
-                }
-            }
+    static DefaultSessionStoragePruneIntervalMS = 120000;//default storage prune interval is 2 minutes
+    static DefaultSessionStorageValueExpireMS = 1800000;//default storage value life is 30 minutes
+    constructor(sessionStoragePruneIntervalMs = DefaultSessionStoragePruneIntervalMS) { 
+        // registry of keys
+        this._keyRegistry = new Set();
+        this._sessionStoragePruneTimer = null;
+        this._sessionStoragePruneIntervalMs = null;
+        if (sessionStoragePruneIntervalMs > 0) {
+            this.StartSessionStoragePruneTimer(sessionStoragePruneIntervalMs);
         }
-        return value;
     }
-
-    // Remove a value from sessionStorage
-    removeItem(key) {
+    Set(key, value, ttlMs = DefaultSessionStorageValueExpireMS) { 
+        if(ttlMs > 0) {
+            const expires = Date.now() + ttlMs;
+            const payload = JSON.stringify({ value, expires });
+            sessionStorage.setItem(key, payload);
+        } else {
+            sessionStorage.setItem(key, value);
+        }
+        this._keyRegistry.add(key);
+    }
+    SetObject(key, value, ttlMs = DefaultSessionStorageValueExpireMS) {
+        this.Set(key, JSON.stringify(value), ttlMs);
+    }
+    GetAllKeys() {
+        return Object.keys(this._keyRegistry);
+    }
+    HasKey(key) {
+        return this.GetAllKeys().includes(key);
+    }
+    Delete(key) {
         sessionStorage.removeItem(key);
-        SessionStorage._keyRegistry.delete(key);
-        SessionStorage._secureKeyRegistry.delete(key);
+        this._keyRegistry.delete(key);
     }
-
-    // Clear all sessionStorage and registry
-    clear() {
-        sessionStorage.clear();
-        SessionStorage._keyRegistry.clear();
-        SessionStorage._secureKeyRegistry.clear();
+    Get(key) {
+        if(this.HasKey(key)) {
+            let payload = sessionStorage.getItem(key);
+            if (!payload) return null;
+            let value, expires;
+            try {
+                ({ value, expires } = JSON.parse(payload));
+                if (expires && Date.now() > expires) {
+                    this.Delete(key);
+                    return null;
+                }
+            } catch {
+                // fallback for non expiring values
+                value = payload;
+            }
+            return value;
+        }
+        else {
+            return undefined;
+        }
     }
-
-    // Get all registered keys
-    static getAllKeys() {
-        return Array.from(SessionStorage._keyRegistry);
+    GetObject(key) {
+        const val = this.Get(key);
+        if(val) {
+            return JSON.parse(val);
+        } else {
+            return val;
+        }
     }
-
-    static getAllSecureKeys() {
-        return Array.from(SessionStorage._secureKeyRegistry);
+    Clear() {
+        this.GetAllKeys().forEach(key =>{
+            this.Delete(key);
+        });
     }
-
-    // Check if a key exists in the registry
-    static hasKey(key) {
-        return SessionStorage._keyRegistry.has(key);
+    SessionStoragePrune() {
+        this.GetAllKeys().forEach(key =>{
+            this.Get(key);
+        });
     }
-
-    static hasSecureKey(key) {
-        return SessionStorage._secureKeyRegistry.has(key);
+    StartSessionStoragePruneTimer(intervalMs = null) {
+        this._sessionStoragePruneIntervalMs = intervalMs || DefaultSessionStoragePruneIntervalMS;
+        if (this._sessionStoragePruneTimer) {
+            clearInterval(this._sessionStoragePruneTimer);
+        }
+        this._sessionStoragePruneIntervalMs = this._sessionStoragePruneIntervalMs;
+        this._sessionStoragePruneTimer = setInterval(() => this.SessionStoragePrune(), this._sessionStoragePruneIntervalMs);
+    }
+    PauseSessionStoragePruneTimer() {
+        if(this._sessionStoragePruneTimer) {
+            clearInterval(this._sessionStoragePruneTimer);
+            this._sessionStoragePruneTimer = null;
+        }
+    }
+    ResumeSessionStoragePruneTimer() {
+        if(this._sessionStoragePruneIntervalMs) {
+            if (this._sessionStoragePruneTimer) {
+                clearInterval(this._sessionStoragePruneTimer);
+            }
+            this._sessionStoragePruneTimer = setInterval(() => this.SessionStoragePrune(), this._sessionStoragePruneIntervalMs);
+        }
+    }
+    StopSessionStoragePruneTimer() {
+        if (this._sessionStoragePruneTimer) {
+            clearInterval(this._sessionStoragePruneTimer);
+            this._sessionStoragePruneTimer = null;
+            this._sessionStoragePruneIntervalMs = null;
+        }
     }
 }

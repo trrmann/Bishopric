@@ -5,16 +5,19 @@ import { Configuration } from "./configuration.mjs";
 // Authentication management module for Unit Management Tools
 export class Auth {
     constructor(configuration) {
-        this.target = configuration.login.target;
-        this.destinationID = configuration.login.destinationID;
-        this.formID = configuration.login.formID;
-        this.emailInputID = configuration.login.emailInputID;
-        this.emailListID=configuration.login.emailListID;
-        this.passwordInputID=configuration.login.passwordInputID;
-        this.mainContainerID = configuration.main.container;
-        this.roleSelectorID = configuration.main.roleSelector;
-        this.selectedRolesID = configuration.main.selectedRoles;
-        this.logoutID = configuration.main.logout;
+        // Defensive: handle missing or null configuration or sub-objects
+        const login = configuration && configuration.login ? configuration.login : {};
+        const main = configuration && configuration.main ? configuration.main : {};
+        this.target = login.target || '';
+        this.destinationID = login.destinationID || '';
+        this.formID = login.formID || '';
+        this.emailInputID = login.emailInputID || '';
+        this.emailListID = login.emailListID || '';
+        this.passwordInputID = login.passwordInputID || '';
+        this.mainContainerID = main.container || '';
+        this.roleSelectorID = main.roleSelector || '';
+        this.selectedRolesID = main.selectedRoles || '';
+        this.logoutID = main.logout || '';
         this.allUsers = [];
         this.currentUser = null;
     }

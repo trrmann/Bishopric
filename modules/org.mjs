@@ -68,7 +68,7 @@ export class Org {
             const key = this.GetLocalStoreKey();
             const hasPreference = LocalStorage.HasPreference(key);
             if(hasPreference) {
-                const preferenceData = await LocalStorage.GetPreferenceObject(key);
+                const preferenceData = await LocalStorage.GetObject(key);
                 Org.CopyFromObject(this, preferenceData);
             }
             const isLastFetchedExpired = this.IsLastFetchedExpired();
@@ -85,7 +85,7 @@ export class Org {
                     console.error('There has been a problem with your fetch operation:', error);
                 }
             }
-            LocalStorage.SetPreferenceObject(key, this);
+            LocalStorage.SetObject(key, this);
         }
         this._buildCache();
     }

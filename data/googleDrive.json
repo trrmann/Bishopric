@@ -8,8 +8,8 @@
         "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
         "redirect_uris":["https://trrmann.github.io/UnitManagementTools/"],
         "javascript_origins":["http://127.0.0.1:5500"],
-        "scopes":"",
-        "discovery_docs":"https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+        "scopes":"https://www.googleapis.com/auth/drive.file",
+        "discovery_docs":["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
         "serviceURL":"https://console.cloud.google.com/auth/overview?project=mann-2023-mail"
     }
 }
