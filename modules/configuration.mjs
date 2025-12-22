@@ -2,90 +2,44 @@ import { Storage } from "./storage.mjs";
 
 export class Configuration {
     static local = true;
-    constructor() {
+    constructor(storageObject) {
+        this._storageObj = storageObject;
         this.configuration = null;
-        this.lastFetched = null;
-        this._configurationObject = null; // cache object
-        this._keyMap = null; // cache key lookup
     }
     static CopyFromJSON(dataJSON) {
         const configuration = new Configuration();
         configuration.configuration = dataJSON.configuration;
-        configuration.lastFetched = dataJSON.lastFetched;
-        configuration._buildCache();
+        configuration._storageObj = dataJSON._storageObj;
         return configuration;
     }
     static CopyFromObject(destination, source) {
         destination.configuration = source.configuration;
-        destination.lastFetched = source.lastFetched;
-        destination._buildCache();
+        destination._storageObj = source._storageObj;
     }
-    static async Factory(storageInstance = null) {
-        const configuration = new Configuration();
-        await configuration.Fetch(storageInstance);
-        configuration._buildCache();
+    static async Factory(storageObject) {
+        const configuration = new Configuration(await storageObject);
+        await configuration.Fetch();
         return configuration;
     }
-    GetConfigurationURL(local = false) {
-        const host = "https://trrmann.github.io/";
-        const projectPath = "bishopric/data/";
-        const path = "data/";
+    GetConfigurationFilename() {
         const file = "configuration.json";
-        let url = `${host}${projectPath}${file}`;
-        if (local) {
-            url = `${path}${file}`;
-        }
-        return url;
+        return file;
     }
-    GetFetchExpireMS() {
-        const expireTime = 1000 * 60 * 60 * 24; // 1 day
-        return expireTime;
+    GetConfigurationExpireMS() {
+        return 1000 * 60 * 60 * 1;// 1 hour
     }
-    GetLocalStoreKey() {
-        return "configuration";
+    GetStorageConfig() {
+        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
     }
-    IsFetched() {
-        const configuration = this.configuration;
-        const isFetched = configuration != null;
-        return isFetched;
-    }
-    IsLastFetchedExpired() {
-        const lastFetchedMS = this.GetLastFetched();
-        if (lastFetchedMS == null) {
-            return true;
-        } else {
-            const expireMS = this.GetFetchExpireMS();
-            const fetchExpireMS = lastFetchedMS + expireMS;
-            const nowMS = Date.now();
-            const match = nowMS >= fetchExpireMS;
-            return match;
-        }
-    }
-    GetLastFetched() {
-        const lastFetched = this.lastFetched;
-        return lastFetched;
-    }
-    SetLastFetched(fetchedDatetime) {
-        this.lastFetched = fetchedDatetime;
-    }
-    async Fetch(storageInstance = null) {
-        // Use Storage class for all data access
-        const storage = storageInstance || new Storage();
-        const key = this.GetLocalStoreKey();
-        const githubFilename = "configuration.json";
-        const cacheTtlMs = this.GetFetchExpireMS();
+    async Fetch() {
         // Try to get from storage (cache/session/local/google/github)
-        let configObj = await storage.get(key, {
-            cacheTtlMs,
-            githubFilename
-        });
+        let configObj = await this._storageObj.Get(this.GetConfigurationFilename(), this.GetStorageConfig());
         if (configObj) {
-            Configuration.CopyFromObject(this, configObj);
+            this.configuration = configObj;
         } else {
             // If not found, fallback to empty
             this.configuration = null;
         }
-        this._buildCache();
     }
     GetConfiguration() {
         if (!this._configurationObject) {
@@ -110,16 +64,6 @@ export class Configuration {
             }
         }
         return result;
-    }
-    _buildCache() {
-        // Build array and lookup maps for fast access
-        this._configurationObject = (this.configuration && this.configuration.configuration) ? this.configuration.configuration : [];
-        this._keyMap = new Map();
-        const config = this.FlattenObject(this._configurationObject);
-        const keys = Object.keys(config);
-        keys.forEach(key => {
-            this._keyMap.set(key, this._configurationObject[key]);
-        });
     }
     GetConfigurationByKey(key) {
         // Fast lookup by name

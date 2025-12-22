@@ -23,6 +23,16 @@ export class GitHubData {
         const url = `${host}${project}${dataPath}${filename}`;
         return url;
     }
+    async Has(filename) {
+        return (this.Get(filename) != null);
+    }
+    async Get(filename, type="raw") {
+        if(type==="raw") {
+            return await this.fetchRawFile(filename);
+        } else {
+            return await this.fetchJsonFile(filename);
+        }
+    };
     async fetchRawFile(filename) {
         const response = await fetch(this.GetConfigurationURL(filename));
         if (!response.ok) throw new Error(`Failed to fetch file: ${filename}`);

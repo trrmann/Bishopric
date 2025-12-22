@@ -1,8 +1,7 @@
 
-import { GoogleDrive } from "../modules/googleDrive.mjs";
+import { Storage } from "../modules/storage.mjs";
 import { Auth } from "../modules/auth.mjs";
 import { PublicKeyCrypto } from "../modules/crypto.mjs";
-import { Storage } from "../modules/storage.mjs";
 
 // --- Public/Private Key Encryption Usage Example ---
 (async () => {
@@ -30,50 +29,6 @@ import { Storage } from "../modules/storage.mjs";
     console.log("Decrypted with imported key:", decrypted2);
 })();
 // --- End Encryption Example ---
-
-const store = await Storage.Factory();
-
-const masterStore = await GoogleDrive.Factory();
-//await masterStore.signIn();
-try {
-    let fileList = await masterStore.listFiles();
-} catch(error) {
-    console.log(error);
-}
-const myData = { foo: "bar", baz: 123 };
-try {
-    const uploadResult = await masterStore.uploadFile("mydata.json", JSON.stringify(myData), "application/json");
-} catch(error) {
-    console.log(error);
-}
-try {
-    fileList = await masterStore.listFiles();
-} catch(error) {
-    console.log(error);
-}
-try {
-    // Use uploadResult.id for downloadFile
-    const fileDownload = await masterStore.downloadFile(uploadResult.id);
-    console.log(fileDownload);
-} catch(error) {
-    console.log(error);
-}
-try {
-    for (const file of fileList) {
-        if (file.name === "") {
-            file.deleteResult = await masterStore.deleteFile(file.id);
-        }
-    }
-    console.log(await fileList);
-} catch(error) {
-    console.log(error);
-}
-try {
-    fileList = await masterStore.listFiles();
-    console.log(fileList);
-} catch(error) {
-    console.log(error);
-}
 
 // Hamburger toggle for user menu in mobile
 document.addEventListener('DOMContentLoaded', function() {
@@ -153,7 +108,8 @@ window.changeMembersPage = function(page) {
     renderMembersTable();
     let authInstance = null;
 
-    Auth.Factory().then(auth => {
+    const store = await Storage.Factory();
+    Auth.Factory(store).then(auth => {
         authInstance = auth;
         // Ensure role selector is correct on resize
         window.addEventListener('resize', () => {

@@ -4,7 +4,8 @@ import { Configuration } from "./configuration.mjs";
 // modules/auth.mjs
 // Authentication management module for Unit Management Tools
 export class Auth {
-    constructor(configuration) {
+    constructor(config) {
+        const configuration = config.configuration;
         // Defensive: handle missing or null configuration or sub-objects
         const login = configuration && configuration.login ? configuration.login : {};
         const main = configuration && configuration.main ? configuration.main : {};
@@ -21,7 +22,7 @@ export class Auth {
         this.allUsers = [];
         this.currentUser = null;
     }
-    static async Factory() {
+    static async Factory(storageObject) {
         //const callings = await Callings.Factory();
         //console.log(callings);
         //console.log(callings.GetCallings());
@@ -36,9 +37,9 @@ export class Auth {
         //console.log(await users.GetUsers());
         //console.log('data ready');
 
-        const configuration = await Configuration.Factory();
+        const configuration = await Configuration.Factory(storageObject);
         //console.log(configuration);
-        const auth = new Auth(configuration.configuration);
+        const auth = new Auth(configuration);
         // Call this before any login modal logic        
         auth.CreateLoginModalWithSpecs();
         // Module-level initialization (runs after DOM is parsed because modules are deferred)

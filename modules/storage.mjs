@@ -1,9 +1,9 @@
-import { LocalStorage } from "./localStorage.mjs";
-import { SessionStorage } from "./sessionStorage.mjs";
-import { GitHubData } from "./gitHubData.mjs";
-import { GoogleDrive } from "./googleDrive.mjs";
 import { CacheStore } from "./cacheStore.mjs";
-
+import { SessionStorage } from "./sessionStorage.mjs";
+import { LocalStorage } from "./localStorage.mjs";
+import { GoogleDrive } from "./googleDrive.mjs";
+import { GitHubData } from "./gitHubData.mjs";
+import { PublicKeyCrypto } from "./crypto.mjs";
 export class Storage {
     static DefaultStoragePruneIntervalMS = 900000;//default storage prune interval is 2 minutes
     constructor(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
@@ -25,14 +25,59 @@ export class Storage {
         this._localStorage_purge_intervalMS = LocalStorage.DefaultLocalStoragePruneIntervalMS;
         this._localStorage_default_value_expireMS = LocalStorage.DefaultLocalStorageValueExpireMS;
         this._localStorage = new LocalStorage(this._localStorage_purge_intervalMS);
+        this._crypto = new PublicKeyCrypto();
         this._googleDrive = null;
         this._gitHub = null;
     }
     static async Factory(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
         const storage = new Storage(storageRegistryPruneIntervalMs);
         storage._gitHub = new GitHubData("trrmann","UnitManagementTools");
-        storage._googleDrive = await GoogleDrive.Factory(storage._gitHub);
+        //storage._googleDrive = await GoogleDrive.Factory(storage._gitHub);
+        await Storage.testGoogleDrive(storage);
         return storage
+    }
+    static async testGoogleDrive(storage) {
+        let fileList = null;
+        try {
+            fileList = await storage._googleDrive.listFiles();
+        } catch(error) {
+            console.log(error);
+        }
+        const myData = { foo: "bar", baz: 123 };
+        let uploadResult = null;
+        try {
+            uploadResult = await storage._googleDrive.uploadFile("mydata.json", JSON.stringify(myData), "application/json");
+        } catch(error) {
+            console.log(error);
+        }
+        try {
+            fileList = await storage._googleDrive.listFiles();
+        } catch(error) {
+            console.log(error);
+        }
+        try {
+            // Use uploadResult.id for downloadFile
+            const fileDownload = await storage._googleDrive.downloadFile(uploadResult.id);
+            console.log(fileDownload);
+        } catch(error) {
+            console.log(error);
+        }
+        try {
+            for (const file of fileList) {
+                if (file.name === "") {
+                    file.deleteResult = await storage._googleDrive.deleteFile(file.id);
+                }
+            }
+            console.log(await fileList);
+        } catch(error) {
+            console.log(error);
+        }
+        try {
+            fileList = await storage._googleDrive.listFiles();
+            console.log(fileList);
+        } catch(error) {
+            console.log(error);
+        }
     }
     RegisterKey(key, expire) {
         this._keyRegistry.set(key, expire);
@@ -107,64 +152,24 @@ export class Storage {
         }
     }
 
-
     // Central get: cache → session → local → google → github
-    async get(key, options = {}) {
+    async Get(key, options = {}) {
         const { cacheTtlMs = null, sessionTtlMs = null, localTtlMs = null, googleId = null, githubFilename = null, privateKey = null, publicKey = null, secure = false } = options;
+        let found = undefined;
         // 1. Cache
-        if (secure && this._cache.Has(key)) return await this._cache.getSecure(key, privateKey);
-        if (!secure && this._cache.Has(key)) return this._cache.Get(key);
+        if(this._cache.Has(key)) found = this._cache.Get(key);
         // 2. Session Storage
-        let value;
-        if (secure) {
-            value = await this._session.getSecureItem(key, privateKey);
-        } else {
-            value = this._session.getItem(key);
-        }
-        if (value != null) {
-            if (secure) await this._cache.setSecure(key, value, publicKey, cacheTtlMs); else this._cache.Set(key, value, cacheTtlMs);
-            return value;
-        }
+        if(!found && this._sessionStorage.HasKey(key)) found = this._sessionStorage.Get(key);
         // 3. Local Storage
-        if (secure) {
-            value = await this._localStorage.Get(key, privateKey);
-        } else {
-            value = await this._localStorage.Get(key);
-        }
-        if (value != null) {
-            if (secure) await this._cache.setSecure(key, value, publicKey, cacheTtlMs); else this._cache.Set(key, value, cacheTtlMs);
-            if (secure) await this._session.setSecureItem(key, value, publicKey, sessionTtlMs); else this._session.setItem(key, value, sessionTtlMs);
-            return value;
-        }
+        if(!found && this._localStorage.HasKey(key)) found = this._localStorage.Get(key);
         // 4. Google Drive (if available)
-        if (this._googleDrive && googleId) {
-            try {
-                value = await this._googleDrive.downloadRawFile(googleId);
-                if (value != null) {
-                    if (secure) await this._cache.setSecure(key, value, publicKey, cacheTtlMs); else this._cache.Set(key, value, cacheTtlMs);
-                    if (secure) await this._session.setSecureItem(key, value, publicKey, sessionTtlMs); else this._session.setItem(key, value, sessionTtlMs);
-                    if (secure) await this._localStorage.SetSecurePreference(key, value, publicKey, localTtlMs); else this._localStorage.Set(key, value, localTtlMs);
-                    return value;
-                }
-            } catch (err) {
-                console.warn('Google Drive unavailable or error:', err);
-            }
+        if(!found && this._googleDrive && this._googleDrive.HasKey(key)) found = await this._googleDrive.Get(key);
+        // 5. GitHub
+        if(!found && this._gitHub.Has(key)) found = await this._gitHub.Get(key,"json");
+        if(secure && privateKey) {
+            return this._crypto.decrypt(privateKey, found);
         }
-        // 5. GitHub (if available)
-        if (this._gitHub && githubFilename) {
-            try {
-                value = await this._gitHub.fetchRawFile(githubFilename);
-                if (value != null) {
-                    if (secure) await this._cache.setSecure(key, value, publicKey, cacheTtlMs); else this._cache.Set(key, value, cacheTtlMs);
-                    if (secure) await this._session.setSecureItem(key, value, publicKey, sessionTtlMs); else this._session.setItem(key, value, sessionTtlMs);
-                    if (secure) await this._localStorage.SetSecurePreference(key, value, publicKey, localTtlMs); else this._localStorage.Set(key, value, localTtlMs);
-                    return value;
-                }
-            } catch (err) {
-                console.warn('GitHub unavailable or error:', err);
-            }
-        }
-        return null;
+        return found;
     }
 
     // Central set: cache, session, local, google, github
