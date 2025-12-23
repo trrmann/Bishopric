@@ -57,7 +57,7 @@ export class Members{
     }
     async GetMembers() {
         // Use cached array and minimize repeated lookups
-        const callings = await this.callings.GetCallingsDetails();
+        const callings = await this.callings.CallingsDetails;
         const roles = await this.roles.GetRoles();
         const org = await this.org.GetOrg();
         const memberEntries = this.GetMemberEntries();

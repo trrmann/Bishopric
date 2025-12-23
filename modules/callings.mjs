@@ -79,11 +79,11 @@ export class Callings {
     }
 
     // ----- Core Data Accessors -----
-    GetCallingsEntries() {
+    get CallingsEntries() {
         return this.Callings.callings;
     }
-    GetCallingsDetails() {
-        return this.GetCallingsEntries().map(calling => ({
+    get CallingsDetails() {
+        return this.CallingsEntries.map(calling => ({
             id: calling.id,
             name: calling.name,
             level: calling.level,
@@ -96,13 +96,13 @@ export class Callings {
 
     // ----- Filtering Methods -----
     GetActiveCallings() {
-        return this.GetCallingsDetails().filter(calling => calling.active === true);
+        return this.CallingsDetails.filter(calling => calling.active === true);
     }
     GetWardCallings() {
-        return this.GetCallingsDetails().filter(calling => calling.level === "ward");
+        return this.CallingsDetails.filter(calling => calling.level === "ward");
     }
     GetStakeCallings() {
-        return this.GetCallingsDetails().filter(calling => calling.level === "stake");
+        return this.CallingsDetails.filter(calling => calling.level === "stake");
     }
     GetActiveWardCallings() {
         return this.GetWardCallings().filter(calling => calling.active === true);
@@ -113,10 +113,10 @@ export class Callings {
 
     // ----- Lookup Methods -----
     GetCallingById(id) {
-        return this.GetCallingsDetails().filter(calling => calling.id === id);
+        return this.CallingsDetails.filter(calling => calling.id === id);
     }
     GetCallingByName(name) {
-        return this.GetCallingsDetails().filter(calling => calling.name === name);
+        return this.CallingsDetails.filter(calling => calling.name === name);
     }
     GetActiveCallingById(id) {
         return this.GetCallingById(id).filter(calling => calling.active === true);
@@ -151,7 +151,7 @@ export class Callings {
 
     // ----- Existence Checks -----
     HasCallings() {
-        const callings = this.GetCallingsDetails();
+        const callings = this.CallingsDetails;
         return callings !== null && callings.length > 0;
     }
     HasActiveCallings() {
