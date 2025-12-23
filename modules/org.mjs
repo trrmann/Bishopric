@@ -1,55 +1,69 @@
 export class Org {
-    constructor(config) {
-        this._storageObj = config._storageObj;
-        this.org = null;
+
+    // ===== Instance Accessors =====
+    get Storage() { return this.storage; }
+    get Organization() { return this.organization; }
+
+    // ===== Constructor =====
+    constructor(configuration) {
+        this.storage = configuration._storageObj;
+        this.organization = undefined;
     }
+
+    // ===== Static Methods =====
     static CopyFromJSON(dataJSON) {
-        this._storageObj = dataJSON._storageObj;
-        this.org = dataJSON.org;
+        const org = new Org(dataJSON._storageObj);
+        org.organization = dataJSON.org;
+        return org;
+    }
+    static CopyToJSON(instance) {
+        return {
+            _storageObj: instance.storage,
+            org: instance.organization
+        };
     }
     static CopyFromObject(destination, source) {
-        destination._storageObj = source._storageObj;
-        destination.org = source.org;
+        destination.storage = source.storage;
+        destination.organization = source.organization;
     }
-    static async Factory(config) {
-        const org = new Org(config);
+    static async Factory(configuration) {
+        const org = new Org(configuration);
         await org.Fetch();
         return org;
     }
-    GetOrgFilename() {
-        const file = "organizations.json";
-        return file;
+
+    // ===== File/Storage Accessors =====
+    static get OrgFileBasename() { return "organizations"; }
+    static get OrgFileExtension() { return "json"; }
+    static get OrgFilename() { return `${Org.OrgFileBasename}.${Org.OrgFileExtension}`; }
+    static get OrgCacheExpireMS() { return 1000 * 60 * 30; }
+    static get OrgSessionExpireMS() { return 1000 * 60 * 60; }
+    static get OrgLocalExpireMS() { return 1000 * 60 * 60 * 2; }
+    static get StorageConfig() {
+        return {
+            cacheTtlMs: Org.OrgCacheExpireMS,
+            sessionTtlMs: Org.OrgSessionExpireMS,
+            localTtlMs: Org.OrgLocalExpireMS,
+            googleId: null,
+            githubFilename: null,
+            privateKey: null,
+            publicKey: null,
+            secure: false
+        };
     }
-    GetOrgExpireMS() {
-        return 1000 * 60 * 60 * 1;// 1 hour
-    }
-    GetStorageConfig() {
-        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
-    }
+
+    // ===== Data Fetching =====
     async Fetch() {
-        // Try to get from storage (cache/session/local/google/github)
-        let orgObj = await this._storageObj.Get(this.GetOrgFilename(), this.GetStorageConfig());
-        if (orgObj) {
-            this.org = orgObj;
-        } else {
-            // If not found, fallback to empty
-            this.org = undefined;
-        }
+        let orgObj = await this.Storage.Get(Org.OrgFilename, Org.StorageConfig);
+        this.organization = orgObj ? orgObj : undefined;
     }
-    GetOrg(){
-        // Ensure cache is built
-        return this.org;
-    }
-    async GetAllStakes() {
-        // Ensure data is loaded before returning stakes
-        return await this.GetOrg().stakes;
-    }
-    GetAllUnits() {
-        // Synchronous: use cached org data
-        const org = this.GetOrg();
-        if (!org || !Array.isArray(org.stakes)) return [];
+
+    // ===== Core Data Accessors =====
+    get Stakes() { return this.organization?.stakes || []; }
+    get Units() {
+        if (!Array.isArray(this.Stakes)) return [];
         const allUnits = [];
-        for (const stake of org.stakes) {
+        for (const stake of this.Stakes) {
             if (Array.isArray(stake.units)) {
                 for (const unit of stake.units) {
                     allUnits.push({
@@ -63,44 +77,51 @@ export class Org {
         }
         return allUnits;
     }
-    GetAllWards() {
-        const allUnits = this.GetAllUnits();
-        return allUnits.filter(unit => unit.type === "ward");
+    get Wards() { return this.Units.filter(unit => unit.type === "ward"); }
+    get Branches() { return this.Units.filter(unit => unit.type === "branch"); }
+
+    // ===== Stake/Unit Lookups =====
+    StakeByUnitNumber(unitNumber) {
+        return this.Stakes.find(stake => stake.unitNumber === unitNumber);
     }
-    GetAllBranches() {
-        const allUnits = this.GetAllUnits();
-        return allUnits.filter(unit => unit.type === "branch");
+    StakeByName(stakeName) {
+        return this.Stakes.find(stake => stake.name === stakeName);
     }
-    GetStake(unitNumber) {
-        const org = this.GetOrg();
-        if (!org || !Array.isArray(org.stakes)) return undefined;
-        return org.stakes.find(stake => stake.unitNumber === unitNumber);
-    }
-    GetAllStakeUnits(stakeUnitNumber) {
-        const stake = this.GetStake(stakeUnitNumber);
+    StakeUnits(stakeUnitNumber) {
+        const stake = this.StakeByUnitNumber(stakeUnitNumber);
         return stake && Array.isArray(stake.units) ? stake.units : [];
     }
-    GetAllStakeWards(stakeUnitNumber) {
-        return this.GetAllStakeUnits(stakeUnitNumber).filter(unit => unit.type === "ward");
+    StakeWards(stakeUnitNumber) {
+        return this.StakeUnits(stakeUnitNumber).filter(unit => unit.type === "ward");
     }
-    GetAllStakeBranches(stakeUnitNumber) {
-        return this.GetAllStakeUnits(stakeUnitNumber).filter(unit => unit.type === "branch");
+    StakeBranches(stakeUnitNumber) {
+        return this.StakeUnits(stakeUnitNumber).filter(unit => unit.type === "branch");
     }
-    GetUnit(unitNumber) {
-        return this.GetAllUnits().find(unit => unit.unitNumber === unitNumber);
+    UnitByNumber(unitNumber) {
+        return this.Units.find(unit => unit.unitNumber === unitNumber);
     }
-    GetWard(unitNumber) {
-        return this.GetAllWards().find(unit => unit.unitNumber === unitNumber);
+    WardByNumber(unitNumber) {
+        return this.Wards.find(unit => unit.unitNumber === unitNumber);
     }
-    GetBranch(unitNumber) {
-        return this.GetAllBranches().find(unit => unit.unitNumber === unitNumber);
+    BranchByNumber(unitNumber) {
+        return this.Branches.find(unit => unit.unitNumber === unitNumber);
     }
-    GetStakeByName(stakeName) {
-        const org = this.GetOrg();
-        if (!org || !Array.isArray(org.stakes)) return undefined;
-        return org.stakes.find(stake => stake.name === stakeName);
+    UnitByName(unitName) {
+        return this.Units.find(unit => unit.name === unitName);
     }
-    GetUnitByName(unitName) {
-        return this.GetAllUnits().find(unit => unit.name === unitName);
-    }
+
+    // ===== Existence Accessors =====
+    get HasStakes() { return this.Stakes.length > 0; }
+    get HasUnits() { return this.Units.length > 0; }
+    get HasWards() { return this.Wards.length > 0; }
+    get HasBranches() { return this.Branches.length > 0; }
+
+    // ===== Existence Lookups =====
+    HasStakeByUnitNumber(unitNumber) { return !!this.StakeByUnitNumber(unitNumber); }
+    HasStakeByName(stakeName) { return !!this.StakeByName(stakeName); }
+    HasUnitByNumber(unitNumber) { return !!this.UnitByNumber(unitNumber); }
+    HasUnitByName(unitName) { return !!this.UnitByName(unitName); }
+    HasWardByNumber(unitNumber) { return !!this.WardByNumber(unitNumber); }
+    HasBranchByNumber(unitNumber) { return !!this.BranchByNumber(unitNumber); }
+
 }

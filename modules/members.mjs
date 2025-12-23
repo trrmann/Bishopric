@@ -59,7 +59,7 @@ export class Members{
         // Use cached array and minimize repeated lookups
         const callings = await this.callings.CallingsDetails;
         const roles = await this.roles.GetRoles();
-        const org = await this.org.GetOrg();
+        const org = this.org.Organization;
         const memberEntries = this.GetMemberEntries();
         return memberEntries.map(member => {
             // Allow members with no callings
@@ -133,8 +133,8 @@ export class Members{
             // Titleless full name (no prefix/title)
             const titlelessFullname = nameParts.filter(Boolean).join(' ');
 
-            const stake = this.org.GetStake(member.stakeUnitNumber);
-            const unit = this.org.GetUnit(member.unitNumber);
+            const stake = this.org.StakeByUnitNumber(member.stakeUnitNumber);
+            const unit = this.org.UnitByNumber(member.unitNumber);
             const stakeName = stake ? stake.name : '';
             const unitName = unit ? unit.name : '';
             const unitType = unit ? unit.type : '';
@@ -178,14 +178,14 @@ export class Members{
 
     // Get leadership for a stake by unitNumber using an Org instance
     static GetStakeLeadership(orgInstance, stakeUnitNumber) {
-        if (!orgInstance || typeof orgInstance.GetStake !== 'function') return null;
-        const stake = orgInstance.GetStake(stakeUnitNumber);
+        if (!orgInstance || typeof orgInstance.StakeByUnitNumber !== 'function') return null;
+        const stake = orgInstance.StakeByUnitNumber(stakeUnitNumber);
         return stake && stake.leadership ? stake.leadership : null;
     }
     // Get leadership for a ward by unitNumber using an Org instance
     static GetWardLeadership(orgInstance, wardUnitNumber) {
-        if (!orgInstance || typeof orgInstance.GetWard !== 'function') return null;
-        const ward = orgInstance.GetWard(wardUnitNumber);
+        if (!orgInstance || typeof orgInstance.WardByNumber !== 'function') return null;
+        const ward = orgInstance.WardByNumber(wardUnitNumber);
         return ward && ward.leadership ? ward.leadership : null;
     }
 }
