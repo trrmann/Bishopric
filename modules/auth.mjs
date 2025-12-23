@@ -204,7 +204,17 @@ export class Auth {
     }
     // Show dashboard
     async ShowDashboard() {
-        const config = await (await Configuration.Factory()).configuration;
+        /*const config = {
+            configuration: this.configuration,
+            _storageObj: this._storageObj
+        };/**/
+        let config = null;
+        if(this.configuration) {
+            config = this.configuration;
+        } else {
+            config = await Configuration.Factory(this._storageObj);
+        }
+
         // Ensure members table is rendered for the current user
         if (typeof this.renderMembersTable === 'function') {
             this.renderMembersTable();
@@ -229,6 +239,7 @@ export class Auth {
         // Helper to control menu item and part visibility using only selected role
         // Use unique names to avoid redeclaration errors if ShowDashboard is called multiple times
         const _setMenuAccess = (menuClass, accessConfig) => {
+            const config = this.configuration;
             const menuItem = document.querySelector('.' + menuClass);
             if (!menuItem || !config || !config.access || !config.access[accessConfig] || !Array.isArray(config.access[accessConfig].page)) return;
             const allowedRoleIDs = config.access[accessConfig].page;
@@ -353,7 +364,7 @@ export class Auth {
         _setMenuAccess('reportsmenuitem', 'reports');
 
         // Apply access control to all parts
-        Object.entries(config.access).forEach(([section, sectionObj]) => {
+        Object.entries(config.configuration.access).forEach(([section, sectionObj]) => {
             if (sectionObj.parts) {
                 _setPartsAccess(section, sectionObj.parts, section + '-');
             }
@@ -618,7 +629,7 @@ export class Auth {
     // Render members table (moved from scripts/script.js)
     async renderMembersTable() {
         if (!this.membersInstance) {
-            this.membersInstance = await Members.Factory();
+            this.membersInstance = await Members.Factory({configuration: this.configuration, _storageObj:this._storageObj});
         }
         const members = await this.membersInstance.GetMembers();
         let filteredMembers = members;
@@ -731,7 +742,7 @@ export class Auth {
                 let canEdit = false;
                 let canRemove = false;
                 // Check access config for current role
-                const config = await (await Configuration.Factory()).configuration;
+                const config = this.configuration;
                 let selectedRoleID = null;
                 if (this.currentUser && this.currentUser.activeRole && Array.isArray(this.currentUser.roleNames) && Array.isArray(this.currentUser.roleIDs)) {
                     const idx = this.currentUser.roleNames.indexOf(this.currentUser.activeRole);
