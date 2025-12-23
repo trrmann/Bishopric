@@ -1,4 +1,8 @@
 export class Callings {
+        // ----- Instance Accessors -----
+        get Storage() {
+            return this.storage;
+        }
     // ----- Instance Accessors -----
     get Callings() {
         return this.callings;
@@ -66,7 +70,7 @@ export class Callings {
 
     // ----- Data Fetching -----
     async Fetch() {
-        let callingsObj = await this.storage.Get(Callings.CallingsFilename, Callings.StorageConfig);
+        let callingsObj = await this.Storage.Get(Callings.CallingsFilename, Callings.StorageConfig);
         if (callingsObj) {
             this.callings = callingsObj;
         } else {
