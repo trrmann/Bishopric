@@ -29,7 +29,7 @@ export class Auth {
         //console.log(callings.CallingsDetails);
         //const roles = await Roles.Factory();
         //console.log(roles);
-        //console.log(roles.Roles);
+        //console.log(roles.RolesDetails);
         //const members = await Members.Factory();
         //console.log(members);
         //console.log(await members.GetMembers());
