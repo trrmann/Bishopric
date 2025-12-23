@@ -12,6 +12,12 @@ export class Callings {
         this.callings = dataJSON.callings;
         return callings;
     }
+    static CopyToJSON() {
+        return {
+            _storageObj: this.storage,
+            callings: this.callings
+        };
+    }
     static CopyFromObject(destination, source) {
         destination.storage = source.storage;
         destination.callings = source.callings;
