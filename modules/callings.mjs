@@ -1,97 +1,48 @@
 export class Callings {
-    static local = true;
-    constructor() {
+    constructor(config) {
+        this._storageObj = config._storageObj;
         this.callings = null;
-        this.lastFetched = null;
-        this._callingsArray = null; // cache array
-        this._idMap = null; // cache id lookup
-        this._nameMap = null; // cache name lookup
     }
     static CopyFromJSON(dataJSON) {
-        const callings = new Callings();
-        callings.callings = dataJSON.callings;
-        callings.lastFetched = dataJSON.lastFetched;
-        callings._buildCache();
-        return callings;
+        this._storageObj = dataJSON._storageObj;
+        this.callings = dataJSON.callings;
     }
     static CopyFromObject(destination, source) {
+        destination._storageObj = source._storageObj;
         destination.callings = source.callings;
-        destination.lastFetched = source.lastFetched;
-        destination._buildCache();
     }
-    static async Factory(storageInstance = null) {
-        const callings = new Callings();
-        await callings.Fetch(storageInstance);
-        callings._buildCache();
+    static async Factory(config) {
+        const callings = new Callings(await config);
+        await callings.Fetch();
         return callings;
     }
-    GetCallingsURL(local = false) {
-        const host = "https://trrmann.github.io/";
-        const projectPath = "bishopric/data/";
-        const path = "data/";
+    GetCallingsFilename() {
         const file = "callings.json";
-        let url = `${host}${projectPath}${file}`;
-        if (local) {
-            url = `${path}${file}`;
-        }
-        return url;
+        return file;
     }
-    GetFetchExpireMS() {
-        const expireTime = 1000 * 60 * 60 * 24; // 1 day
-        return expireTime;
+    GetCallingsExpireMS() {
+        return 1000 * 60 * 60 * 1;// 1 hour
     }
-    GetLocalStoreKey() {
-        return "callings";
+    GetStorageConfig() {
+        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
     }
-    IsFetched() {
-        const callings = this.callings;
-        const isFetched = callings != null;
-        return isFetched;
-    }
-    IsLastFetchedExpired() {
-        const lastFetchedMS = this.GetLastFetched();
-        if (lastFetchedMS == null) {
-            return true;
+    async Fetch() {
+        // Try to get from storage (cache/session/local/google/github)
+        let callingsObj = await this._storageObj.Get(this.GetCallingsFilename(), this.GetStorageConfig());
+        if (callingsObj) {
+            this.callings = callingsObj;
         } else {
-            const expireMS = this.GetFetchExpireMS();
-            const fetchExpireMS = lastFetchedMS + expireMS;
-            const nowMS = Date.now();
-            const match = nowMS >= fetchExpireMS;
-            return match;
+            // If not found, fallback to empty
+            this.callings = undefined;
         }
     }
-    GetLastFetched() {
-        const lastFetched = this.lastFetched;
-        return lastFetched;
+    GetCallingsEntries(){
+        // Ensure cache is built
+        return this.callings.callings;
     }
-    SetLastFetched(fetchedDatetime) {
-        this.lastFetched = fetchedDatetime;
-    }
-        async Fetch(storageInstance = null) {
-            // Use Storage class for all data access
-            const storage = storageInstance || new Storage();
-            const key = this.GetLocalStoreKey();
-            const githubFilename = "callings.json";
-            const cacheTtlMs = this.GetFetchExpireMS();
-            // Try to get from storage (cache/session/local/google/github)
-            let callingsObj = await storage.get(key, {
-                cacheTtlMs,
-                githubFilename
-            });
-            if (callingsObj) {
-                Callings.CopyFromObject(this, callingsObj);
-            } else {
-                // If not found, fallback to empty
-                this.callings = null;
-            }
-            this._buildCache();
-        }
-        GetCallings() {
-            if (!this._callingsArray) {
-                this._buildCache();
-            }
+    GetCallings() {
             // Return callings with new fields (hasTitle, title, titleOrdinal) included
-            return this._callingsArray.map(calling => ({
+            return this.GetCallingsEntries().map(calling => ({
                 id: calling.id,
                 name: calling.name,
                 level: calling.level,
@@ -100,16 +51,6 @@ export class Callings {
                 title: calling.title,
                 titleOrdinal: calling.titleOrdinal
             }));
-        }
-        _buildCache() {
-            // Build array and lookup maps for fast access
-            this._callingsArray = (this.callings && this.callings.callings) ? this.callings.callings : [];
-            this._idMap = new Map();
-            this._nameMap = new Map();
-            for (const calling of this._callingsArray) {
-                this._idMap.set(calling.id, calling);
-                this._nameMap.set(calling.name, calling);
-            }
         }
         GetActiveCallings() {
             return this.GetCallings().filter(calling => calling.active === true);
@@ -127,16 +68,10 @@ export class Callings {
             return this.GetStakeCallings().filter(calling => calling.active === true);
         }
         GetCallingById(id) {
-            // Fast lookup by id
-            if (!this._idMap) this._buildCache();
-            const c = this._idMap.get(id);
-            return c ? [c] : [];
+            return this.GetCallings().filter(calling => calling.id === id);
         }
         GetCallingByName(name) {
-            // Fast lookup by name
-            if (!this._nameMap) this._buildCache();
-            const c = this._nameMap.get(name);
-            return c ? [c] : [];
+            return this.GetCallings().filter(calling => calling.name === name);
         }
         GetActiveCallingById(id) {
             return this.GetCallingById(id).filter(calling => calling.active === true);

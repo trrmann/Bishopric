@@ -1,156 +1,69 @@
-import { Callings } from "./callings.mjs";
-import { LocalStorage } from "./localStorage.mjs";
 import { Roles } from "./roles.mjs";
 import { Org } from "./org.mjs";
 export class Members{
     static local = true;
-    constructor() {
+    constructor(config) {
+        this._storageObj = config._storageObj;
         this.members = null;
-        this.lastFetched = null;
-        this.callings = null;
-        this.roles = null;
-        this.org = null;
-        this._membersArray = null; // cache array
-        this._idMap = null; // cache id lookup
-        this._emailMap = null; // cache email lookup
+        this.roles = undefined;
+        this.callings = undefined;
+        this.org = undefined;
     }
     static CopyFromJSON(dataJSON) {
-        const members = new Members();
-        members.members = dataJSON.members;
-        members.lastFetched = dataJSON.lastFetched;
-        members._buildCache();
-        return members;
+        this._storageObj = dataJSON._storageObj;
+        this.members = dataJSON.members;
+        this.callings = dataJSON.callings;
+        this.roles = dataJSON.roles;
+        this.org = dataJSON.org;
     }
     static CopyFromObject(destination, source) {
+        destination._storageObj = source._storageObj;
         destination.members = source.members;
-        destination.lastFetched = source.lastFetched;
-        destination._buildCache();
+        destination.callings = source.callings;
+        destination.roles = source.roles;
+        destination.org = source.org;
     }
-    static async Factory() {
-        const members = new Members();
+    static async Factory(config) {
+        const members = new Members(await config);
         await members.Fetch();
+        members.roles = await Roles.Factory(config);
+        members.callings = await members.roles.callings;
+        members.org = await Org.Factory(config);
         return members;
     }
-    GetMembersURL(local=false) {
-        const host = "https://trrmann.github.io/";
-        const projectPath = "bishopric/data/";
-        const path = "data/";
+    GetMembersFilename() {
         const file = "members.json";
-        let url = `${host}${projectPath}${file}`;
-        if(local) {
-            url = `${path}${file}`;
-        }
-        return url;
+        return file;
     }
-    GetFetchExpireMS(){
-        const expireTime = 1000 * 60 * 60 * 24; // 1 day
-        return expireTime;
+    GetMembersExpireMS() {
+        return 1000 * 60 * 60 * 1;// 1 hour
     }
-    GetLocalStoreKey() {
-        return "members";
-    }
-    IsFetched(){
-        const members = this.members;
-        const isFetched = (members != null);
-        return isFetched;
-    }
-    IsLastFetchedExpired(){
-        const lastFetchedMS = this.GetLastFetched();
-        const lastFetched = Date(lastFetchedMS);
-        if(lastFetched==null) {
-            return true;
-        } else {
-            const expireMS = this.GetFetchExpireMS();
-            const fetchExpireMS = lastFetchedMS + expireMS;
-            //const fetchExpire = Date(fetchExpireMS);
-            const nowMS = Date.now();
-            //const now = Date(nowMS);
-            const match = (nowMS >= fetchExpireMS);
-            return match;
-        }
-    }
-    GetLastFetched(){
-        const lastFetched = this.lastFetched;
-        return lastFetched;
-    }
-    SetLastFetched(fetchedDatetime){
-        const fetchedDatetimeIn = fetchedDatetime;
-        this.lastFetched = fetchedDatetimeIn;
+    GetStorageConfig() {
+        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
     }
     async Fetch() {
-        this.callings = await Callings.Factory();
-        this.roles = await Roles.Factory();
-        this.org = await Org.Factory();
-        let fetched = false;
-        const isFetched = this.IsFetched();
-        if(!isFetched) {
-            const key = this.GetLocalStoreKey();
-            const hasPreference = await LocalStorage.HasPreference(key);
-            if(hasPreference) {
-                const preferenceData = await LocalStorage.GetObject(key);
-                Members.CopyFromObject(this, preferenceData);
-            }
-            const isLastFetchedExpired = this.IsLastFetchedExpired();
-            if(isLastFetchedExpired){
-                try {
-                    const url = this.GetMembersURL(Members.local);
-                    const response = await fetch(url);
-                    const responseOk = response.ok;
-                    if (!responseOk) {
-                        throw new Error('Network response was not ok');
-                    }
-                    this.members = await response.json();
-                    const newLastFetchDate = Date.now();
-                    this.SetLastFetched(newLastFetchDate);
-                    fetched = true;
-                } catch (error) {
-                    console.error('There has been a problem with your fetch operation:', error);
-                }
-            }
-            await LocalStorage.SetObject(key, this);
-        }
-        // Always rebuild cache after fetch or local load
-        this._buildCache();
-        // if (fetched) {
-        //     console.log('Fetched members from remote:', this.members);
-        // }
-    }
-    async GetCallings() {
-        return await this.callings;
-    }
-    async GetRoles() {
-        return await this.roles.GetRoles();
-    }
-    async GetOrg() {
-        return await this.org;
-    }
-
-    _buildCache() {
-        // Build array and lookup maps for fast access
-        this._membersArray = (this.members && this.members.members) ? this.members.members : [];
-        this._idMap = new Map();
-        this._emailMap = new Map();
-        for (const member of this._membersArray) {
-            // Only use memberNumber for mapping
-            this._idMap.set(member.memberNumber, member);
-            this._emailMap.set(member.email, member);
+        // Try to get from storage (cache/session/local/google/github)
+        let membersObj = await this._storageObj.Get(this.GetMembersFilename(), this.GetStorageConfig());
+        if (membersObj) {
+            this.members = membersObj;
+        } else {
+            // If not found, fallback to empty
+            this.members = undefined;
         }
     }
     GetMemberEntries(){
         // Ensure cache is built
-        if (!this._membersArray) this._buildCache();
-        return this._membersArray;
+        return this.members.members;
     }
     async GetMembers() {
         // Use cached array and minimize repeated lookups
-        if (!this._membersArray) this._buildCache();
-        const callings = await this.GetCallings();
-        const roles = await this.GetRoles();
-        const org = await this.GetOrg();
-        return this._membersArray.map(member => {
+        const callings = await this.callings.GetCallings();
+        const roles = await this.roles.GetRoles();
+        const org = await this.org.GetOrg();
+        return this.GetMemberEntries().map(member => {
             // Allow members with no callings
             const memberCallings = Array.isArray(member.callings) ? member.callings : [];
-            const callingsResolved = memberCallings.length > 0 ? memberCallings.map(callingid => callings.GetCallingById(callingid)) : [];
+            const callingsResolved = memberCallings.length > 0 ? memberCallings.map(callingid => this.callings.GetCallingById(callingid)) : [];
             const callingNames = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].name : null) : [];
             const callingLevels = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].level : null) : [];
             const callingsActive = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].active === true : false) : [];
@@ -219,8 +132,8 @@ export class Members{
             // Titleless full name (no prefix/title)
             const titlelessFullname = nameParts.filter(Boolean).join(' ');
 
-            const stake = org.GetStake(member.stakeUnitNumber);
-            const unit = org.GetUnit(member.unitNumber);
+            const stake = this.org.GetStake(member.stakeUnitNumber);
+            const unit = this.org.GetUnit(member.unitNumber);
             const stakeName = stake ? stake.name : '';
             const unitName = unit ? unit.name : '';
             const unitType = unit ? unit.type : '';

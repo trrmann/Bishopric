@@ -9,6 +9,7 @@ export class Auth {
         // Defensive: handle missing or null configuration or sub-objects
         const login = configuration && configuration.login ? configuration.login : {};
         const main = configuration && configuration.main ? configuration.main : {};
+        this._storageObj = config._storageObj;
         this.target = login.target || '';
         this.destinationID = login.destinationID || '';
         this.formID = login.formID || '';
@@ -46,7 +47,7 @@ export class Auth {
         (async function() {
             try {
                 // Always reload users for login page
-                const usersObj = await Users.Factory();
+                const usersObj = await Users.Factory(configuration);
                 auth.allUsers = await usersObj.GetUsers();
                 auth.PopulateEmailList(auth.emailListID);
             } catch (error) {

@@ -1,119 +1,59 @@
 import { Callings } from "./callings.mjs";
-import { Storage } from "./storage.mjs";
 export class Roles{
-    static local = true;
-    constructor() {
+    constructor(config) {
+        this._storageObj = config._storageObj;
         this.roles = null;
-        this.lastFetched = null;
-        this.callings = null;
-        this._rolesArray = null; // cache array
-        this._idMap = null; // cache id lookup
-        this._nameMap = null; // cache name lookup
+        this.callings = undefined;
     }
     static CopyFromJSON(dataJSON) {
-        const roles = new Roles();
-        roles.roles = dataJSON.roles;
-        roles.lastFetched = dataJSON.lastFetched;
-        roles._buildCache();
-        return roles;
+        this._storageObj = dataJSON._storageObj;
+        this.roles = dataJSON.roles;
+        this.callings = dataJSON.callings;
     }
     static CopyFromObject(destination, source) {
+        destination._storageObj = source._storageObj;
         destination.roles = source.roles;
-        destination.lastFetched = source.lastFetched;
-        destination._buildCache();
+        destination.callings = source.callings;
     }
-    static async Factory(storageInstance = null) {
-        const roles = new Roles();
-        await roles.Fetch(storageInstance);
-        roles._buildCache();
+    static async Factory(config) {
+        const roles = new Roles(await config);
+        await roles.Fetch();
+        roles.callings = await Callings.Factory(config);
         return roles;
     }
-    GetRolesURL(local=false) {
-        const host = "https://trrmann.github.io/";
-        const projectPath = "bishopric/data/";
-        const path = "data/";
+    GetRolesFilename() {
         const file = "roles.json";
-        let url = `${host}${projectPath}${file}`;
-        if(local) {
-            url = `${path}${file}`;
-        }
-        return url;
+        return file;
     }
-    GetFetchExpireMS(){
-        const expireTime = 1000 * 60 * 60 * 24; // 1 day
-        return expireTime;
+    GetRolesExpireMS() {
+        return 1000 * 60 * 60 * 1;// 1 hour
     }
-    GetLocalStoreKey() {
-        return "roles";
+    GetStorageConfig() {
+        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
     }
-    IsFetched(){
-        const roles = this.roles;
-        const isFetched = (roles != null);
-        return isFetched;
-    }
-    IsLastFetchedExpired(){
-        const lastFetchedMS = this.GetLastFetched();
-        const lastFetched = Date(lastFetchedMS);
-        if(lastFetched==null) {
-            return true;
-        } else {
-            const expireMS = this.GetFetchExpireMS();
-            const fetchExpireMS = lastFetchedMS + expireMS;
-            //const fetchExpire = Date(fetchExpireMS);
-            const nowMS = Date.now();
-            //const now = Date(nowMS);
-            const match = (nowMS >= fetchExpireMS);
-            return match;
-        }
-    }
-    GetLastFetched(){
-        const lastFetched = this.lastFetched;
-        return lastFetched;
-    }
-    SetLastFetched(fetchedDatetime){
-        const fetchedDatetimeIn = fetchedDatetime;
-        this.lastFetched = fetchedDatetimeIn;
-    }
-    async Fetch(storageInstance = null) {
-        // Use Storage class for all data access
-        this.callings = await Callings.Factory(storageInstance);
-        const storage = storageInstance || new Storage();
-        const key = this.GetLocalStoreKey();
-        const githubFilename = "roles.json";
-        const cacheTtlMs = this.GetFetchExpireMS();
+    async Fetch() {
         // Try to get from storage (cache/session/local/google/github)
-        let rolesObj = await storage.get(key, {
-            cacheTtlMs,
-            githubFilename
-        });
+        let rolesObj = await this._storageObj.Get(this.GetRolesFilename(), this.GetStorageConfig());
         if (rolesObj) {
-            Roles.CopyFromObject(this, rolesObj);
+            this.roles = rolesObj;
         } else {
             // If not found, fallback to empty
-            this.roles = null;
+            this.roles = undefined;
         }
-        this._buildCache();
     }
-    GetCallings() {
-        return this.callings;
+    GetRolesEntries(){
+        // Ensure cache is built
+        return this.roles.roles;
     }
-    GetRoleEntries(){
-        if (!this._rolesArray) {
-            this._buildCache();
-        }
-        return this._rolesArray;
-    }
+
     GetRoles(){
-        if (!this._rolesArray) {
-            this._buildCache();
-        }
-        return this._rolesArray.map(role => {
+        return this.GetRolesEntries().map(role => {
             const callingArr = this.callings ? this.callings.GetCallingById(role.calling) : [];
             const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
             const subRoles = this.GetRawSubRolesById(role.id);
-            const subRoleNames = this._rolesArray.filter(r => {return subRoles.includes(r.id);}).map(r => {return r.name;});
+            const subRoleNames = this.GetRolesEntries().filter(r => {return subRoles.includes(r.id);}).map(r => {return r.name;});
             const allSubRoles = this.GetSubRolesById(role.id);
-            const allSubRoleNames = this._rolesArray.filter(r => {return allSubRoles.includes(r.id);}).map(r => {return r.name;});
+            const allSubRoleNames = this.GetRolesEntries().filter(r => {return allSubRoles.includes(r.id);}).map(r => {return r.name;});
             return {
                 id: role.id,
                 name: role.name,
@@ -134,7 +74,7 @@ export class Roles{
     }
     GetRawSubRolesById(roleId) {
         // Returns the array of subrole IDs for a given roleId, or [] if none
-        const roleArr = this.GetRoleById(roleId);
+        const roleArr = this.GetRoleEntryById(roleId);
         if (!roleArr || roleArr.length === 0) return [];
         const role = roleArr[0];
         // subRoles may be undefined or not an array
@@ -166,25 +106,14 @@ export class Roles{
     GetActiveRoles(){
         return this.GetRoles().filter(role => {return (role.active === true);});
     }
+    GetRoleEntryById(id) {
+        return this.GetRolesEntries().filter(role => {return (role.id === id);});
+    }
     GetRoleById(id) {
-        if (!this._idMap) this._buildCache();
-        const r = this._idMap.get(id);
-        return r ? [r] : [];
+        return this.GetRoles().filter(role => {return (role.id === id);});
     }
     GetRoleByName(name) {
-        if (!this._nameMap) this._buildCache();
-        const r = this._nameMap.get(name);
-        return r ? [r] : [];
-    }
-    _buildCache() {
-        // Build array and lookup maps for fast access
-        this._rolesArray = (this.roles && this.roles.roles) ? this.roles.roles : [];
-        this._idMap = new Map();
-        this._nameMap = new Map();
-        for (const role of this._rolesArray) {
-            this._idMap.set(role.id, role);
-            this._nameMap.set(role.name, role);
-        }
+        return this.GetRoles().filter(role => {return (role.name === name);});
     }
     GetRolesByCalling(callingId) {
         return this.GetRoles().filter(role => {return role.callingID === callingId;});

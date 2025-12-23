@@ -1,135 +1,64 @@
 import { Members } from "./members.mjs";
-import { LocalStorage } from "./localStorage.mjs";
 export class Users {
   static local = true;
-  constructor() {
+  constructor(config) {
+    this._storageObj = config._storageObj;
     this.users = { users: [] };
-    this.lastFetched = null;
-    this._usersArray = null; // cache array
-    this._idMap = null; // cache id lookup
-    this._emailMap = null; // cache email lookup
+    this.members = undefined;
   }
 
   static CopyFromJSON(dataJSON) {
     const users = new Users();
+    users._storageObj = dataJSON._storageObj;
     users.users = dataJSON.users;
+    users.members = dataJSON.members;
     users.lastFetched = dataJSON.lastFetched;
     users._buildCache();
     return users;
   }
 
   static CopyFromObject(destination, source) {
+    destination._storageObj = source._storageObj;
     destination.users = source.users;
+    destination.members = source.members;
     destination.lastFetched = source.lastFetched;
     destination._buildCache();
   }
 
-  static async Factory() {
-    const users = new Users();
+  static async Factory(config) {
+    const users = new Users(config);
     await users.Fetch();
+    users.members = await Members.Factory(config);
     return users;
   }
-
-  GetUsersURL(local = false) {
-    const host = "https://trrmann.github.io/";
-    const projectPath = "bishopric/data/";
-    const path = "data/";
-    const file = "users.json";
-    let url = `${host}${projectPath}${file}`;
-    if (local) {
-      url = `${path}${file}`;
+    GetUsersFilename() {
+        const file = "users.json";
+        return file;
     }
-    return url;
-  }
-
-  GetFetchExpireMS() {
-    const expireTime = 1000 * 60 * 60 * 24; // 1 day
-    return expireTime;
-  }
-
-  GetLocalStoreKey() {
-    return "users";
-  }
-
-  IsFetched() {
-    const users = this.users;
-    const isFetched = (users != null);
-    return isFetched;
-  }
-
-  IsLastFetchedExpired() {
-    const lastFetchedMS = this.GetLastFetched();
-    const lastFetched = Date(lastFetchedMS);
-    if (lastFetched == null) {
-      return true;
-    } else {
-      const expireMS = this.GetFetchExpireMS();
-      const fetchExpireMS = lastFetchedMS + expireMS;
-      const nowMS = Date.now();
-      return (nowMS >= fetchExpireMS);
+    GetUsersExpireMS() {
+        return 1000 * 60 * 60 * 1;// 1 hour
     }
-  }
-
-  GetLastFetched() {
-    return this.lastFetched;
-  }
-
-  SetLastFetched(fetchedDatetime) {
-    this.lastFetched = fetchedDatetime;
-  }
-
-  async Fetch() {
-    const isFetched = this.IsFetched();
-    if (!isFetched) {
-      const key = this.GetLocalStoreKey();
-      const hasPreference = LocalStorage.HasPreference(key);
-      if (hasPreference) {
-        const preferenceData = await LocalStorage.GetObject(key);
-        Users.CopyFromObject(this, preferenceData);
-      }
-      const isLastFetchedExpired = this.IsLastFetchedExpired();
-      if (isLastFetchedExpired) {
-        try {
-          const url = this.GetUsersURL(Users.local);
-          const response = await fetch(url);
-          const responseOk = response.ok;
-          if (!responseOk) {
-            throw new Error('Network response was not ok');
-          }
-          this.users = await response.json();
-          const newLastFetchDate = Date.now();
-          this.SetLastFetched(newLastFetchDate);
-        } catch (error) {
-          console.error('There has been a problem with your fetch operation:', error);
+    GetStorageConfig() {
+        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
+    }
+    async Fetch() {
+        // Try to get from storage (cache/session/local/google/github)
+        let usersObj = await this._storageObj.Get(this.GetUsersFilename(), this.GetStorageConfig());
+        if (usersObj) {
+            this.users = usersObj;
+        } else {
+            // If not found, fallback to empty
+            this.users = undefined;
         }
-      }
-      await LocalStorage.SetObject(key, this);
     }
-    this._buildCache();
-  }
-
-  _buildCache() {
-    this._usersArray = (this.users && this.users.users) ? this.users.users : [];
-    this._idMap = new Map();
-    this._emailMap = new Map();
-    for (const user of this._usersArray) {
-      // Only use memberNumber for mapping
-      this._idMap.set(user.memberNumber, user);
-      this._emailMap.set(user.email, user);
-    }
-  }
-
   GetUserEntries() {
-    if (!this._usersArray) this._buildCache();
-    return this._usersArray;
+    return this.users.users;
   }
 
   async GetUsers() {
-    if (!this._usersArray) this._buildCache();
     // Dynamically import Members if not already imported
-    let members = await Members.Factory();
-    let membersData = await members.GetMembers(); 
-    return this._usersArray.map(user => {
+    let membersData = await this.members.GetMembers();
+    return this.GetUserEntries().map(user => {
       // Only use memberNumber for matching
       const member = membersData.find(member => member.memberNumber === user.memberNumber);
       return {
