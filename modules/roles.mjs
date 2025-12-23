@@ -2,40 +2,43 @@ import { Callings } from "./callings.mjs";
 export class Roles {
 
     // ===== Instance Accessors =====
-    get Storage() { return this.storage; }
     get Callings() { return this.callings; }
+    get Storage() {
+        if (!this.Callings || !this.Callings.storage) {
+            throw new Error("Callings instance or its storage is not set on Roles.");
+        }
+        return this.Callings.storage;
+    }
     get RolesData() { return this.rolesData; }
 
     // ===== Constructor =====
-    constructor(configuration) {
-        this.storage = configuration._storageObj;
+    constructor() {
+        // No parameters; will set callings and rolesData later
         this.rolesData = undefined;
         this.callings = undefined;
     }
 
     // ===== Static Methods =====
     static CopyFromJSON(dataJSON) {
-        const roles = new Roles(dataJSON._storageObj);
-        roles.rolesData = dataJSON.roles;
+        const roles = new Roles();
         roles.callings = dataJSON.callings;
+        roles.rolesData = dataJSON.roles;
         return roles;
     }
     static CopyToJSON(instance) {
         return {
-            _storageObj: instance.storage,
             roles: instance.rolesData,
             callings: instance.callings
         };
     }
     static CopyFromObject(destination, source) {
-        destination.storage = source.storage;
-        destination.rolesData = source.rolesData;
         destination.callings = source.callings;
+        destination.rolesData = source.rolesData;
     }
     static async Factory(configuration) {
-        const roles = new Roles(configuration);
-        await roles.Fetch();
+        const roles = new Roles();
         roles.callings = await Callings.Factory(configuration);
+        await roles.Fetch();
         return roles;
     }
 
@@ -61,7 +64,11 @@ export class Roles {
 
     // ===== Data Fetching =====
     async Fetch() {
-        let rolesObj = await this.Storage.Get(Roles.RolesFilename, Roles.StorageConfig);
+        // Always use storage from Callings accessor
+        if (!this.Callings || !this.Callings.storage) {
+            throw new Error("Callings instance or its storage is not set on Roles.");
+        }
+        let rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, Roles.StorageConfig);
         this.rolesData = rolesObj ? rolesObj : undefined;
     }
 
@@ -70,7 +77,7 @@ export class Roles {
     get Roles() {
         const entries = this.RolesEntries;
         return entries.map(role => {
-            const callingArr = this.callings ? (this.callings.CallingIds.includes(role.calling) ? this.callings.CallingById(role.calling) : []) : [];
+            const callingArr = this.Callings ? (this.Callings.CallingIds.includes(role.calling) ? this.Callings.CallingById(role.calling) : []) : [];
             const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
             const subRoles = this.RawSubRolesById(role.id);
             const subRoleNames = entries.filter(r => subRoles.includes(r.id)).map(r => r.name);
