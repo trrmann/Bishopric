@@ -49,7 +49,7 @@ export class Roles{
     GetRoles(){
         const entries = this.GetRolesEntries();
         return entries.map(role => {
-            const callingArr = this.callings ? this.callings.CallingById(role.calling) : [];
+            const callingArr = this.callings ? (this.callings.CallingIds.includes(role.calling) ? this.callings.CallingById(role.calling) : []) : [];
             const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
             const subRoles = this.GetRawSubRolesById(role.id);
             const subRoleNames = entries.filter(r => subRoles.includes(r.id)).map(r => r.name);

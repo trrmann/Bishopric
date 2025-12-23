@@ -111,7 +111,15 @@ export class Callings {
         return this.StakeCallings.filter(calling => calling.active === true);
     }
 
-    // ----- Lookup Methods -----
+    // ----- ID/Name Accessors -----
+    get CallingIds() {
+        return this.CallingsDetails.map(calling => calling.id);
+    }
+    get CallingNames() {
+        return this.CallingsDetails.map(calling => calling.name);
+    }
+
+    // ----- ID/Name Lookups -----
     CallingById(id) {
         return this.CallingsDetails.filter(calling => calling.id === id);
     }
@@ -213,76 +221,78 @@ export class Callings {
     }
 
     // ----- ID/Name Accessors -----
-    GetCallingIds() {
-        return this.GetCallingsDetails().map(calling => calling.id);
+    get AllCallingIds() {
+        return this.CallingsDetails.map(calling => calling.id);
     }
-    GetCallingNames() {
-        return this.GetCallingsDetails().map(calling => calling.name);
+    get AllCallingNames() {
+        return this.CallingsDetails.map(calling => calling.name);
     }
-    GetActiveCallingIds() {
+    get AllActiveCallingIds() {
         return this.ActiveCallings.map(calling => calling.id);
     }
-    GetActiveCallingNames() {
+    get AllActiveCallingNames() {
         return this.ActiveCallings.map(calling => calling.name);
     }
-    GetWardCallingIds() {
+    get AllWardCallingIds() {
         return this.WardCallings.map(calling => calling.id);
     }
-    GetWardCallingNames() {
+    get AllWardCallingNames() {
         return this.WardCallings.map(calling => calling.name);
     }
-    GetStakeCallingIds() {
+    get AllStakeCallingIds() {
         return this.StakeCallings.map(calling => calling.id);
     }
-    GetStakeCallingNames() {
+    get AllStakeCallingNames() {
         return this.StakeCallings.map(calling => calling.name);
     }
-    GetActiveWardCallingIds() {
+    get AllActiveWardCallingIds() {
         return this.ActiveWardCallings.map(calling => calling.id);
     }
-    GetActiveWardCallingNames() {
+    get AllActiveWardCallingNames() {
         return this.ActiveWardCallings.map(calling => calling.name);
     }
-    GetActiveStakeCallingIds() {
-        return this.GetActiveStakeCallings().map(calling => calling.id);
+    get AllActiveStakeCallingIds() {
+        return this.ActiveStakeCallings.map(calling => calling.id);
     }
-    GetActiveStakeCallingNames() {
-        return this.GetActiveStakeCallings().map(calling => calling.name);
+    get AllActiveStakeCallingNames() {
+        return this.ActiveStakeCallings.map(calling => calling.name);
     }
-    GetCallingNameById(id) {
-        return this.GetCallingById(id).map(calling => calling.name);
+
+    // ----- ID/Name Lookups -----
+    CallingNameById(id) {
+        return this.CallingById(id).map(calling => calling.name);
     }
-    GetCallingIdByName(name) {
-        return this.GetCallingByName(name).map(calling => calling.id);
+    CallingIdByName(name) {
+        return this.CallingByName(name).map(calling => calling.id);
     }
-    GetActiveCallingNameById(id) {
-        return this.GetActiveCallingById(id).map(calling => calling.name);
+    ActiveCallingNameById(id) {
+        return this.ActiveCallingById(id).map(calling => calling.name);
     }
-    GetActiveCallingIdByName(name) {
-        return this.GetActiveCallingByName(name).map(calling => calling.id);
+    ActiveCallingIdByName(name) {
+        return this.ActiveCallingByName(name).map(calling => calling.id);
     }
-    GetWardCallingNameById(id) {
-        return this.GetWardCallingById(id).map(calling => calling.name);
+    WardCallingNameById(id) {
+        return this.WardCallingById(id).map(calling => calling.name);
     }
-    GetWardCallingIdByName(name) {
-        return this.GetWardCallingByName(name).map(calling => calling.id);
+    WardCallingIdByName(name) {
+        return this.WardCallingByName(name).map(calling => calling.id);
     }
-    GetActiveWardCallingNameById(id) {
-        return this.GetActiveWardCallingById(id).map(calling => calling.name);
+    ActiveWardCallingNameById(id) {
+        return this.ActiveWardCallingById(id).map(calling => calling.name);
     }
-    GetActiveWardCallingIdByName(name) {
-        return this.GetActiveWardCallingByName(name).map(calling => calling.id);
+    ActiveWardCallingIdByName(name) {
+        return this.ActiveWardCallingByName(name).map(calling => calling.id);
     }
-    GetStakeCallingNameById(id) {
-        return this.GetStakeCallingById(id).map(calling => calling.name);
+    StakeCallingNameById(id) {
+        return this.StakeCallingById(id).map(calling => calling.name);
     }
-    GetStakeCallingIdByName(name) {
-        return this.GetStakeCallingByName(name).map(calling => calling.id);
+    StakeCallingIdByName(name) {
+        return this.StakeCallingByName(name).map(calling => calling.id);
     }
-    GetActiveStakeCallingNameById(id) {
-        return this.GetActiveStakeCallingById(id).map(calling => calling.name);
+    ActiveStakeCallingNameById(id) {
+        return this.ActiveStakeCallingById(id).map(calling => calling.name);
     }
-    GetActiveStakeCallingIdByName(name) {
-        return this.GetActiveStakeCallingByName(name).map(calling => calling.id);
+    ActiveStakeCallingIdByName(name) {
+        return this.ActiveStakeCallingByName(name).map(calling => calling.id);
     }
 }

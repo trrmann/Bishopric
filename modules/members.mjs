@@ -64,7 +64,7 @@ export class Members{
         return memberEntries.map(member => {
             // Allow members with no callings
             const memberCallings = Array.isArray(member.callings) ? member.callings : [];
-            const callingsResolved = memberCallings.length > 0 ? memberCallings.map(callingid => this.callings.CallingById(callingid)) : [];
+            const callingsResolved = memberCallings.length > 0 ? memberCallings.filter(callingid => this.callings.CallingIds.includes(callingid)).map(callingid => this.callings.CallingById(callingid)) : [];
             const callingNames = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].name : null) : [];
             const callingLevels = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].level : null) : [];
             const callingsActive = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].active === true : false) : [];
