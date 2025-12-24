@@ -123,7 +123,7 @@ export class Callings {
     get HasWardCallings() { return Callings._hasAny(this.WardCallings); }
     get HasStakeCallings() { return Callings._hasAny(this.StakeCallings); }
     get HasActiveWardCallings() { return Callings._hasAny(this.ActiveWardCallings); }
-    get HasActiveStakeCallings() { return this.ActiveStakeCallings?.length > 0; }
+    get HasActiveStakeCallings() { return Callings._hasAny(this.ActiveStakeCallings); }
 
     // ===== Existence Lookups =====
     HasCallingById(id) { return this.CallingById(id)?.length > 0; }
