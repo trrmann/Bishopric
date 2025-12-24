@@ -120,7 +120,7 @@ export class Callings {
         static _hasAny(array) {
             return Array.isArray(array) && array.length > 0;
         }
-    get HasWardCallings() { return this.WardCallings?.length > 0; }
+    get HasWardCallings() { return Callings._hasAny(this.WardCallings); }
     get HasStakeCallings() { return this.StakeCallings?.length > 0; }
     get HasActiveWardCallings() { return this.ActiveWardCallings?.length > 0; }
     get HasActiveStakeCallings() { return this.ActiveStakeCallings?.length > 0; }
