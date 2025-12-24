@@ -1,8 +1,11 @@
 export class SessionStorage {
-    static DefaultSessionStoragePruneIntervalMS = 120000;//default storage prune interval is 2 minutes
-    static DefaultSessionStorageValueExpireMS = 1800000;//default storage value life is 30 minutes
-    constructor(sessionStoragePruneIntervalMs = DefaultSessionStoragePruneIntervalMS) { 
-        // registry of keys
+    // ===== Instance Accessors =====
+    get KeyRegistry() { return this._keyRegistry; }
+    get SessionStoragePruneTimer() { return this._sessionStoragePruneTimer; }
+    get SessionStoragePruneIntervalMs() { return this._sessionStoragePruneIntervalMs; }
+
+    // ===== Constructor =====
+    constructor(sessionStoragePruneIntervalMs = SessionStorage.DefaultSessionStoragePruneIntervalMS) { 
         this._keyRegistry = new Set();
         this._sessionStoragePruneTimer = null;
         this._sessionStoragePruneIntervalMs = null;
@@ -10,7 +13,37 @@ export class SessionStorage {
             this.StartSessionStoragePruneTimer(sessionStoragePruneIntervalMs);
         }
     }
-    Set(key, value, ttlMs = DefaultSessionStorageValueExpireMS) { 
+
+    // ===== Static Methods =====
+    static get DefaultSessionStoragePruneIntervalMS() { return 120000; }
+    static get DefaultSessionStorageValueExpireMS() { return 1800000; }
+
+    static CopyFromJSON(dataJSON) {
+        const session = new SessionStorage();
+        session._keyRegistry = new Set(dataJSON._keyRegistry);
+        session._sessionStoragePruneIntervalMs = dataJSON._sessionStoragePruneIntervalMs;
+        // Timer is not restored from JSON
+        return session;
+    }
+
+    static CopyToJSON(instance) {
+        return {
+            _keyRegistry: Array.from(instance._keyRegistry),
+            _sessionStoragePruneIntervalMs: instance._sessionStoragePruneIntervalMs
+        };
+    }
+
+    static CopyFromObject(destination, source) {
+        destination._keyRegistry = new Set(source._keyRegistry);
+        destination._sessionStoragePruneIntervalMs = source._sessionStoragePruneIntervalMs;
+    }
+
+    static async Factory(sessionStoragePruneIntervalMs = SessionStorage.DefaultSessionStoragePruneIntervalMS) {
+        return new SessionStorage(sessionStoragePruneIntervalMs);
+    }
+
+    // ===== Core Methods =====
+    Set(key, value, ttlMs = SessionStorage.DefaultSessionStorageValueExpireMS) { 
         if(ttlMs > 0) {
             const expires = Date.now() + ttlMs;
             const payload = JSON.stringify({ value, expires });
@@ -20,11 +53,11 @@ export class SessionStorage {
         }
         this._keyRegistry.add(key);
     }
-    SetObject(key, value, ttlMs = DefaultSessionStorageValueExpireMS) {
+    SetObject(key, value, ttlMs = SessionStorage.DefaultSessionStorageValueExpireMS) {
         this.Set(key, JSON.stringify(value), ttlMs);
     }
     GetAllKeys() {
-        return Object.keys(this._keyRegistry);
+        return Array.from(this._keyRegistry);
     }
     HasKey(key) {
         return this.GetAllKeys().includes(key);
@@ -45,7 +78,6 @@ export class SessionStorage {
                     return null;
                 }
             } catch {
-                // fallback for non expiring values
                 value = payload;
             }
             return value;
@@ -69,11 +101,10 @@ export class SessionStorage {
         });
     }
     StartSessionStoragePruneTimer(intervalMs = null) {
-        this._sessionStoragePruneIntervalMs = intervalMs || DefaultSessionStoragePruneIntervalMS;
+        this._sessionStoragePruneIntervalMs = intervalMs || SessionStorage.DefaultSessionStoragePruneIntervalMS;
         if (this._sessionStoragePruneTimer) {
             clearInterval(this._sessionStoragePruneTimer);
         }
-        this._sessionStoragePruneIntervalMs = this._sessionStoragePruneIntervalMs;
         this._sessionStoragePruneTimer = setInterval(() => this.SessionStoragePrune(), this._sessionStoragePruneIntervalMs);
     }
     PauseSessionStoragePruneTimer() {

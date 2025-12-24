@@ -1,8 +1,11 @@
 export class LocalStorage {
-    static DefaultLocalStoragePruneIntervalMS = 180000;//default storage prune interval is 3 minutes
-    static DefaultLocalStorageValueExpireMS = 2700000;//default storage value life is 45 minutes
-    constructor(localStoragePruneIntervalMs = DefaultLocalStoragePruneIntervalMS) { 
-        // registry of keys
+    // ===== Instance Accessors =====
+    get KeyRegistry() { return this._keyRegistry; }
+    get LocalStoragePruneTimer() { return this._localStoragePruneTimer; }
+    get LocalStoragePruneIntervalMs() { return this._localStoragePruneIntervalMs; }
+
+    // ===== Constructor =====
+    constructor(localStoragePruneIntervalMs = LocalStorage.DefaultLocalStoragePruneIntervalMS) { 
         this._keyRegistry = new Set();
         this._localStoragePruneTimer = null;
         this._localStoragePruneIntervalMs = null;
@@ -10,7 +13,37 @@ export class LocalStorage {
             this.StartLocalStoragePruneTimer(localStoragePruneIntervalMs);
         }
     }
-    Set(key, value, ttlMs = DefaultLocalStorageValueExpireMS) { 
+
+    // ===== Static Methods =====
+    static get DefaultLocalStoragePruneIntervalMS() { return 180000; }
+    static get DefaultLocalStorageValueExpireMS() { return 2700000; }
+
+    static CopyFromJSON(dataJSON) {
+        const local = new LocalStorage();
+        local._keyRegistry = new Set(dataJSON._keyRegistry);
+        local._localStoragePruneIntervalMs = dataJSON._localStoragePruneIntervalMs;
+        // Timer is not restored from JSON
+        return local;
+    }
+
+    static CopyToJSON(instance) {
+        return {
+            _keyRegistry: Array.from(instance._keyRegistry),
+            _localStoragePruneIntervalMs: instance._localStoragePruneIntervalMs
+        };
+    }
+
+    static CopyFromObject(destination, source) {
+        destination._keyRegistry = new Set(source._keyRegistry);
+        destination._localStoragePruneIntervalMs = source._localStoragePruneIntervalMs;
+    }
+
+    static async Factory(localStoragePruneIntervalMs = LocalStorage.DefaultLocalStoragePruneIntervalMS) {
+        return new LocalStorage(localStoragePruneIntervalMs);
+    }
+
+    // ===== Core Methods =====
+    Set(key, value, ttlMs = LocalStorage.DefaultLocalStorageValueExpireMS) { 
         if(ttlMs > 0) {
             const expires = Date.now() + ttlMs;
             const payload = JSON.stringify({ value, expires });
@@ -20,11 +53,11 @@ export class LocalStorage {
         }
         this._keyRegistry.add(key);
     }
-    SetObject(key, value, ttlMs = DefaultLocalStorageValueExpireMS) {
+    SetObject(key, value, ttlMs = LocalStorage.DefaultLocalStorageValueExpireMS) {
         this.Set(key, JSON.stringify(value), ttlMs);
     }
     GetAllKeys() {
-        return Object.keys(this._keyRegistry);
+        return Array.from(this._keyRegistry);
     }
     HasKey(key) {
         return this.GetAllKeys().includes(key);
@@ -45,7 +78,6 @@ export class LocalStorage {
                     return null;
                 }
             } catch {
-                // fallback for non expiring values
                 value = payload;
             }
             return value;
@@ -69,11 +101,10 @@ export class LocalStorage {
         });
     }
     StartLocalStoragePruneTimer(intervalMs = null) {
-        this._localStoragePruneIntervalMs = intervalMs || DefaultLocalStoragePruneIntervalMS;
+        this._localStoragePruneIntervalMs = intervalMs || LocalStorage.DefaultLocalStoragePruneIntervalMS;
         if (this._localStoragePruneTimer) {
             clearInterval(this._localStoragePruneTimer);
         }
-        this._localStoragePruneIntervalMs = this._localStoragePruneIntervalMs;
         this._localStoragePruneTimer = setInterval(() => this.LocalStoragePrune(), this._localStoragePruneIntervalMs);
     }
     PauseLocalStoragePruneTimer() {

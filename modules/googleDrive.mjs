@@ -2,20 +2,70 @@
 // Maintains Google Drive API methods for interaction
 
 export class GoogleDrive {
-    static DefaultUnitManagementToolsKey = "AIzaSyCNEotTLr9DV2nkqPixdmcRZArDwltryh0";
-    static DefaultDiscoveryDocEntry = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest";
-    static DefaultScope = "https://www.googleapis.com/auth/drive.file";
+    // ===== Instance Accessors =====
+    get Data() { return this._data; }
+    get GitHubDataObj() { return this._gitHubDataObj; }
+    get IsLoaded() { return this._isLoaded; }
+    get UnitManagementToolsKey() { return this._unitManagementToolsKey; }
+    get ClientId() { return this.CLIENT_ID; }
+    get ApiKey() { return this.API_KEY; }
+    get DiscoveryDocs() { return this.DISCOVERY_DOCS; }
+    get Scopes() { return this.SCOPES; }
+    get IsInitialized() { return this.isInitialized; }
+
+    // ===== Constructor =====
     constructor(gitHubDataObject) {
         this._data = [];
         this._gitHubDataObj = gitHubDataObject;
         this._isLoaded = false;
-        // Google Drive API config
-        this.UnitManagementToolsKey = GoogleDrive.DefaultUnitManagementToolsKey;
+        this._unitManagementToolsKey = GoogleDrive.DefaultUnitManagementToolsKey;
         this.CLIENT_ID = null;
         this.API_KEY = null;
         this.DISCOVERY_DOCS = [GoogleDrive.DefaultDiscoveryDocEntry];
         this.SCOPES = GoogleDrive.DefaultScope;
         this.isInitialized = false;
+    }
+
+    // ===== Static Methods =====
+    static get DefaultUnitManagementToolsKey() { return "AIzaSyCNEotTLr9DV2nkqPixdmcRZArDwltryh0"; }
+    static get DefaultDiscoveryDocEntry() { return "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"; }
+    static get DefaultScope() { return "https://www.googleapis.com/auth/drive.file"; }
+
+    static CopyFromJSON(dataJSON) {
+        const drive = new GoogleDrive(dataJSON._gitHubDataObj);
+        drive._data = dataJSON._data;
+        drive._isLoaded = dataJSON._isLoaded;
+        drive._unitManagementToolsKey = dataJSON._unitManagementToolsKey;
+        drive.CLIENT_ID = dataJSON.CLIENT_ID;
+        drive.API_KEY = dataJSON.API_KEY;
+        drive.DISCOVERY_DOCS = dataJSON.DISCOVERY_DOCS;
+        drive.SCOPES = dataJSON.SCOPES;
+        drive.isInitialized = dataJSON.isInitialized;
+        return drive;
+    }
+    static CopyToJSON(instance) {
+        return {
+            _data: instance._data,
+            _gitHubDataObj: instance._gitHubDataObj,
+            _isLoaded: instance._isLoaded,
+            _unitManagementToolsKey: instance._unitManagementToolsKey,
+            CLIENT_ID: instance.CLIENT_ID,
+            API_KEY: instance.API_KEY,
+            DISCOVERY_DOCS: instance.DISCOVERY_DOCS,
+            SCOPES: instance.SCOPES,
+            isInitialized: instance.isInitialized
+        };
+    }
+    static CopyFromObject(destination, source) {
+        destination._data = source._data;
+        destination._gitHubDataObj = source._gitHubDataObj;
+        destination._isLoaded = source._isLoaded;
+        destination._unitManagementToolsKey = source._unitManagementToolsKey;
+        destination.CLIENT_ID = source.CLIENT_ID;
+        destination.API_KEY = source.API_KEY;
+        destination.DISCOVERY_DOCS = source.DISCOVERY_DOCS;
+        destination.SCOPES = source.SCOPES;
+        destination.isInitialized = source.isInitialized;
     }
     static async Factory(gitHubDataObject, config) {
         const drive = new GoogleDrive(gitHubDataObject);
@@ -29,7 +79,6 @@ export class GoogleDrive {
             try {
                 secrets = await drive._gitHubDataObj.fetchJsonFile("secrets.json");
             } catch(error) {
-                // If fetch from GitHub fails, try to load from local file
                 try {
                     const response = await fetch("data/secrets.json");
                     if (!response.ok) throw new Error("Local secrets.json not found");
@@ -43,7 +92,6 @@ export class GoogleDrive {
             drive.SCOPES = googleConfig.web.scopes;
             if(secrets) drive.API_KEY = secrets.googleDrive.client_secret;
         }
-        //await drive.Fetch();
         await drive.loadGisScript();
         await drive.signIn();
         return drive;

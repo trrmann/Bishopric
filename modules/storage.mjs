@@ -5,11 +5,21 @@ import { GoogleDrive } from "./googleDrive.mjs";
 import { GitHubData } from "./gitHubData.mjs";
 import { PublicKeyCrypto } from "./crypto.mjs";
 export class Storage {
-    static DefaultStoragePruneIntervalMS = 900000;//default storage prune interval is 2 minutes
+    // ===== Instance Accessors =====
+    get KeyRegistry() { return this._keyRegistry; }
+    get SecureKeyRegistry() { return this._secureKeyRegistry; }
+    get RegistryPruneTimer() { return this._registryPruneTimer; }
+    get RegistryPruneIntervalMs() { return this._registryPruneIntervalMs; }
+    get Cache() { return this._cache; }
+    get SessionStorage() { return this._sessionStorage; }
+    get LocalStorage() { return this._localStorage; }
+    get Crypto() { return this._crypto; }
+    get GoogleDrive() { return this._googleDrive; }
+    get GitHub() { return this._gitHub; }
+
+    // ===== Constructor =====
     constructor(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
-        // registry of files
         this._keyRegistry = new Map();
-        // secure registry of files
         this._secureKeyRegistry = new Map();
         this._registryPruneTimer = null;
         this._registryPruneIntervalMs = null;
@@ -18,23 +28,55 @@ export class Storage {
         }
         this._cache_purge_intervalMS = CacheStore.DefaultCachePruneIntervalMS;
         this._cache_default_value_expireMS = CacheStore.DefaultCacheValueExpireMS;
-        this._cache = new CacheStore(this._cache_purge_intervalMS);
-        this._sessionStorage_purge_intervalMS = SessionStorage.DefaultSessionStoragePruneIntervalMS;
-        this._sessionStorage_default_value_expireMS = SessionStorage.DefaultSessionStorageValueExpireMS;
-        this._sessionStorage = new SessionStorage(this._sessionStorage_purge_intervalMS);
+        // Use static Factory methods for instantiation
+        // These are async, so we must initialize them in the async Factory method below
+        this._cache = null;
+        this._sessionStorage = null;
+        this._localStorage = null;
+        this._crypto = null;
         this._localStorage_purge_intervalMS = LocalStorage.DefaultLocalStoragePruneIntervalMS;
         this._localStorage_default_value_expireMS = LocalStorage.DefaultLocalStorageValueExpireMS;
-        this._localStorage = new LocalStorage(this._localStorage_purge_intervalMS);
-        this._crypto = new PublicKeyCrypto();
+        this._sessionStorage_purge_intervalMS = SessionStorage.DefaultSessionStoragePruneIntervalMS;
+        this._sessionStorage_default_value_expireMS = SessionStorage.DefaultSessionStorageValueExpireMS;
         this._googleDrive = null;
         this._gitHub = null;
     }
+
+    // ===== Static Methods =====
+    static get DefaultStoragePruneIntervalMS() { return 900000; }
+
+    static async CopyFromJSON(dataJSON) {
+        const storage = new Storage();
+        storage._keyRegistry = new Map(dataJSON._keyRegistry);
+        storage._secureKeyRegistry = new Map(dataJSON._secureKeyRegistry);
+        // Timers and sub-objects are not restored from JSON
+        storage._cache = await CacheStore.Factory();
+        storage._sessionStorage = await SessionStorage.Factory();
+        storage._localStorage = await LocalStorage.Factory();
+        storage._crypto = await PublicKeyCrypto.Factory();
+        return storage;
+    }
+    static CopyToJSON(instance) {
+        return {
+            _keyRegistry: Array.from(instance._keyRegistry.entries()),
+            _secureKeyRegistry: Array.from(instance._secureKeyRegistry.entries())
+        };
+    }
+    static CopyFromObject(destination, source) {
+        destination._keyRegistry = new Map(source._keyRegistry);
+        destination._secureKeyRegistry = new Map(source._secureKeyRegistry);
+    }
     static async Factory(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
         const storage = new Storage(storageRegistryPruneIntervalMs);
-        storage._gitHub = new GitHubData("trrmann","UnitManagementTools");
+        // Use static Factory methods for all utility/service classes
+        storage._cache = await CacheStore.Factory(storage._cache_purge_intervalMS);
+        storage._sessionStorage = await SessionStorage.Factory(storage._sessionStorage_purge_intervalMS);
+        storage._localStorage = await LocalStorage.Factory(storage._localStorage_purge_intervalMS);
+        storage._crypto = await PublicKeyCrypto.Factory();
+        storage._gitHub = await GitHubData.Factory("trrmann","UnitManagementTools");
         //storage._googleDrive = await GoogleDrive.Factory(storage._gitHub);
         await Storage.testGoogleDrive(storage);
-        return storage
+        return storage;
     }
     static async testGoogleDrive(storage) {
         let fileList = null;

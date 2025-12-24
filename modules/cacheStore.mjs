@@ -1,9 +1,13 @@
 // cacheStore.mjs
 // Simple in-memory cache variable store with get/set/delete/clear and optional expiration
 export class CacheStore {
-    static DefaultCachePruneIntervalMS = 60000;//default storage prune interval is 1 minute
-    static DefaultCacheValueExpireMS = 900000;//default storage value life is 15 minutes
-    constructor(cachePruneIntervalMs = DefaultCachePruneIntervalMS) {
+    // ===== Instance Accessors =====
+    get Store() { return this._store; }
+    get CachePruneTimer() { return this._cachePruneTimer; }
+    get CachePruneIntervalMs() { return this._cachePruneIntervalMs; }
+
+    // ===== Constructor =====
+    constructor(cachePruneIntervalMs = CacheStore.DefaultCachePruneIntervalMS) {
         this._store = new Map();
         this._cachePruneTimer = null;
         this._cachePruneIntervalMs = null;
@@ -11,8 +15,37 @@ export class CacheStore {
             this.StartCachePruneTimer(cachePruneIntervalMs);
         }
     }
-    Set(key, value, ttlMs = DefaultCacheValueExpireMS) {
-        // if ttlMs is 0 or less, then no expire
+
+    // ===== Static Methods =====
+    static get DefaultCachePruneIntervalMS() { return 60000; }
+    static get DefaultCacheValueExpireMS() { return 900000; }
+
+    static CopyFromJSON(dataJSON) {
+        const cache = new CacheStore();
+        cache._store = new Map(dataJSON._store);
+        cache._cachePruneIntervalMs = dataJSON._cachePruneIntervalMs;
+        // Timer is not restored from JSON
+        return cache;
+    }
+
+    static CopyToJSON(instance) {
+        return {
+            _store: Array.from(instance._store.entries()),
+            _cachePruneIntervalMs: instance._cachePruneIntervalMs
+        };
+    }
+
+    static CopyFromObject(destination, source) {
+        destination._store = new Map(source._store);
+        destination._cachePruneIntervalMs = source._cachePruneIntervalMs;
+    }
+
+    static async Factory(cachePruneIntervalMs = CacheStore.DefaultCachePruneIntervalMS) {
+        return new CacheStore(cachePruneIntervalMs);
+    }
+
+    // ===== Core Methods =====
+    Set(key, value, ttlMs = CacheStore.DefaultCacheValueExpireMS) {
         let expires = null;
         if(ttlMs > 0) {
             expires = Date.now() + ttlMs;
@@ -59,11 +92,10 @@ export class CacheStore {
         }
     }
     StartCachePruneTimer(intervalMs = null) {
-        this._cachePruneIntervalMs = intervalMs || DefaultCachePruneIntervalMS;
+        this._cachePruneIntervalMs = intervalMs || CacheStore.DefaultCachePruneIntervalMS;
         if (this._cachePruneTimer) {
             clearInterval(this._cachePruneTimer);
         }
-        this._cachePruneIntervalMs = this._cachePruneIntervalMs;
         this._cachePruneTimer = setInterval(() => this.CachePrune(), this._cachePruneIntervalMs);
     }
     PauseCachePruneTimer() {

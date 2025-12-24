@@ -1,14 +1,54 @@
 // modules/crypto.mjs
 // Standalone Public/Private Key Encryption Module using Web Crypto API
 
+
 export class CryptoKeyPair {
+    // ===== Instance Accessors =====
+    get PublicKey() { return this.publicKey; }
+    get PrivateKey() { return this.privateKey; }
+
+    // ===== Constructor =====
     constructor(publicKey = null, privateKey = null) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
+
+    // ===== Static Methods =====
+    static CopyFromJSON(dataJSON) {
+        return new CryptoKeyPair(dataJSON.publicKey, dataJSON.privateKey);
+    }
+    static CopyToJSON(instance) {
+        return {
+            publicKey: instance.publicKey,
+            privateKey: instance.privateKey
+        };
+    }
+    static CopyFromObject(destination, source) {
+        destination.publicKey = source.publicKey;
+        destination.privateKey = source.privateKey;
+    }
+    static async Factory(publicKey = null, privateKey = null) {
+        return new CryptoKeyPair(publicKey, privateKey);
+    }
 }
 
 export class PublicKeyCrypto {
+    // ===== Static Methods =====
+    static async Factory() {
+        return new PublicKeyCrypto();
+    }
+
+    static CopyFromJSON(dataJSON) {
+        // No instance state, return new instance
+        return new PublicKeyCrypto();
+    }
+    static CopyToJSON(instance) {
+        return {};
+    }
+    static CopyFromObject(destination, source) {
+        // No instance state to copy
+    }
+
     // Generate a new RSA-OAEP key pair
     static async generateKeyPair() {
         const keyPair = await window.crypto.subtle.generateKey(
