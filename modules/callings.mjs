@@ -17,9 +17,11 @@ export class Callings {
         return callings;
     }
     static CopyToJSON() {
-        return {
-            _storageObj: this.storage,
-            callings: this.Callings
+        return function(instance) {
+            return {
+                _storageObj: instance.storage,
+                callings: instance.callings
+            };
         };
     }
     static CopyFromObject(destination, source) {
