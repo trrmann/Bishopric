@@ -69,11 +69,11 @@ export class Callings {
         }
     }
     get CallingsDetails() {
-        return this.CallingsEntries.map(this._normalizeCallingEntry);
+        return this.CallingsEntries.map(Callings._normalizeCallingEntry);
     }
 
     // ===== Utility Methods =====
-    _normalizeCallingEntry(entry) {
+    static _normalizeCallingEntry(entry) {
         return {
             id: entry?.id ?? null,
             name: entry?.name ?? null,
