@@ -115,7 +115,11 @@ export class Callings {
 
     // ===== Existence Accessors =====
     get HasCallings() { return this.CallingsDetails?.length > 0; }
-    get HasActiveCallings() { return this.ActiveCallings?.length > 0; }
+    get HasActiveCallings() { return Callings._hasAny(this.ActiveCallings); }
+        // ===== Existence Utility =====
+        static _hasAny(array) {
+            return Array.isArray(array) && array.length > 0;
+        }
     get HasWardCallings() { return this.WardCallings?.length > 0; }
     get HasStakeCallings() { return this.StakeCallings?.length > 0; }
     get HasActiveWardCallings() { return this.ActiveWardCallings?.length > 0; }
