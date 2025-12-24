@@ -69,15 +69,20 @@ export class Callings {
         }
     }
     get CallingsDetails() {
-        return this.CallingsEntries.map(calling => ({
-            id: calling.id,
-            name: calling.name,
-            level: calling.level,
-            active: calling.active,
-            hasTitle: calling.hasTitle,
-            title: calling.title,
-            titleOrdinal: calling.titleOrdinal
-        }));
+        return this.CallingsEntries.map(this._normalizeCallingEntry);
+    }
+
+    // ===== Utility Methods =====
+    _normalizeCallingEntry(entry) {
+        return {
+            id: entry?.id ?? null,
+            name: entry?.name ?? null,
+            level: entry?.level ?? null,
+            active: entry?.active ?? false,
+            hasTitle: entry?.hasTitle ?? false,
+            title: entry?.title ?? null,
+            titleOrdinal: entry?.titleOrdinal ?? null
+        };
     }
 
     // ===== Filtering Methods =====
