@@ -105,7 +105,7 @@ export class Callings {
         static _filterBy(array, property, value) {
             return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
         }
-    CallingByName(name) { return this.CallingsDetails.filter(calling => calling.name === name); }
+    CallingByName(name) { return Callings._filterBy(this.CallingsDetails, 'name', name); }
     ActiveCallingById(id) { return this.CallingById(id).filter(calling => calling.active === true); }
     ActiveCallingByName(name) { return this.CallingByName(name).filter(calling => calling.active === true); }
     WardCallingById(id) { return this.CallingById(id).filter(calling => calling.level === "ward"); }
