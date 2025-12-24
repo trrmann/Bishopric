@@ -91,7 +91,7 @@ export class Callings {
             return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
         }
     get WardCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'ward'); }
-    get StakeCallings() { return this.CallingsDetails.filter(calling => calling.level === "stake"); }
+    get StakeCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'stake'); }
     get ActiveWardCallings() { return this.WardCallings.filter(calling => calling.active === true); }
     get ActiveStakeCallings() { return this.StakeCallings.filter(calling => calling.active === true); }
 
