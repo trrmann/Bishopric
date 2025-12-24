@@ -2,7 +2,6 @@ export class Callings {
 
     // ===== Instance Accessors =====
     get Storage() { return this.storage; }
-    get Callings() { return this.callings; }
 
     // ===== Constructor =====
     constructor(configuration) {
