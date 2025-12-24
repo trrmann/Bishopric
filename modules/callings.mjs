@@ -100,7 +100,11 @@ export class Callings {
     get CallingNames() { return this.CallingsDetails.map(calling => calling.name); }
 
     // ===== ID/Name Lookups =====
-    CallingById(id) { return this.CallingsDetails.filter(calling => calling.id === id); }
+    CallingById(id) { return Callings._filterBy(this.CallingsDetails, 'id', id); }
+        // ===== Lookup Utility =====
+        static _filterBy(array, property, value) {
+            return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
+        }
     CallingByName(name) { return this.CallingsDetails.filter(calling => calling.name === name); }
     ActiveCallingById(id) { return this.CallingById(id).filter(calling => calling.active === true); }
     ActiveCallingByName(name) { return this.CallingByName(name).filter(calling => calling.active === true); }
