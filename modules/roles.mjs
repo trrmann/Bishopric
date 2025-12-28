@@ -1,5 +1,5 @@
 import { Callings } from "./callings.mjs";
-import { createStorageConfig } from "./objectUtils.mjs";
+import { createStorageConfig, ObjectUtils } from "./objectUtils.mjs";
 export class Roles {
 
     // ===== Instance Accessors =====
@@ -169,32 +169,32 @@ export class Roles {
     ActiveRoleCallingByName(name) { return this.ActiveRoleByName(name).map(role => role.callingID); }
 
     // ===== Ward/Stake Filtering =====
-    get WardRoles() { return this.RolesDetails.filter(role => role.level === "ward"); }
-    get StakeRoles() { return this.RolesDetails.filter(role => role.level === "stake"); }
-    get ActiveWardRoles() { return this.WardRoles.filter(role => role.active === true); }
-    get ActiveStakeRoles() { return this.StakeRoles.filter(role => role.active === true); }
-    WardRoleById(id) { return this.RoleById(id).filter(role => role.level === "ward"); }
-    WardRoleByName(name) { return this.RoleByName(name).filter(role => role.level === "ward"); }
-    ActiveWardRoleById(id) { return this.ActiveRoleById(id).filter(role => role.level === "ward"); }
-    ActiveWardRoleByName(name) { return this.ActiveRoleByName(name).filter(role => role.level === "ward"); }
-    StakeRoleById(id) { return this.RoleById(id).filter(role => role.level === "stake"); }
-    StakeRoleByName(name) { return this.RoleByName(name).filter(role => role.level === "stake"); }
-    ActiveStakeRoleById(id) { return this.ActiveRoleById(id).filter(role => role.level === "stake"); }
-    ActiveStakeRoleByName(name) { return this.ActiveRoleByName(name).filter(role => role.level === "stake"); }
+    get WardRoles() { return ObjectUtils.filterByProperty(this.RolesDetails, 'level', 'ward'); }
+    get StakeRoles() { return ObjectUtils.filterByProperty(this.RolesDetails, 'level', 'stake'); }
+    get ActiveWardRoles() { return ObjectUtils.filterByProperty(this.WardRoles, 'active', true); }
+    get ActiveStakeRoles() { return ObjectUtils.filterByProperty(this.StakeRoles, 'active', true); }
+    WardRoleById(id) { return ObjectUtils.filterBy(this.RoleById(id), 'level', 'ward'); }
+    WardRoleByName(name) { return ObjectUtils.filterBy(this.RoleByName(name), 'level', 'ward'); }
+    ActiveWardRoleById(id) { return ObjectUtils.filterBy(this.ActiveRoleById(id), 'level', 'ward'); }
+    ActiveWardRoleByName(name) { return ObjectUtils.filterBy(this.ActiveRoleByName(name), 'level', 'ward'); }
+    StakeRoleById(id) { return ObjectUtils.filterBy(this.RoleById(id), 'level', 'stake'); }
+    StakeRoleByName(name) { return ObjectUtils.filterBy(this.RoleByName(name), 'level', 'stake'); }
+    ActiveStakeRoleById(id) { return ObjectUtils.filterBy(this.ActiveRoleById(id), 'level', 'stake'); }
+    ActiveStakeRoleByName(name) { return ObjectUtils.filterBy(this.ActiveRoleByName(name), 'level', 'stake'); }
 
     // ===== Ward/Stake Existence =====
-    get HasWardRoles() { return this.WardRoles.length > 0; }
-    get HasStakeRoles() { return this.StakeRoles.length > 0; }
-    get HasActiveWardRoles() { return this.ActiveWardRoles.length > 0; }
-    get HasActiveStakeRoles() { return this.ActiveStakeRoles.length > 0; }
-    HasWardRoleById(id) { return this.WardRoleById(id).length > 0; }
-    HasWardRoleByName(name) { return this.WardRoleByName(name).length > 0; }
-    HasActiveWardRoleById(id) { return this.ActiveWardRoleById(id).length > 0; }
-    HasActiveWardRoleByName(name) { return this.ActiveWardRoleByName(name).length > 0; }
-    HasStakeRoleById(id) { return this.StakeRoleById(id).length > 0; }
-    HasStakeRoleByName(name) { return this.StakeRoleByName(name).length > 0; }
-    HasActiveStakeRoleById(id) { return this.ActiveStakeRoleById(id).length > 0; }
-    HasActiveStakeRoleByName(name) { return this.ActiveStakeRoleByName(name).length > 0; }
+    get HasWardRoles() { return ObjectUtils.hasAny(this.WardRoles); }
+    get HasStakeRoles() { return ObjectUtils.hasAny(this.StakeRoles); }
+    get HasActiveWardRoles() { return ObjectUtils.hasAny(this.ActiveWardRoles); }
+    get HasActiveStakeRoles() { return ObjectUtils.hasAny(this.ActiveStakeRoles); }
+    HasWardRoleById(id) { return ObjectUtils.hasAny(this.WardRoleById(id)); }
+    HasWardRoleByName(name) { return ObjectUtils.hasAny(this.WardRoleByName(name)); }
+    HasActiveWardRoleById(id) { return ObjectUtils.hasAny(this.ActiveWardRoleById(id)); }
+    HasActiveWardRoleByName(name) { return ObjectUtils.hasAny(this.ActiveWardRoleByName(name)); }
+    HasStakeRoleById(id) { return ObjectUtils.hasAny(this.StakeRoleById(id)); }
+    HasStakeRoleByName(name) { return ObjectUtils.hasAny(this.StakeRoleByName(name)); }
+    HasActiveStakeRoleById(id) { return ObjectUtils.hasAny(this.ActiveStakeRoleById(id)); }
+    HasActiveStakeRoleByName(name) { return ObjectUtils.hasAny(this.ActiveStakeRoleByName(name)); }
 
     // ===== Ward/Stake ID/Name Accessors =====
     get WardRoleIds() { return this.WardRoles.map(role => role.id); }
