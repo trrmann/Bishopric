@@ -31,7 +31,11 @@ export class Roles {
         };
     }
     static CopyFromObject(destination, source) {
-        destination.callings = source.callings;
+        if (destination.callings && source.callings) {
+            Callings.CopyFromObject(destination.callings, source.callings);
+        } else {
+            destination.callings = source.callings;
+        }
         destination.roles = source.roles;
     }
     static async Factory(configuration) {
