@@ -1,4 +1,6 @@
 
+import { ObjectUtils } from "./objectUtils.mjs";
+
 export class Configuration {
     // ===== Instance Accessors =====
     get Storage() { return this._storageObj; }
@@ -62,20 +64,15 @@ export class Configuration {
     }
 
     // ===== Utility Methods =====
+    /**
+     * Flattens a nested object into a single-level object with dot-separated keys.
+     * @param {Object} obj - The object to flatten.
+     * @param {string} parentKey - The prefix for the keys (used for recursion).
+     * @param {string} separator - The separator between keys.
+     * @returns {Object} The flattened object.
+     */
     FlattenObject(obj, parentKey = '', separator = '.') {
-        const result = {};
-        for (const key in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                const newKey = parentKey ? `${parentKey}${separator}${key}` : key;
-                const value = obj[key];
-                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                    Object.assign(result, this.FlattenObject(value, newKey, separator));
-                } else {
-                    result[newKey] = value;
-                }
-            }
-        }
-        return result;
+        return ObjectUtils.flattenObject(obj, parentKey, separator);
     }
 
     GetConfigByKey(key) {
