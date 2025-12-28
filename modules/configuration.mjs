@@ -1,5 +1,5 @@
 
-import { ObjectUtils } from "./objectUtils.mjs";
+import { ObjectUtils, createStorageConfig } from "./objectUtils.mjs";
 
 export class Configuration {
     // ===== Instance Accessors =====
@@ -45,16 +45,11 @@ export class Configuration {
     static get ConfigSessionExpireMS() { return 1000 * 60 * 60; }
     static get ConfigLocalExpireMS() { return 1000 * 60 * 60 * 2; }
     static get StorageConfig() {
-        return {
+        return createStorageConfig({
             cacheTtlMs: Configuration.ConfigCacheExpireMS,
             sessionTtlMs: Configuration.ConfigSessionExpireMS,
-            localTtlMs: Configuration.ConfigLocalExpireMS,
-            googleId: null,
-            githubFilename: null,
-            privateKey: null,
-            publicKey: null,
-            secure: false
-        };
+            localTtlMs: Configuration.ConfigLocalExpireMS
+        });
     }
 
     // ===== Data Fetching =====
