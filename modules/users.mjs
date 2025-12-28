@@ -43,7 +43,11 @@ export class Users {
 
     static CopyFromObject(destination, source) {
         destination.users = source.users;
-        destination.members = source.members;
+        if (destination.members && source.members) {
+            Members.CopyFromObject(destination.members, source.members);
+        } else {
+            destination.members = source.members;
+        }
         destination.lastFetched = source.lastFetched;
     }
 
