@@ -1,3 +1,5 @@
+import { createStorageConfig } from "./objectUtils.mjs";
+
 export class Callings {
 
     // ===== Instance Accessors =====
@@ -39,16 +41,11 @@ export class Callings {
     static get CallingsSessionExpireMS() { return 1000 * 60 * 60; }
     static get CallingsLocalExpireMS() { return 1000 * 60 * 60 * 2; }
     static get StorageConfig() {
-        return {
+        return createStorageConfig({
             cacheTtlMs: Callings.CallingsCacheExpireMS,
             sessionTtlMs: Callings.CallingsSessionExpireMS,
-            localTtlMs: Callings.CallingsLocalExpireMS,
-            googleId: null,
-            githubFilename: null,
-            privateKey: null,
-            publicKey: null,
-            secure: false
-        };
+            localTtlMs: Callings.CallingsLocalExpireMS
+        });
     }
 
     // ===== Data Fetching =====
