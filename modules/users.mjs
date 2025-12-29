@@ -160,6 +160,27 @@ export class Users {
         const membersData = await this.members.MembersDetails();
         return this.UserEntries.map(user => {
             const member = membersData.find(member => member.memberNumber === user.memberNumber);
+            //TODO #06 read the additional roles from the users record
+            const userAdditionalRoles = Array.isArray(user.roles) ? user.roles : [];
+            //TODO #07 validate the additional roles do not have a calling associated with them
+            const rolesInstance = this.members && this.members.Roles ? this.members.Roles : undefined;
+            const validAdditionalRoles = userAdditionalRoles.filter(roleId => {
+                if (!rolesInstance) return false;
+                const roleEntry = rolesInstance.RoleEntryById(roleId);
+                if (!roleEntry || roleEntry.length === 0) return false;
+                return roleEntry[0].calling === null || roleEntry[0].calling === undefined;
+            });
+            //TODO #08 add additional roles to the roleIDs in the userDetails output
+            const callingRoleIDs = member ? member.callingRoleIDs : [];
+            const combinedRoleIDs = [...callingRoleIDs, ...validAdditionalRoles];
+            //TODO #09 add additional roles to the roleNames in the userDetails output
+            const callingRoleNames = member ? member.callingRoleNames : [];
+            const additionalRoleNames = validAdditionalRoles.map(roleId => {
+                if (!rolesInstance) return '';
+                const roleName = rolesInstance.RoleNameById(roleId);
+                return roleName && roleName.length > 0 ? roleName[0] : '';
+            });
+            const combinedRoleNames = [...callingRoleNames, ...additionalRoleNames];
             return {
                 memberNumber: member ? member.memberNumber : user.memberNumber,
                 fullname: member ? member.fullname : '',
@@ -180,8 +201,8 @@ export class Users {
                 callingHaveTitles: member ? member.callingHaveTitles : [],
                 callingTitles: member ? member.callingTitles : [],
                 callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
-                roleIDs: member ? member.callingRoleIDs : [],
-                roleNames: member ? member.callingRoleNames : [],
+                roleIDs: combinedRoleIDs,
+                roleNames: combinedRoleNames,
                 callingsActive: member ? member.callingsActive : [],
                 allSubRoles: member ? member.callingsAllSubRoles : [],
                 allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
