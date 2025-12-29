@@ -1,6 +1,119 @@
+  describe('forEachEntry', () => {
+    it('should call callback for each [key, value] pair', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const entries = [];
+      cache.forEachEntry((key, value) => entries.push([key, value]));
+      expect(entries).toEqual(expect.arrayContaining([
+        ['a', 1],
+        ['b', 2],
+        ['c', 3]
+      ]));
+      expect(entries.length).toBe(3);
+    });
+
+    it('should respect thisArg', () => {
+      const cache = new CacheStore();
+      cache.Set('x', 5);
+      const context = { arr: [] };
+      cache.forEachEntry(function(key, value) { this.arr.push([key, value]); }, context);
+      expect(context.arr).toEqual([['x', 5]]);
+    });
+  });
 import { CacheStore } from '../cacheStore.mjs';
 
 describe('CacheStore', () => {
+                describe('reduce', () => {
+                  it('should sum all values with initial value', () => {
+                    const cache = new CacheStore();
+                    cache.Set('a', 1);
+                    cache.Set('b', 2);
+                    cache.Set('c', 3);
+                    const result = cache.reduce((acc, v) => acc + v, 0);
+                    expect(result).toBe(6);
+                  });
+
+                  it('should sum all values without initial value', () => {
+                    const cache = new CacheStore();
+                    cache.Set('a', 1);
+                    cache.Set('b', 2);
+                    cache.Set('c', 3);
+                    const result = cache.reduce((acc, v) => acc + v);
+                    expect(result).toBe(6);
+                  });
+
+                  it('should throw if empty and no initial value', () => {
+                    const cache = new CacheStore();
+                    expect(() => cache.reduce((acc, v) => acc + v)).toThrow(TypeError);
+                  });
+
+                  it('should return initial value if empty and initial value provided', () => {
+                    const cache = new CacheStore();
+                    expect(cache.reduce((acc, v) => acc + v, 10)).toBe(10);
+                  });
+
+                  it('should pass key and store to callback', () => {
+                    const cache = new CacheStore();
+                    cache.Set('x', 2);
+                    cache.Set('y', 3);
+                    const keys = [];
+                    cache.reduce((acc, v, k) => { keys.push(k); return acc + v; }, 0);
+                    expect(keys).toEqual(['x', 'y']);
+                  });
+                });
+            describe('every', () => {
+              it('should return true if all values match the callback', () => {
+                const cache = new CacheStore();
+                cache.Set('a', 2);
+                cache.Set('b', 4);
+                cache.Set('c', 6);
+                expect(cache.every((v) => v % 2 === 0)).toBe(true);
+              });
+
+              it('should return false if any value does not match the callback', () => {
+                const cache = new CacheStore();
+                cache.Set('a', 2);
+                cache.Set('b', 3);
+                expect(cache.every((v) => v % 2 === 0)).toBe(false);
+              });
+
+              it('should return true for empty cache', () => {
+                const cache = new CacheStore();
+                expect(cache.every(() => false)).toBe(true);
+              });
+
+              it('should respect thisArg', () => {
+                const cache = new CacheStore();
+                cache.Set('x', 5);
+                const context = { target: 5 };
+                expect(cache.every(function(v) { return v === this.target; }, context)).toBe(true);
+              });
+            });
+        describe('some', () => {
+          it('should return true if at least one value matches the callback', () => {
+            const cache = new CacheStore();
+            cache.Set('a', 1);
+            cache.Set('b', 2);
+            cache.Set('c', 3);
+            expect(cache.some((v) => v % 2 === 0)).toBe(true);
+          });
+
+          it('should return false if no value matches the callback', () => {
+            const cache = new CacheStore();
+            cache.Set('a', 1);
+            cache.Set('b', 3);
+            expect(cache.some((v) => v > 10)).toBe(false);
+          });
+
+          it('should respect thisArg', () => {
+            const cache = new CacheStore();
+            cache.Set('x', 5);
+            const context = { target: 5 };
+            expect(cache.some(function(v) { return v === this.target; }, context)).toBe(true);
+          });
+        });
     describe('findEntry', () => {
       it('should return the first [key, value] pair matching the callback', () => {
         const cache = new CacheStore();

@@ -3,6 +3,50 @@
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
+    // Calls the callback for each [key, value] pair in the cache
+    forEachEntry(callback, thisArg = undefined) {
+        for (const [key, entry] of this._store.entries()) {
+            callback.call(thisArg, key, entry.value, this);
+        }
+    }
+
+    // Reduces the values in the cache to a single value using the callback
+    reduce(callback, initialValue) {
+        let accumulator = initialValue;
+        let start = 0;
+        for (const [key, entry] of this._store.entries()) {
+            if (start === 0 && accumulator === undefined) {
+                accumulator = entry.value;
+            } else {
+                accumulator = callback(accumulator, entry.value, key, this);
+            }
+            start++;
+        }
+        if (start === 0 && accumulator === undefined) {
+            throw new TypeError('Reduce of empty CacheStore with no initial value');
+        }
+        return accumulator;
+    }
+
+    // Returns true if all values pass the callback test, else false
+    every(callback, thisArg = undefined) {
+        for (const [key, entry] of this._store.entries()) {
+            if (!callback.call(thisArg, entry.value, key, this)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Returns true if at least one value passes the callback test, else false
+    some(callback, thisArg = undefined) {
+        for (const [key, entry] of this._store.entries()) {
+            if (callback.call(thisArg, entry.value, key, this)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Returns the first [key, value] pair for which the callback returns true, or undefined
     findEntry(callback, thisArg = undefined) {
@@ -251,7 +295,7 @@ export class CacheStore {
 
     forEach(callback, thisArg = undefined) {
         this._store.forEach((entry, key) => {
-            callback.call(thisArg, entry, key, this);
+            callback.call(thisArg, entry.value, key, this);
         });
     }
 
