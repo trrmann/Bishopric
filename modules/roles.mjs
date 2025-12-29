@@ -3,6 +3,7 @@ import { createStorageConfig, ObjectUtils } from "./objectUtils.mjs";
 export class Roles {
     // ===== Private Fast Lookup Maps =====
     #_idMap = null;
+    #_rolesDetailsCache = null;
 
     // ===== Instance Accessors =====
     get Callings() { return this.callings; }
@@ -19,6 +20,7 @@ export class Roles {
         this.callings = undefined;
         this.roles = undefined;
         this.#_idMap = null;
+        this.#_rolesDetailsCache = null;
     }
 
     // ===== Static Methods =====
@@ -68,6 +70,7 @@ export class Roles {
     // ===== Internal Map Management =====
     _invalidateMaps() {
         this.#_idMap = null;
+        this.#_rolesDetailsCache = null;
     }
 
     _buildIdMap() {
@@ -129,8 +132,11 @@ export class Roles {
     // ===== Core Data Accessors =====
     get RolesEntries() { return this.roles?.roles || []; }
     get RolesDetails() {
+        if (this.#_rolesDetailsCache !== null) {
+            return this.#_rolesDetailsCache;
+        }
         const entries = this.RolesEntries;
-        return entries.map(role => {
+        this.#_rolesDetailsCache = entries.map(role => {
             const callingArr = this.Callings ? (this.Callings.CallingIds.includes(role.calling) ? this.Callings.CallingById(role.calling) : []) : [];
             const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
             const subRoles = this.RawSubRolesById(role.id);
@@ -154,6 +160,7 @@ export class Roles {
                 active: role.active
             };
         });
+        return this.#_rolesDetailsCache;
     }
 
     // ===== SubRole Accessors =====

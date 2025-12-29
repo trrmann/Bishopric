@@ -83,6 +83,26 @@ describe('Roles Class', () => {
       expect(roles.HasRoleById('3')).toBe(true);
       expect(roles.HasRoleById('1')).toBe(false);
     });
+    test('RolesDetails caching works correctly', () => {
+      // First access should compute and cache
+      const details1 = roles.RolesDetails;
+      expect(details1).toHaveLength(3);
+      
+      // Second access should return the same cached instance
+      const details2 = roles.RolesDetails;
+      expect(details2).toBe(details1); // Same reference
+      
+      // Changing roles should invalidate cache
+      roles.roles = {
+        roles: [
+          { id: '10', name: 'New Role', calling: 'c1', active: true, subRoles: [] }
+        ]
+      };
+      const details3 = roles.RolesDetails;
+      expect(details3).not.toBe(details1); // Different reference
+      expect(details3).toHaveLength(1);
+      expect(details3[0].name).toBe('New Role');
+    });
   });
 
   describe('Role filtering', () => {
