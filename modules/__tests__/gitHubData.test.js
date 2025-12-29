@@ -44,9 +44,9 @@ describe('GitHubData', () => {
 
   test('GetHost, GetProject, GetDataPath, GetConfigurationURL return expected values', () => {
     const gh = new GitHubData('owner', 'repo', 'data', 'main');
-    expect(gh.GetHost()).toBe('https://owner.github.io/');
-    expect(gh.GetProject()).toBe('repo/');
-    expect(gh.GetDataPath()).toBe('data/');
+    expect(gh.GetHost()).toBe('https://owner.github.io');
+    expect(gh.GetProject()).toBe('repo');
+    expect(gh.GetDataPath()).toBe('data');
     expect(gh.GetConfigurationURL('file.json')).toBe('https://owner.github.io/repo/data/file.json');
   });
 });

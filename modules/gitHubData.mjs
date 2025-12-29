@@ -39,39 +39,43 @@ export class GitHubData {
 
     // ===== Core Methods =====
     GetHost() {
-        return `https://${this.repoOwner}.github.io/`;
+        // No trailing slash
+        return `https://${this.repoOwner}.github.io`;
     }
     GetProject() {
-        return `${this.repoName}/`;
+        // No leading or trailing slash
+        return this.repoName;
     }
     GetDataPath() {
-        return `${this.dataPath}/`;
+        // No leading or trailing slash
+        return this.dataPath;
     }
     GetConfigurationURL(filename) {
+        // Join parts with single slashes
         const host = this.GetHost();
         const project = this.GetProject();
         const dataPath = this.GetDataPath();
-        const url = `${host}${project}${dataPath}${filename}`;
-        return url;
+        // Avoid double slashes
+        return `${host}/${project}/${dataPath}/${filename}`.replace(/([^:]\/)\/+/, '$1');
     }
     async Has(filename) {
         return (this.Get(filename) != null);
     }
     async Get(filename, type="raw") {
         if(type==="raw") {
-            return await this.fetchRawFile(filename);
+            return this.fetchRawFile(filename);
         } else {
-            return await this.fetchJsonFile(filename);
+            return this.fetchJsonFile(filename);
         }
-    };
+    }
     async fetchRawFile(filename) {
         const response = await fetch(this.GetConfigurationURL(filename));
         if (!response.ok) throw new Error(`Failed to fetch file: ${filename}`);
-        return await response.text();
+        return response.text();
     }
     async fetchJsonFile(filename) {
         const text = await this.fetchRawFile(filename);
-        return await JSON.parse(text);
+        return JSON.parse(text);
     }
     async fetchFileMetadata(filename, token = null) {
         const url = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/contents/${filename}?ref=${this.branch}`;
