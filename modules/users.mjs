@@ -79,7 +79,16 @@ export class Users {
         if (!this.Storage) {
             throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
         }
-        let usersObj = await this.Storage.Get(Users.UsersFilename, Users.StorageConfig);
+        // 1. Try to get from cache
+        let usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: Users.UsersCacheExpireMS });
+        // 2. If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+        if (!usersObj) {
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null });
+            // If found, set in cache for future use
+            if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
+            }
+        }
         this.users = usersObj ? usersObj : undefined;
     }
 
