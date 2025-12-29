@@ -165,11 +165,46 @@ export class Org {
     get HasBranches() { return this.Branches.length > 0; }
 
     // ===== Existence Lookups =====
+    /**
+     * Checks if a stake exists by unit number.
+     * @param {string|number} unitNumber - Stake unit number.
+     * @returns {boolean}
+     */
     HasStakeByUnitNumber(unitNumber) { return !!this.StakeByUnitNumber(unitNumber); }
+
+    /**
+     * Checks if a stake exists by name.
+     * @param {string} stakeName - Stake name.
+     * @returns {boolean}
+     */
     HasStakeByName(stakeName) { return !!this.StakeByName(stakeName); }
+
+    /**
+     * Checks if a unit exists by number.
+     * @param {string|number} unitNumber - Unit number.
+     * @returns {boolean}
+     */
     HasUnitByNumber(unitNumber) { return !!this.UnitByNumber(unitNumber); }
+
+    /**
+     * Checks if a unit exists by name.
+     * @param {string} unitName - Unit name.
+     * @returns {boolean}
+     */
     HasUnitByName(unitName) { return !!this.UnitByName(unitName); }
+
+    /**
+     * Checks if a ward exists by number.
+     * @param {string|number} unitNumber - Ward unit number.
+     * @returns {boolean}
+     */
     HasWardByNumber(unitNumber) { return !!this.WardByNumber(unitNumber); }
+
+    /**
+     * Checks if a branch exists by number.
+     * @param {string|number} unitNumber - Branch unit number.
+     * @returns {boolean}
+     */
     HasBranchByNumber(unitNumber) { return !!this.BranchByNumber(unitNumber); }
 
 }
