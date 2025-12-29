@@ -70,6 +70,9 @@
             <button class="nav-btn usersmenuitem" onclick="showSection('users')">
                 <i class="fas fa-id-badge"></i> Users
             </button>
+            <button class="nav-btn testingmenuitem" onclick="showSection('testing')">
+                <i class="fas fa-vial"></i> Testing
+            </button>
             <button class="nav-btn configurationmenuitem" onclick="showSection('configuration')">
                 <i class="fas fa-cogs"></i> Configuration
             </button>
@@ -83,6 +86,21 @@
 
         <!-- Main Content -->
         <main class="main-content">
+                                                            <!-- Testing Section -->
+                                                            <section id="testing" class="section">
+                                                                <h2>Testing & Utilities</h2>
+                                                                <div class="section-toolbar">
+                                                                    <button class="btn-primary testing-ResetCache" onclick="resetCache()">
+                                                                        <i class="fas fa-sync-alt"></i> Reset Cache
+                                                                    </button>
+                                                                    <button class="btn-primary testing-ExportData" onclick="exportData()">
+                                                                        <i class="fas fa-file-export"></i> Export Data
+                                                                    </button>
+                                                                </div>
+                                                                <div id="testingUtilities" class="testing-utilities">
+                                                                    <p>Use these tools for development and troubleshooting.</p>
+                                                                </div>
+                                                            </section>
                                                 <!-- Users Section -->
                                                 <section id="users" class="section">
                                                     <h2>Users Management</h2>
