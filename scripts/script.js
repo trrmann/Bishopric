@@ -4,6 +4,7 @@ import './callings.ui.js';
 import './roles.ui.js';
 import './users.ui.js';
 import './testing.ui.js';
+import './workflows.ui.js';
 // --- Configuration Tab Logic ---
 window.openEditConfiguration = function() {
     // Example: Show a modal with editable configuration fields
