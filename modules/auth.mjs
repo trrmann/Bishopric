@@ -173,13 +173,17 @@ export class Auth {
         const emailList = document.getElementById(elementID);
         if (!emailList || !this.allUsers) return;
         emailList.innerHTML = '';
+        
+        // Use DocumentFragment for batch DOM operations to improve performance
+        const fragment = document.createDocumentFragment();
         this.allUsers.forEach(user => {
             if ((user.memberactive || user.active) && user.email && typeof user.email === 'string' && user.email.trim() !== '') {
                 const option = document.createElement('option');
                 option.value = user.email;
-                emailList.appendChild(option);
+                fragment.appendChild(option);
             }
         });
+        emailList.appendChild(fragment);
     }
     ShowLoginForm() {
         const loginModal = document.getElementById(this.destinationID);
@@ -456,15 +460,29 @@ export class Auth {
         const callingTitles = this.currentUser.callingTitles || [];
         const displayName = this.currentUser.fullname || '';
         const isMobile = window.innerWidth <= 600;
-        // Determine if any roleName is different from the displayName/calling title
-        const filteredRoleNames = roleNames.filter(roleName => {
-            if (!roleName) return false;
-            const normRole = roleName.trim().toLowerCase();
-            const normDisplay = displayName.trim().toLowerCase();
-            const matchesDisplay = normRole === normDisplay;
-            const matchesAnyTitle = callingTitles.some(title => (title || '').trim().toLowerCase() === normRole);
-            return !(matchesDisplay || matchesAnyTitle);
-        });
+        
+        // Create cache key from user role data
+        const cacheKey = JSON.stringify({ roleNames, callingTitles, displayName });
+        
+        // Use cached filtered roles if available and cache key matches
+        let filteredRoleNames;
+        if (this._roleCacheKey === cacheKey && this._cachedFilteredRoles) {
+            filteredRoleNames = this._cachedFilteredRoles;
+        } else {
+            // Determine if any roleName is different from the displayName/calling title
+            filteredRoleNames = roleNames.filter(roleName => {
+                if (!roleName) return false;
+                const normRole = roleName.trim().toLowerCase();
+                const normDisplay = displayName.trim().toLowerCase();
+                const matchesDisplay = normRole === normDisplay;
+                const matchesAnyTitle = callingTitles.some(title => (title || '').trim().toLowerCase() === normRole);
+                return !(matchesDisplay || matchesAnyTitle);
+            });
+            // Cache the result
+            this._roleCacheKey = cacheKey;
+            this._cachedFilteredRoles = filteredRoleNames;
+        }
+        
         roleSelector.classList.remove('show');
         if (filteredRoleNames.length > 1) {
             if (roleSelector) {

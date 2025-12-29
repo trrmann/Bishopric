@@ -65,6 +65,8 @@ export class Users {
     constructor() {
         this.users = undefined;
         this.members = undefined;
+        this._cachedUsersDetails = null;
+        this._cacheInvalidationKey = null;
     }
 
     // ===== Static Methods =====
@@ -73,6 +75,8 @@ export class Users {
         users.users = dataJSON.users;
         users.members = dataJSON.members ? Members.CopyFromJSON(dataJSON.members) : undefined;
         users.lastFetched = dataJSON.lastFetched;
+        users._cachedUsersDetails = null;
+        users._cacheInvalidationKey = null;
         return users;
     }
 
@@ -92,6 +96,8 @@ export class Users {
             destination.members = source.members;
         }
         destination.lastFetched = source.lastFetched;
+        destination._cachedUsersDetails = null;
+        destination._cacheInvalidationKey = null;
     }
 
     static async Factory(configuration) {
@@ -121,18 +127,25 @@ export class Users {
         if (!this.Storage) {
             throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
         }
+        
+        // Pre-create storage configs to avoid repeated object spreading
+        const baseConfig = Users.StorageConfig;
+        const cacheConfig = { ...baseConfig, cacheTtlMs: Users.UsersCacheExpireMS };
+        const sessionConfig = { ...baseConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS };
+        const localConfig = { ...baseConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS };
+        
         // 1. Try to get from cache
-        let usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: Users.UsersCacheExpireMS });
+        let usersObj = await this.Storage.Get(Users.UsersFilename, cacheConfig);
         // 2. If not found, try session storage
         if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS });
+            usersObj = await this.Storage.Get(Users.UsersFilename, sessionConfig);
             if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
             }
         }
         // 3. If still not found, try local storage
         if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
+            usersObj = await this.Storage.Get(Users.UsersFilename, localConfig);
             if (usersObj) {
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
@@ -144,69 +157,148 @@ export class Users {
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig });
+            usersObj = await this.Storage.Get(Users.UsersFilename, baseConfig);
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
         if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
             usersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Users.UsersFilename);
         }
         this.users = usersObj ? usersObj : undefined;
+        // Invalidate cache when data is fetched
+        this._invalidateUsersDetailsCache();
     }
 
     // ===== Core Data Accessors =====
     get UserEntries() { return this.users?.users || []; }
 
+    // ===== Cache Management =====
+    _getCacheInvalidationKey() {
+        // Generate a key based on the current state of users and members data
+        const usersKey = this.users ? JSON.stringify(this.users.users) : 'null';
+        const membersKey = this.members ? JSON.stringify(this.members.members) : 'null';
+        return `${usersKey}:${membersKey}`;
+    }
+
+    _invalidateUsersDetailsCache() {
+        this._cachedUsersDetails = null;
+        this._cacheInvalidationKey = null;
+    }
+
     async UsersDetails() {
+        // Check if cache is valid
+        const currentKey = this._getCacheInvalidationKey();
+        if (this._cachedUsersDetails && this._cacheInvalidationKey === currentKey) {
+            return this._cachedUsersDetails;
+        }
+
+        // Cache miss - recalculate
         const membersData = await this.members.MembersDetails();
-        return this.UserEntries.map(user => {
-            const member = membersData.find(member => member.memberNumber === user.memberNumber);
-            return {
-                memberNumber: member ? member.memberNumber : user.memberNumber,
-                fullname: member ? member.fullname : '',
-                titlelessFullname: member ? member.titlelessFullname : '',
-                firstName: member ? member.firstName : '',
-                middleName: member ? member.middleName : '',
-                maidenName: member ? member.maidenName : '',
-                maternalLastName: member ? member.maternalLastName : '',
-                paternalLastName: member ? member.paternalLastName : '',
-                maidenNameMaternal: member ? member.maidenNameMaternal : false,
-                genderMale: member ? member.genderMale : false,
-                gender: member ? member.gender : '',
-                password: user.password,
-                email: member ? member.email : user.email,
-                phone: member ? member.phone : '',
-                callingIDs: member ? member.callingIDs : [],
-                callingNames: member ? member.callingNames : [],
-                callingHaveTitles: member ? member.callingHaveTitles : [],
-                callingTitles: member ? member.callingTitles : [],
-                callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
-                roleIDs: member ? member.callingRoleIDs : [],
-                roleNames: member ? member.callingRoleNames : [],
-                callingsActive: member ? member.callingsActive : [],
-                allSubRoles: member ? member.callingsAllSubRoles : [],
-                allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
-                subRoles: member ? member.callingsSubRoles : [],
-                subRoleNames: member ? member.callingsSubRoleNames : [],
-                levels: member ? member.levels : [],
-                memberactive: member ? member.active : false,
-                active: user.active,
-                stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
-                unitNumber: member ? member.unitNumber : undefined,
-                stakeName: member ? member.stakeName : '',
-                unitName: member ? member.unitName : '',
-                unitType: member ? member.unitType : ''
-            };
+        
+        // Create Map for O(1) member lookup instead of O(n) array.find()
+        const memberMap = new Map();
+        for (const member of membersData) {
+            memberMap.set(member.memberNumber, member);
+        }
+        
+        const result = this.UserEntries.map(user => {
+            const member = memberMap.get(user.memberNumber);
+            
+            // Fast path: if member found, use member data directly; otherwise use defaults
+            if (member) {
+                return {
+                    memberNumber: member.memberNumber,
+                    fullname: member.fullname,
+                    titlelessFullname: member.titlelessFullname,
+                    firstName: member.firstName,
+                    middleName: member.middleName,
+                    maidenName: member.maidenName,
+                    maternalLastName: member.maternalLastName,
+                    paternalLastName: member.paternalLastName,
+                    maidenNameMaternal: member.maidenNameMaternal,
+                    genderMale: member.genderMale,
+                    gender: member.gender,
+                    password: user.password,
+                    email: member.email,
+                    phone: member.phone,
+                    callingIDs: member.callingIDs,
+                    callingNames: member.callingNames,
+                    callingHaveTitles: member.callingHaveTitles,
+                    callingTitles: member.callingTitles,
+                    callingTitleOrdinals: member.callingTitleOrdinals,
+                    roleIDs: member.callingRoleIDs,
+                    roleNames: member.callingRoleNames,
+                    callingsActive: member.callingsActive,
+                    allSubRoles: member.callingsAllSubRoles,
+                    allSubRoleNames: member.callingsAllSubRoleNames,
+                    subRoles: member.callingsSubRoles,
+                    subRoleNames: member.callingsSubRoleNames,
+                    levels: member.levels,
+                    memberactive: member.active,
+                    active: user.active,
+                    stakeUnitNumber: member.stakeUnitNumber,
+                    unitNumber: member.unitNumber,
+                    stakeName: member.stakeName,
+                    unitName: member.unitName,
+                    unitType: member.unitType
+                };
+            } else {
+                // No member found - return user data with defaults
+                return {
+                    memberNumber: user.memberNumber,
+                    fullname: '',
+                    titlelessFullname: '',
+                    firstName: '',
+                    middleName: '',
+                    maidenName: '',
+                    maternalLastName: '',
+                    paternalLastName: '',
+                    maidenNameMaternal: false,
+                    genderMale: false,
+                    gender: '',
+                    password: user.password,
+                    email: user.email,
+                    phone: '',
+                    callingIDs: [],
+                    callingNames: [],
+                    callingHaveTitles: [],
+                    callingTitles: [],
+                    callingTitleOrdinals: [],
+                    roleIDs: [],
+                    roleNames: [],
+                    callingsActive: [],
+                    allSubRoles: [],
+                    allSubRoleNames: [],
+                    subRoles: [],
+                    subRoleNames: [],
+                    levels: [],
+                    memberactive: false,
+                    active: user.active,
+                    stakeUnitNumber: undefined,
+                    unitNumber: undefined,
+                    stakeName: '',
+                    unitName: '',
+                    unitType: ''
+                };
+            }
         });
+
+        // Update cache
+        this._cachedUsersDetails = result;
+        this._cacheInvalidationKey = currentKey;
+
+        return result;
     }
 
     // ===== Filtering and Lookup Methods =====
     async UserById(id) {
         const users = await this.UsersDetails();
+        if (users.length === 0) return [];
         return users.filter(u => u.memberNumber === id || String(u.memberNumber) === String(id));
     }
 
     async UserByEmail(email) {
         const users = await this.UsersDetails();
+        if (users.length === 0) return [];
         return users.filter(u => u.email === email);
     }
 
@@ -216,12 +308,12 @@ export class Users {
     }
 
     async HasUserById(id) {
-        const userById = await this.UserById(id);
-        return (userById !== null && userById.length > 0);
+        const users = await this.UsersDetails();
+        return users.some(u => u.memberNumber === id || String(u.memberNumber) === String(id));
     }
 
     async HasUserByEmail(email) {
-        const userByEmail = await this.UserByEmail(email);
-        return (userByEmail !== null && userByEmail.length > 0);
+        const users = await this.UsersDetails();
+        return users.some(u => u.email === email);
     }
 }
