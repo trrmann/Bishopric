@@ -130,6 +130,10 @@ export class CacheStore {
     entries() {
         return Array.from(this._store.entries()).map(([key, entry]) => [key, entry.value]);
     }
+
+    [Symbol.iterator]() {
+        return this.entries()[Symbol.iterator]();
+    }
 }
 // Example usage:
 // import { CacheStore } from './cacheStore.mjs';
