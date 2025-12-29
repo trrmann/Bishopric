@@ -1,3 +1,94 @@
+          describe('CacheStore.deleteWhere', () => {
+            let cache;
+            beforeEach(() => {
+              cache = new CacheStore();
+              cache.Set('a', 1);
+              cache.Set('b', 2);
+              cache.Set('c', 3);
+              cache.Set('d', 4);
+            });
+
+            test('deletes all entries matching predicate', () => {
+              const deleted = cache.deleteWhere((v, k) => v % 2 === 0); // delete even values
+              expect(deleted).toBe(2);
+              expect(cache.Has('b')).toBe(false);
+              expect(cache.Has('d')).toBe(false);
+              expect(cache.Has('a')).toBe(true);
+              expect(cache.Has('c')).toBe(true);
+            });
+
+            test('returns 0 if no entries match', () => {
+              const deleted = cache.deleteWhere((v) => v > 10);
+              expect(deleted).toBe(0);
+              expect(cache.Size).toBe(4);
+            });
+
+            test('returns 0 if predicate is not a function', () => {
+              expect(cache.deleteWhere(null)).toBe(0);
+              expect(cache.Size).toBe(4);
+            });
+
+            test('supports thisArg', () => {
+              const context = { min: 3 };
+              const deleted = cache.deleteWhere(function(v) { return v < this.min; }, context);
+              expect(deleted).toBe(2);
+              expect(cache.Has('a')).toBe(false);
+              expect(cache.Has('b')).toBe(false);
+              expect(cache.Has('c')).toBe(true);
+              expect(cache.Has('d')).toBe(true);
+            });
+          });
+          describe('getOrSet', () => {
+            let cache;
+            beforeEach(() => {
+              cache = new CacheStore();
+            });
+
+            test('returns existing value if present and not expired', () => {
+              cache.Set('a', 1, 1000);
+              expect(cache.getOrSet('a', 2)).toBe(1);
+            });
+
+            test('sets and returns new value if key is missing', () => {
+              expect(cache.getOrSet('b', 42)).toBe(42);
+              expect(cache.Get('b').value).toBe(42);
+            });
+
+            test('sets and returns new value if key is expired', () => {
+              cache.Set('c', 5, 1);
+              jest.advanceTimersByTime(2);
+              expect(cache.getOrSet('c', 99)).toBe(99);
+              expect(cache.Get('c').value).toBe(99);
+            });
+
+            test('uses factory function if provided', () => {
+              let called = false;
+              const factory = () => { called = true; return 123; };
+              expect(cache.getOrSet('d', factory)).toBe(123);
+              expect(called).toBe(true);
+            });
+          });
+        describe('hasExpired', () => {
+          let cache;
+          beforeEach(() => {
+            cache = new CacheStore();
+          });
+
+          test('returns true if key exists and is expired', () => {
+            cache.Set('a', 1, 1); // expires quickly
+            jest.advanceTimersByTime(2);
+            expect(cache.hasExpired('a')).toBe(true);
+          });
+
+          test('returns false if key exists and is not expired', () => {
+            cache.Set('b', 2, 10000);
+            expect(cache.hasExpired('b')).toBe(false);
+          });
+
+          test('returns false if key does not exist', () => {
+            expect(cache.hasExpired('missing')).toBe(false);
+          });
+        });
       describe('fromMap', () => {
         it('should create a CacheStore from a Map', () => {
           const map = new Map([
@@ -408,4 +499,22 @@ describe('CacheStore', () => {
       expect(cache.Has('prune')).toBe(false);
     });
   });
-});
+  describe('peek', () => {
+      let cache;
+      beforeEach(() => {
+        cache = new CacheStore();
+      });
+
+      test('returns value for existing key regardless of expiration', () => {
+        cache.Set('a', 123, 1); // expires quickly
+        expect(cache.peek('a')).toBe(123);
+        jest.advanceTimersByTime(2);
+        // Even after expiration, peek returns the value
+        expect(cache.peek('a')).toBe(123);
+      });
+
+      test('returns undefined for missing key', () => {
+        expect(cache.peek('missing')).toBeUndefined();
+      });
+    });
+  });

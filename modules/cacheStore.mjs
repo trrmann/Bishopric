@@ -1,5 +1,3 @@
-// cacheStore.mjs
-// Simple in-memory cache variable store with get/set/delete/clear and optional expiration
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
@@ -113,6 +111,19 @@ export class CacheStore {
         return this;
     }
 
+    // Deletes all entries for which the predicate returns true
+    deleteWhere(predicate, thisArg = undefined) {
+        if (typeof predicate !== 'function') return 0;
+        let count = 0;
+        for (const [key, entry] of this._store.entries()) {
+            if (predicate.call(thisArg, entry.value, key, this)) {
+                this._store.delete(key);
+                count++;
+            }
+        }
+        return count;
+    }
+
     // Ergonomic alias for Keys(), returns all keys as an array
     keysArray() {
         return this.Keys();
@@ -183,14 +194,14 @@ export class CacheStore {
 
 
     // PascalCase alias for values() to match test expectation
-    Values() {
-        return this.values();
+    // Returns true if the key exists and is expired, false otherwise
+    hasExpired(key) {
+        if (this._store.has(key)) {
+            const entry = this._store.get(key);
+            return !!(entry.expires && Date.now() > entry.expires);
+        }
+        return false;
     }
-    // ===== Instance Accessors =====
-    get Store() { return this._store; }
-    get CachePruneTimer() { return this._cachePruneTimer; }
-    get CachePruneIntervalMs() { return this._cachePruneIntervalMs; }
-    get Size() { return this._store.size; }
 
     // ===== Constructor =====
     constructor(cachePruneIntervalMs = CacheStore.DefaultCachePruneIntervalMS) {
@@ -284,6 +295,23 @@ export class CacheStore {
             return defaultValue;
         }
     }
+
+    // Returns the value for a key if present and not expired, otherwise sets and returns the new value
+    getOrSet(key, valueOrFactory, ttlMs = CacheStore.DefaultCacheValueExpireMS) {
+        if (this.Has(key)) {
+            return this.Get(key).value;
+        }
+        const value = (typeof valueOrFactory === 'function') ? valueOrFactory() : valueOrFactory;
+        this.Set(key, value, ttlMs);
+        return value;
+    }
+    // Returns the value for a key without checking expiration or deleting expired entries
+    peek(key) {
+        if (this._store.has(key)) {
+            return this._store.get(key).value;
+        }
+        return undefined;
+    }
     Clear() {
         this._store.clear();
         return this;
@@ -315,8 +343,19 @@ export class CacheStore {
         });
     }
 
+
     values() {
         return Array.from(this._store.values()).map(entry => entry.value);
+    }
+
+    // PascalCase alias for values() to match test expectation
+    Values() {
+        return this.values();
+    }
+
+    // PascalCase alias for size getter
+    get Size() {
+        return this._store.size;
     }
 
     entries() {
