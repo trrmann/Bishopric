@@ -4,6 +4,7 @@ import { Org } from "./org.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
 
 export class Members {
+    #_membersDetails = null;
     // ===== Instance Accessors =====
     get Roles() { return this.roles; }
     get Callings() { return this.roles ? this.roles.Callings : undefined; }
@@ -21,6 +22,29 @@ export class Members {
         this.members = undefined;
         this.roles = undefined;
         this.org = undefined;
+        this.#_membersDetails = null;
+    }
+
+    set members(val) {
+        this._members = val;
+        this.#_membersDetails = null;
+    }
+    get members() {
+        return this._members;
+    }
+    set roles(val) {
+        this._roles = val;
+        this.#_membersDetails = null;
+    }
+    get roles() {
+        return this._roles;
+    }
+    set org(val) {
+        this._org = val;
+        this.#_membersDetails = null;
+    }
+    get org() {
+        return this._org;
     }
 
     // ===== Static Methods =====
@@ -120,11 +144,12 @@ export class Members {
     get MemberEntries() { return this.members?.members || []; }
 
     async MembersDetails() {
+        if (this.#_membersDetails) return this.#_membersDetails;
         const callings = this.roles && this.roles.Callings ? this.roles.Callings.CallingsDetails : undefined;
         const roles = this.roles ? this.roles.RolesDetails : undefined;
         const org = this.org ? this.org.Organization : undefined;
         const memberEntries = this.MemberEntries;
-        return memberEntries.map(member => {
+        this.#_membersDetails = memberEntries.map(member => {
             // ...existing code for mapping members...
             // Allow members with no callings
             const memberCallings = Array.isArray(member.callings) ? member.callings : [];
@@ -238,6 +263,7 @@ export class Members {
                 unitType: unitType
             };
         });
+        return this.#_membersDetails;
     }
 
     // ===== Leadership Lookups =====
