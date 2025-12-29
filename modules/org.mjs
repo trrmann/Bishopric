@@ -6,28 +6,51 @@ export class Org {
     get Storage() { return this.storage; }
     get Organization() { return this.organization; }
 
-    // ===== Constructor =====
+    /**
+     * Creates an Org instance.
+     * @param {object} configuration - Configuration object containing _storageObj.
+     */
     constructor(configuration) {
         this.storage = configuration._storageObj;
         this.organization = undefined;
     }
 
     // ===== Static Methods =====
+    /**
+     * Creates an Org instance from a JSON object.
+     * @param {object} dataJSON - JSON object with _storageObj and org properties.
+     * @returns {Org} New Org instance.
+     */
     static CopyFromJSON(dataJSON) {
         const org = new Org(dataJSON._storageObj);
         org.organization = dataJSON.org;
         return org;
     }
+    /**
+     * Converts an Org instance to a JSON object.
+     * @param {Org} instance - Org instance to convert.
+     * @returns {object} JSON representation of Org.
+     */
     static CopyToJSON(instance) {
         return {
             _storageObj: instance.storage,
             org: instance.organization
         };
     }
+    /**
+     * Copies Org properties from source to destination.
+     * @param {Org} destination - Destination Org instance.
+     * @param {Org} source - Source Org instance.
+     */
     static CopyFromObject(destination, source) {
         destination.storage = source.storage;
         destination.organization = source.organization;
     }
+    /**
+     * Factory method to create and initialize an Org instance.
+     * @param {object} configuration - Configuration object containing _storageObj.
+     * @returns {Promise<Org>} Initialized Org instance.
+     */
     static async Factory(configuration) {
         const org = new Org(configuration);
         await org.Fetch();
