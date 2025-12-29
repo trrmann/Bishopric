@@ -22,23 +22,24 @@
 //TODO #22 add cloud store migration function to configuration tab
 //TODO #23 add workflows / schedule template tab for system admin
 //TODO #24 add tasks module - integrate into assignments tab
-//TODO #25 add callings scrape function to callings tab
-//TODO #26 add members scrape function to users tab
-//TODO #27 add schedule module integrate into the schedule tab
-//TODO #28 add events module integrate into the schedule module
-//TODO #29 first workflow is the calling pipeline
-//TODO #30 second workflow is the sacrament talk pipeline
-//TODO #31 third workflow is the sacrament prayers pipline
-//TODO #32 forth workflow is the youth temple recommend pipline
-//TODO #33 fifth workflow is the missing members pipline
-//TODO #34 first repeat event schedule is ward council meeting
-//TODO #35 second repeat event schedule is bishopric meeting
-//TODO #36 third repeat event schedule is sacrament attendance count
-//TODO #37 forth repeat event schedule is donation processing
-//TODO #38 fifth repeat event schedule is expense review
-//TODO #39 sixth repeat event schedule is tithing declaration
-//TODO #40 seventh repeat event schedule is leadership youth training
-//TODO #41 eighth repeat event schedule is leadership church funds training
+//TODO #25 add church authentication - field to user for church username and church password and a call to authenticate against the church auth services.
+//TODO #26 add callings scrape function to callings tab
+//TODO #27 add members scrape function to users tab
+//TODO #28 add schedule module integrate into the schedule tab
+//TODO #29 add events module integrate into the schedule module
+//TODO #30 first workflow is the calling pipeline
+//TODO #31 second workflow is the sacrament talk pipeline
+//TODO #32 third workflow is the sacrament prayers pipline
+//TODO #33 forth workflow is the youth temple recommend pipline
+//TODO #34 fifth workflow is the missing members pipline
+//TODO #35 first repeat event schedule is ward council meeting
+//TODO #36 second repeat event schedule is bishopric meeting
+//TODO #37 third repeat event schedule is sacrament attendance count
+//TODO #38 forth repeat event schedule is donation processing
+//TODO #39 fifth repeat event schedule is expense review
+//TODO #40 sixth repeat event schedule is tithing declaration
+//TODO #41 seventh repeat event schedule is leadership youth training
+//TODO #42 eighth repeat event schedule is leadership church funds training
 
 import { Members } from "./members.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
