@@ -67,7 +67,16 @@ export class Roles {
         if (!this.Callings || !this.Callings.storage) {
             throw new Error("Callings instance or its storage is not set on Roles.");
         }
-        let rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, Roles.StorageConfig);
+        // 1. Try to get from cache
+        let rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: Roles.RolesCacheExpireMS });
+        // 2. If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+        if (!rolesObj) {
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null });
+            // If found, set in cache for future use
+            if (rolesObj && this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
+                this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
+            }
+        }
         this.roles = rolesObj ? rolesObj : undefined;
     }
 
