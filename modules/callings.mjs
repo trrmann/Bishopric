@@ -58,7 +58,6 @@ export class Callings {
         // 2. If not found, try session storage
         if (!callingsObj) {
             callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: Callings.CallingsSessionExpireMS });
-            // If found in session, set in cache for faster access next time
             if (callingsObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
             }
@@ -66,7 +65,6 @@ export class Callings {
         // 3. If still not found, try local storage
         if (!callingsObj) {
             callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Callings.CallingsLocalExpireMS });
-            // If found in local, set in session and cache for faster access next time
             if (callingsObj) {
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
@@ -76,21 +74,13 @@ export class Callings {
                 }
             }
         }
-        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
-        if (!callingsObj) {
-            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
-            // If found, set in local, session, and cache for future use
-            if (callingsObj) {
-                if (this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
-                    this.Storage.LocalStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsLocalExpireMS);
-                }
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
-                }
-            }
+        // 4. If still not found, use GoogleDrive for read/write priority
+        if (!callingsObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig });
+        }
+        // 5. If still not found, fallback to GitHubDataObj for read-only
+        if (!callingsObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
+            callingsObj = await this.Storage._gitHubDataObj.fetchJsonFile(Callings.CallingsFilename);
         }
         this.callings = callingsObj ? callingsObj : undefined;
     }
