@@ -51,13 +51,24 @@ export class Org {
 
     // ===== Data Fetching =====
     async Fetch() {
-        // Try to get from cache first
+        // 1. Try to get from cache
         let orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: Org.OrgCacheExpireMS });
+        // 2. If not found, try session storage
         if (!orgObj) {
-            // If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
-            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null });
-            // If found, set in cache for future use
+            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: Org.OrgSessionExpireMS });
+            // If found in session, set in cache for faster access next time
+            if (orgObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
+            }
+        }
+        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!orgObj) {
+            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
+            // If found, set in session storage and cache for future use
             if (orgObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
+                }
                 if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                     this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
                 }
