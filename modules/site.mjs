@@ -2,6 +2,92 @@
     import { Configuration } from "./configuration.mjs";
     import { Auth } from "../modules/auth.mjs";
 
+// Static HTML templates for modal content (memory optimization)
+const MODAL_TEMPLATES = {
+    ADD_MEMBER: `
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" placeholder="Enter first name" required>
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" placeholder="Enter last name" required>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter email" required>
+        </div>
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" placeholder="Enter phone number" required>
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <select required>
+                <option value="">Select Role</option>
+                <option value="member">Member</option>
+                <option value="home-teacher">Home Teacher</option>
+                <option value="relief-society">Relief Society</option>
+                <option value="elders-quorum">Elders Quorum</option>
+            </select>
+        </div>
+    `,
+    NEW_ASSIGNMENT: `
+        <div class="form-group">
+            <label>Assignment Title</label>
+            <input type="text" placeholder="Enter assignment title" required>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea placeholder="Enter assignment description" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Assign To</label>
+            <select required>
+                <option value="">Select Member</option>
+                <option value="james">James Johnson</option>
+                <option value="sarah">Sarah Williams</option>
+                <option value="michael">Michael Brown</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" required>
+        </div>
+    `,
+    SCHEDULE_EVENT: `
+        <div class="form-group">
+            <label>Event Name</label>
+            <input type="text" placeholder="Enter event name" required>
+        </div>
+        <div class="form-group">
+            <label>Event Date</label>
+            <input type="date" required>
+        </div>
+        <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" required>
+        </div>
+        <div class="form-group">
+            <label>End Time</label>
+            <input type="time" required>
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" placeholder="Enter location" required>
+        </div>
+    `
+};
+
+const FORM_TITLES = {
+    referral: 'Member Referral Form',
+    homeTeaching: 'Home Teaching Report',
+    welfare: 'Welfare Assistance Request',
+    missionary: 'Missionary Recommendation',
+    activity: 'Activity Planning Form',
+    service: 'Service Project Log'
+};
+
 export class Site {
     constructor() {
         this._siteConfig = null;
@@ -190,91 +276,20 @@ export class Site {
     editAssignment(id) { alert(`Edit assignment ${id}`); }
     markComplete(id) { alert(`Assignment ${id} marked complete`); }
     viewAssignment(id) { alert(`View assignment ${id}`); }
-    openAddMember() { this.openModal('Add Member', `
-        <div class="form-group">
-            <label>First Name</label>
-            <input type="text" placeholder="Enter first name" required>
-        </div>
-        <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" placeholder="Enter last name" required>
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="Enter email" required>
-        </div>
-        <div class="form-group">
-            <label>Phone</label>
-            <input type="tel" placeholder="Enter phone number" required>
-        </div>
-        <div class="form-group">
-            <label>Role</label>
-            <select required>
-                <option value="">Select Role</option>
-                <option value="member">Member</option>
-                <option value="home-teacher">Home Teacher</option>
-                <option value="relief-society">Relief Society</option>
-                <option value="elders-quorum">Elders Quorum</option>
-            </select>
-        </div>
-    `); }
-    openNewAssignment() { this.openModal('New Assignment', `
-        <div class="form-group">
-            <label>Assignment Title</label>
-            <input type="text" placeholder="Enter assignment title" required>
-        </div>
-        <div class="form-group">
-            <label>Description</label>
-            <textarea placeholder="Enter assignment description" rows="4"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Assign To</label>
-            <select required>
-                <option value="">Select Member</option>
-                <option value="james">James Johnson</option>
-                <option value="sarah">Sarah Williams</option>
-                <option value="michael">Michael Brown</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Due Date</label>
-            <input type="date" required>
-        </div>
-    `); }
-    openScheduleEvent() { this.openModal('Schedule Event', `
-        <div class="form-group">
-            <label>Event Name</label>
-            <input type="text" placeholder="Enter event name" required>
-        </div>
-        <div class="form-group">
-            <label>Event Date</label>
-            <input type="date" required>
-        </div>
-        <div class="form-group">
-            <label>Start Time</label>
-            <input type="time" required>
-        </div>
-        <div class="form-group">
-            <label>End Time</label>
-            <input type="time" required>
-        </div>
-        <div class="form-group">
-            <label>Location</label>
-            <input type="text" placeholder="Enter location" required>
-        </div>
-    `); }
+    openAddMember() { 
+        this.openModal('Add Member', MODAL_TEMPLATES.ADD_MEMBER); 
+    }
+    openNewAssignment() { 
+        this.openModal('New Assignment', MODAL_TEMPLATES.NEW_ASSIGNMENT); 
+    }
+    openScheduleEvent() { 
+        this.openModal('Schedule Event', MODAL_TEMPLATES.SCHEDULE_EVENT); 
+    }
     openForm(formType) {
-        const formTitles = {
-            referral: 'Member Referral Form',
-            homeTeaching: 'Home Teaching Report',
-            welfare: 'Welfare Assistance Request',
-            missionary: 'Missionary Recommendation',
-            activity: 'Activity Planning Form',
-            service: 'Service Project Log'
-        };
-        this.openModal(formTitles[formType] || 'Form', `
+        const title = FORM_TITLES[formType] || 'Form';
+        this.openModal(title, `
             <div class="form-group">
-                <label>Form Type: ${formTitles[formType]}</label>
+                <label>Form Type: ${title}</label>
                 <textarea placeholder="Enter form details..." rows="6"></textarea>
             </div>
             <div class="form-group">
