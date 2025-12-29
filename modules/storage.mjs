@@ -203,11 +203,11 @@ export class Storage {
         const { cacheTtlMs = null, sessionTtlMs = null, localTtlMs = null, googleId = null, githubFilename = null, publicKey = null, secure = false } = options;
         if (secure) {
             await this._cache.setSecure(key, value, publicKey, cacheTtlMs);
-            await this._session.setSecureItem(key, value, publicKey, sessionTtlMs);
+            await this._sessionStorage.setSecureItem(key, value, publicKey, sessionTtlMs);
             await this._localStorage.SetSecurePreference(key, value, publicKey, localTtlMs);
         } else {
             this._cache.Set(key, value, cacheTtlMs);
-            this._session.setItem(key, value, sessionTtlMs);
+            this._sessionStorage.setItem(key, value, sessionTtlMs);
             this._localStorage.Set(key, value, localTtlMs);
         }
         if (this._googleDrive && googleId) {
