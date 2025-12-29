@@ -115,6 +115,11 @@ export class Configuration {
         return ObjectUtils.flattenObject(obj, parentKey, separator);
     }
 
+    /**
+     * Retrieves configuration value(s) by key.
+     * @param {string} key - The configuration key to look up.
+     * @returns {Array} Array containing the config value if found, otherwise an empty array.
+     */
     GetConfigByKey(key) {
         if (!this._keyMap) this._buildCache();
         const c = this._keyMap.get(key);
