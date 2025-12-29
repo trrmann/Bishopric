@@ -61,7 +61,7 @@ export class CacheStore {
         return Array.from(this._store.keys());
     }
     Delete(key) {
-        return this._store.delete(key);
+        this._store.delete(key);
     }
     Has(key) {
         if (this._store.has(key)) {
