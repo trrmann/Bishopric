@@ -84,7 +84,6 @@ export class Users {
         // 2. If not found, try session storage
         if (!usersObj) {
             usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS });
-            // If found in session, set in cache for faster access next time
             if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
             }
@@ -92,7 +91,6 @@ export class Users {
         // 3. If still not found, try local storage
         if (!usersObj) {
             usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
-            // If found in local, set in session and cache for faster access next time
             if (usersObj) {
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
@@ -102,21 +100,13 @@ export class Users {
                 }
             }
         }
-        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
-        if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
-            // If found, set in local, session, and cache for future use
-            if (usersObj) {
-                if (this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
-                    this.Storage.LocalStorage.Set(Users.UsersFilename, usersObj, Users.UsersLocalExpireMS);
-                }
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
-                }
-            }
+        // 4. If still not found, use GoogleDrive for read/write priority
+        if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig });
+        }
+        // 5. If still not found, fallback to GitHubDataObj for read-only
+        if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
+            usersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Users.UsersFilename);
         }
         this.users = usersObj ? usersObj : undefined;
     }
