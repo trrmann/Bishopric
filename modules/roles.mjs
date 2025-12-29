@@ -1,8 +1,14 @@
 import { Callings } from "./callings.mjs";
 import { createStorageConfig, ObjectUtils } from "./objectUtils.mjs";
+
 export class Roles {
-    // ===== Private Fast Lookup Maps =====
+    // ===== Private Fast Lookup Maps and Caches =====
     #_idMap = null;
+    #_nameMap = null;
+    #_callingIdMap = null;
+    #_wardRoles = null;
+    #_stakeRoles = null;
+    #_rolesDetails = null;
 
     // ===== Instance Accessors =====
     get Callings() { return this.callings; }
@@ -66,8 +72,28 @@ export class Roles {
 
     // ===== Data Fetching =====
     // ===== Internal Map Management =====
+
+
     _invalidateMaps() {
         this.#_idMap = null;
+        this.#_nameMap = null;
+        this.#_callingIdMap = null;
+        this.#_wardRoles = null;
+        this.#_stakeRoles = null;
+        this.#_rolesDetails = null;
+    }
+    _buildCallingIdMap() {
+        if (!this.#_callingIdMap) {
+            this.#_callingIdMap = new Map();
+            for (const role of this.RolesDetails) {
+                if (role && role.callingID !== undefined && role.callingID !== null) {
+                    if (!this.#_callingIdMap.has(role.callingID)) {
+                        this.#_callingIdMap.set(role.callingID, []);
+                    }
+                    this.#_callingIdMap.get(role.callingID).push(role);
+                }
+            }
+        }
     }
 
     _buildIdMap() {
@@ -76,6 +102,20 @@ export class Roles {
             for (const role of this.RolesEntries) {
                 if (role && role.id !== undefined && role.id !== null) {
                     this.#_idMap.set(role.id, role);
+                }
+            }
+        }
+    }
+
+    _buildNameMap() {
+        if (!this.#_nameMap) {
+            this.#_nameMap = new Map();
+            for (const role of this.RolesDetails) {
+                if (role && role.name !== undefined && role.name !== null) {
+                    if (!this.#_nameMap.has(role.name)) {
+                        this.#_nameMap.set(role.name, []);
+                    }
+                    this.#_nameMap.get(role.name).push(role);
                 }
             }
         }
@@ -129,31 +169,34 @@ export class Roles {
     // ===== Core Data Accessors =====
     get RolesEntries() { return this.roles?.roles || []; }
     get RolesDetails() {
-        const entries = this.RolesEntries;
-        return entries.map(role => {
-            const callingArr = this.Callings ? (this.Callings.CallingIds.includes(role.calling) ? this.Callings.CallingById(role.calling) : []) : [];
-            const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
-            const subRoles = this.RawSubRolesById(role.id);
-            const subRoleNames = entries.filter(r => subRoles.includes(r.id)).map(r => r.name);
-            const allSubRoles = this.SubRolesById(role.id);
-            const allSubRoleNames = entries.filter(r => allSubRoles.includes(r.id)).map(r => r.name);
-            return {
-                id: role.id,
-                name: role.name,
-                callingID: role.calling,
-                callingName: calling.name,
-                level: calling.level,
-                callingActive: calling.active,
-                callingHasTitle: calling.hasTitle,
-                callingTitle: calling.title,
-                callingTitleOrdinal: calling.titleOrdinal,
-                subRoles: subRoles,
-                subRoleNames: subRoleNames,
-                allSubRoles: allSubRoles,
-                allSubRoleNames: allSubRoleNames,
-                active: role.active
-            };
-        });
+        if (!this.#_rolesDetails) {
+            const entries = this.RolesEntries;
+            this.#_rolesDetails = entries.map(role => {
+                const callingArr = this.Callings ? (this.Callings.CallingIds.includes(role.calling) ? this.Callings.CallingById(role.calling) : []) : [];
+                const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
+                const subRoles = this.RawSubRolesById(role.id);
+                const subRoleNames = entries.filter(r => subRoles.includes(r.id)).map(r => r.name);
+                const allSubRoles = this.SubRolesById(role.id);
+                const allSubRoleNames = entries.filter(r => allSubRoles.includes(r.id)).map(r => r.name);
+                return {
+                    id: role.id,
+                    name: role.name,
+                    callingID: role.calling,
+                    callingName: calling.name,
+                    level: calling.level,
+                    callingActive: calling.active,
+                    callingHasTitle: calling.hasTitle,
+                    callingTitle: calling.title,
+                    callingTitleOrdinal: calling.titleOrdinal,
+                    subRoles: subRoles,
+                    subRoleNames: subRoleNames,
+                    allSubRoles: allSubRoles,
+                    allSubRoleNames: allSubRoleNames,
+                    active: role.active
+                };
+            });
+        }
+        return this.#_rolesDetails;
     }
 
     // ===== SubRole Accessors =====
@@ -190,8 +233,14 @@ export class Roles {
         // RolesDetails is a mapped version, so we need to find the mapped role by id
         return this.RolesDetails.filter(role => role.id === id);
     }
-    RoleByName(name) { return this.RolesDetails.filter(role => role.name === name); }
-    RolesByCalling(callingId) { return this.RolesDetails.filter(role => role.callingID === callingId); }
+    RoleByName(name) {
+        this._buildNameMap();
+        return this.#_nameMap.has(name) ? this.#_nameMap.get(name) : [];
+    }
+    RolesByCalling(callingId) {
+        this._buildCallingIdMap();
+        return this.#_callingIdMap.has(callingId) ? this.#_callingIdMap.get(callingId) : [];
+    }
     ActiveRoleById(id) { return this.RoleById(id).filter(role => role.active === true); }
     ActiveRoleByName(name) { return this.RoleByName(name).filter(role => role.active === true); }
     ActiveRolesByCalling(callingId) { return this.RolesByCalling(callingId).filter(role => role.active === true); }
@@ -205,8 +254,14 @@ export class Roles {
         this._buildIdMap();
         return this.#_idMap.has(id);
     }
-    HasRoleByName(name) { return this.RoleByName(name).length > 0; }
-    HasRolesByCalling(callingId) { return this.RolesByCalling(callingId).length > 0; }
+    HasRoleByName(name) {
+        this._buildNameMap();
+        return this.#_nameMap.has(name) && this.#_nameMap.get(name).length > 0;
+    }
+    HasRolesByCalling(callingId) {
+        this._buildCallingIdMap();
+        return this.#_callingIdMap.has(callingId) && this.#_callingIdMap.get(callingId).length > 0;
+    }
     HasActiveRoleById(id) { return this.ActiveRoleById(id).length > 0; }
     HasActiveRoleByName(name) { return this.ActiveRoleByName(name).length > 0; }
     HasActiveRolesByCalling(callingId) { return this.ActiveRolesByCalling(callingId).length > 0; }
@@ -233,9 +288,19 @@ export class Roles {
     ActiveRoleCallingById(id) { return this.ActiveRoleById(id).map(role => role.callingID); }
     ActiveRoleCallingByName(name) { return this.ActiveRoleByName(name).map(role => role.callingID); }
 
-    // ===== Ward/Stake Filtering =====
-    get WardRoles() { return ObjectUtils.filterByProperty(this.RolesDetails, 'level', 'ward'); }
-    get StakeRoles() { return ObjectUtils.filterByProperty(this.RolesDetails, 'level', 'stake'); }
+    // ===== Ward/Stake Filtering (with caching) =====
+    get WardRoles() {
+        if (!this.#_wardRoles) {
+            this.#_wardRoles = ObjectUtils.filterByProperty(this.RolesDetails, 'level', 'ward');
+        }
+        return this.#_wardRoles;
+    }
+    get StakeRoles() {
+        if (!this.#_stakeRoles) {
+            this.#_stakeRoles = ObjectUtils.filterByProperty(this.RolesDetails, 'level', 'stake');
+        }
+        return this.#_stakeRoles;
+    }
     get ActiveWardRoles() { return ObjectUtils.filterByProperty(this.WardRoles, 'active', true); }
     get ActiveStakeRoles() { return ObjectUtils.filterByProperty(this.StakeRoles, 'active', true); }
     WardRoleById(id) { return ObjectUtils.filterBy(this.RoleById(id), 'level', 'ward'); }

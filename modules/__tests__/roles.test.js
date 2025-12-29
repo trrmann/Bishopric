@@ -1,3 +1,57 @@
+      test('RolesByCalling and HasRolesByCalling use fast path and return correct result', () => {
+        roles.roles = {
+          roles: [
+            { id: '1', name: 'Leader', calling: 'c1', active: true },
+            { id: '2', name: 'Assistant', calling: 'c2', active: false },
+            { id: '3', name: 'Stake Clerk', calling: 'c1', active: true }
+          ]
+        };
+        // First access builds the map
+        expect(roles.RolesByCalling('c1')).toEqual([
+          expect.objectContaining({ id: '1', name: 'Leader', calling: 'c1', active: true }),
+          expect.objectContaining({ id: '3', name: 'Stake Clerk', calling: 'c1', active: true })
+        ]);
+        // Second access should use the map (fast path)
+        expect(roles.RolesByCalling('c2')).toEqual([
+          expect.objectContaining({ id: '2', name: 'Assistant', calling: 'c2', active: false })
+        ]);
+        // Non-existent callingId
+        expect(roles.RolesByCalling('c99')).toEqual([]);
+        // Changing roles invalidates the map
+        roles.roles = { roles: [{ id: '4', name: 'Clerk', calling: 'c3', active: true }] };
+        expect(roles.RolesByCalling('c3')).toEqual([
+          expect.objectContaining({ id: '4', name: 'Clerk', calling: 'c3', active: true })
+        ]);
+        expect(roles.HasRolesByCalling('c3')).toBe(true);
+        expect(roles.HasRolesByCalling('c1')).toBe(false);
+      });
+    test('RoleByName and HasRoleByName use fast path and return correct result', () => {
+      roles.roles = {
+        roles: [
+          { id: '1', name: 'Leader', calling: 'c1', active: true },
+          { id: '2', name: 'Assistant', calling: 'c2', active: false },
+          { id: '3', name: 'Leader', calling: 'c3', active: true }
+        ]
+      };
+      // First access builds the map
+      expect(roles.RoleByName('Leader')).toEqual([
+        expect.objectContaining({ id: '1', name: 'Leader', calling: 'c1', active: true }),
+        expect.objectContaining({ id: '3', name: 'Leader', calling: 'c3', active: true })
+      ]);
+      // Second access should use the map (fast path)
+      expect(roles.RoleByName('Assistant')).toEqual([
+        expect.objectContaining({ id: '2', name: 'Assistant', calling: 'c2', active: false })
+      ]);
+      // Non-existent name
+      expect(roles.RoleByName('Clerk')).toEqual([]);
+      // Changing roles invalidates the map
+      roles.roles = { roles: [{ id: '4', name: 'Clerk', calling: 'c4', active: true }] };
+      expect(roles.RoleByName('Clerk')).toEqual([
+        expect.objectContaining({ id: '4', name: 'Clerk', calling: 'c4', active: true })
+      ]);
+      expect(roles.HasRoleByName('Clerk')).toBe(true);
+      expect(roles.HasRoleByName('Leader')).toBe(false);
+    });
   test('RoleEntryById and HasRoleById use fast path and return correct result', () => {
     roles.roles = {
       roles: [
