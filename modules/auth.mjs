@@ -24,13 +24,15 @@ export class Auth {
         this.currentUser = null;
     }
     static async Factory(storageObject) {
-        const configuration = await Configuration.Factory(storageObject);
-        const auth = new Auth(configuration);
+        // Use Configuration.Fetch to leverage hierarchical caching
+        const configInstance = await Configuration.Factory(storageObject);
+        await configInstance.Fetch();
+        const auth = new Auth(configInstance);
         auth.CreateLoginModalWithSpecs();
         (async function() {
             try {
                 // Always reload users for login page
-                const usersObj = await Users.Factory(configuration);
+                const usersObj = await Users.Factory(configInstance);
                 auth.allUsers = await usersObj.UsersDetails();
                 auth.PopulateEmailList(auth.emailListID);
             } catch (error) {
