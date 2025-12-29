@@ -145,33 +145,86 @@ export class Org {
     StakeBranches(stakeUnitNumber) {
         return this.StakeUnits(stakeUnitNumber).filter(unit => unit.type === "branch");
     }
-    UnitByNumber(unitNumber) {
-        return this.Units.find(unit => unit.unitNumber === unitNumber);
-    }
-    WardByNumber(unitNumber) {
-        return this.Wards.find(unit => unit.unitNumber === unitNumber);
-    }
-    BranchByNumber(unitNumber) {
-        return this.Branches.find(unit => unit.unitNumber === unitNumber);
-    }
-    UnitByName(unitName) {
-        return this.Units.find(unit => unit.name === unitName);
-    }
-
-    // ===== Existence Accessors =====
-    get HasStakes() { return this.Stakes.length > 0; }
-    get HasUnits() { return this.Units.length > 0; }
-    get HasWards() { return this.Wards.length > 0; }
-    get HasBranches() { return this.Branches.length > 0; }
-
-    // ===== Existence Lookups =====
     /**
-     * Checks if a stake exists by unit number.
+     * Finds a stake by unit number.
      * @param {string|number} unitNumber - Stake unit number.
-     * @returns {boolean}
+     * @returns {object|undefined} Stake object or undefined.
      */
-    HasStakeByUnitNumber(unitNumber) { return !!this.StakeByUnitNumber(unitNumber); }
+    StakeByUnitNumber(unitNumber) {
+        /*...*/
+    }
 
+    /**
+     * Finds a stake by name.
+     * @param {string} stakeName - Stake name.
+     * @returns {object|undefined} Stake object or undefined.
+     */
+    StakeByName(stakeName) {
+        /*...*/
+    }
+
+    /**
+     * Gets all units for a stake by unit number.
+     * @param {string|number} stakeUnitNumber - Stake unit number.
+     * @returns {Array<object>} Array of unit objects.
+     */
+    StakeUnits(stakeUnitNumber) {
+        /*...*/
+    }
+
+    /**
+     * Gets all wards for a stake by unit number.
+     * @param {string|number} stakeUnitNumber - Stake unit number.
+     * @returns {Array<object>} Array of ward unit objects.
+     */
+    StakeWards(stakeUnitNumber) {
+        /*...*/
+    }
+
+    /**
+     * Gets all branches for a stake by unit number.
+     * @param {string|number} stakeUnitNumber - Stake unit number.
+     * @returns {Array<object>} Array of branch unit objects.
+     */
+    StakeBranches(stakeUnitNumber) {
+        /*...*/
+    }
+
+    /**
+     * Finds a unit by number.
+     * @param {string|number} unitNumber - Unit number.
+     * @returns {object|undefined} Unit object or undefined.
+     */
+    UnitByNumber(unitNumber) {
+        /*...*/
+    }
+
+    /**
+     * Finds a ward by number.
+     * @param {string|number} unitNumber - Ward unit number.
+     * @returns {object|undefined} Ward object or undefined.
+     */
+    WardByNumber(unitNumber) {
+        /*...*/
+    }
+
+    /**
+     * Finds a branch by number.
+     * @param {string|number} unitNumber - Branch unit number.
+     * @returns {object|undefined} Branch object or undefined.
+     */
+    BranchByNumber(unitNumber) {
+        /*...*/
+    }
+
+    /**
+     * Finds a unit by name.
+     * @param {string} unitName - Unit name.
+     * @returns {object|undefined} Unit object or undefined.
+     */
+    UnitByName(unitName) {
+        /*...*/
+    }
     /**
      * Checks if a stake exists by name.
      * @param {string} stakeName - Stake name.
