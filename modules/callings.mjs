@@ -1,6 +1,9 @@
 import { createStorageConfig, ObjectUtils } from "./objectUtils.mjs";
 
 export class Callings {
+    // ===== Private Fast Lookup Maps =====
+    #_idMap = null;
+    #_nameMap = null;
 
     // ===== Instance Accessors =====
     get Storage() { return this.storage; }
@@ -9,9 +12,48 @@ export class Callings {
     constructor(configuration) {
         this.storage = configuration._storageObj;
         this.callings = undefined;
+        this.#_idMap = null;
     }
 
-    // ===== Static Methods =====
+    // ===== Internal Map Management =====
+
+    _invalidateMaps() {
+        this.#_idMap = null;
+        this.#_nameMap = null;
+    }
+
+    _buildIdMap() {
+        if (!this.#_idMap) {
+            this.#_idMap = new Map();
+            for (const calling of this.CallingsDetails) {
+                if (calling && calling.id !== undefined && calling.id !== null) {
+                    this.#_idMap.set(calling.id, calling);
+                }
+            }
+        }
+    }
+
+    _buildNameMap() {
+        if (!this.#_nameMap) {
+            this.#_nameMap = new Map();
+            for (const calling of this.CallingsDetails) {
+                if (calling && calling.name !== undefined && calling.name !== null) {
+                    if (!this.#_nameMap.has(calling.name)) {
+                        this.#_nameMap.set(calling.name, []);
+                    }
+                    this.#_nameMap.get(calling.name).push(calling);
+                }
+            }
+        }
+    }
+
+    set callings(val) {
+        this._callings = val;
+        this._invalidateMaps();
+    }
+    get callings() {
+        return this._callings;
+    }
     static CopyFromJSON(dataJSON) {
         const callings = new Callings({ _storageObj: dataJSON._storageObj });
         callings.storage = dataJSON._storageObj;
@@ -125,17 +167,62 @@ export class Callings {
     get CallingNames() { return this.CallingsDetails.map(calling => calling.name); }
 
     // ===== ID/Name Lookups =====
-    CallingById(id) { return ObjectUtils.filterBy(this.CallingsDetails, 'id', id); }
-    CallingByName(name) { return ObjectUtils.filterBy(this.CallingsDetails, 'name', name); }
+    CallingById(id) {
+        this._buildIdMap();
+        const result = this.#_idMap.has(id) ? [this.#_idMap.get(id)] : [];
+        return result;
+    }
+    CallingByName(name) {
+        this._buildNameMap();
+        return this.#_nameMap.has(name) ? this.#_nameMap.get(name) : [];
+    }
     ActiveCallingById(id) { return ObjectUtils.filterBy(this.CallingById(id), 'active', true); }
     ActiveCallingByName(name) { return ObjectUtils.filterBy(this.CallingByName(name), 'active', true); }
-    WardCallingById(id) { return this.CallingById(id).filter(calling => calling.level === "ward"); }
-    WardCallingByName(name) { return this.CallingByName(name).filter(calling => calling.level === "ward"); }
-    ActiveWardCallingById(id) { return this.ActiveCallingById(id).filter(calling => calling.level === "ward"); }
+    WardCallingById(id) {
+        this._buildIdMap();
+        const calling = this.#_idMap.get(id);
+        if (calling && calling.level === "ward") {
+            return [calling];
+        }
+        return [];
+    }
+    WardCallingByName(name) {
+        this._buildNameMap();
+        const arr = this.#_nameMap.has(name) ? this.#_nameMap.get(name) : [];
+        return arr.filter(calling => calling.level === "ward");
+    }
+    ActiveWardCallingById(id) {
+        // Combine filters in a single pass for efficiency
+        this._buildIdMap();
+        const calling = this.#_idMap.get(id);
+        if (calling && calling.active === true && calling.level === "ward") {
+            return [calling];
+        }
+        return [];
+    }
     ActiveWardCallingByName(name) { return this.ActiveCallingById(name).filter(calling => calling.level === "ward"); }
-    StakeCallingById(id) { return this.CallingById(id).filter(calling => calling.level === "stake"); }
-    StakeCallingByName(name) { return this.CallingByName(name).filter(calling => calling.level === "stake"); }
-    ActiveStakeCallingById(id) { return this.ActiveStakeCallingById(id).filter(calling => calling.level === "stake"); }
+    StakeCallingById(id) {
+        this._buildIdMap();
+        const calling = this.#_idMap.get(id);
+        if (calling && calling.level === "stake") {
+            return [calling];
+        }
+        return [];
+    }
+    StakeCallingByName(name) {
+        this._buildNameMap();
+        const arr = this.#_nameMap.has(name) ? this.#_nameMap.get(name) : [];
+        return arr.filter(calling => calling.level === "stake");
+    }
+    ActiveStakeCallingById(id) {
+        // Combine filters in a single pass for efficiency
+        this._buildIdMap();
+        const calling = this.#_idMap.get(id);
+        if (calling && calling.active === true && calling.level === "stake") {
+            return [calling];
+        }
+        return [];
+    }
     ActiveStakeCallingByName(name) { return this.ActiveStakeCallingById(name).filter(calling => calling.level === "stake"); }
 
     // ===== Existence Accessors =====
@@ -147,8 +234,14 @@ export class Callings {
     get HasActiveStakeCallings() { return ObjectUtils.hasAny(this.ActiveStakeCallings); }
 
     // ===== Existence Lookups =====
-    HasCallingById(id) { return this.CallingById(id)?.length > 0; }
-    HasCallingByName(name) { return this.CallingByName(name)?.length > 0; }
+    HasCallingById(id) {
+        this._buildIdMap();
+        return this.#_idMap.has(id);
+    }
+    HasCallingByName(name) {
+        this._buildNameMap();
+        return this.#_nameMap.has(name) && this.#_nameMap.get(name).length > 0;
+    }
     HasActiveCallingById(id) { return this.ActiveCallingById(id)?.length > 0; }
     HasActiveCallingByName(name) { return this.ActiveCallingByName(name)?.length > 0; }
     HasWardCallingById(id) { return this.WardCallingById(id)?.length > 0; }
