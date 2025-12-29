@@ -103,6 +103,14 @@ export class Configuration {
      * @param {string} separator - The separator between keys.
      * @returns {Object} The flattened object.
      */
+    /**
+     * Flattens a nested object into a single-level object with dot-separated keys.
+     * Delegates to ObjectUtils.flattenObject.
+     * @param {Object} obj - The object to flatten.
+     * @param {string} [parentKey] - The prefix for the keys (used for recursion).
+     * @param {string} [separator] - The separator between keys.
+     * @returns {Object} The flattened object.
+     */
     FlattenObject(obj, parentKey = '', separator = '.') {
         return ObjectUtils.flattenObject(obj, parentKey, separator);
     }
