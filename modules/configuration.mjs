@@ -54,7 +54,18 @@ export class Configuration {
 
     // ===== Data Fetching =====
     async Fetch() {
-        let configObj = await this._storageObj.Get(Configuration.ConfigFilename, Configuration.StorageConfig);
+        // Try to get from cache first
+        let configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: Configuration.ConfigCacheExpireMS });
+        if (!configObj) {
+            // If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+            configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null });
+            // If found, set in cache for future use
+            if (configObj) {
+                if (this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
+                    this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
+                }
+            }
+        }
         this.configuration = configObj ? configObj : undefined;
     }
 
