@@ -193,8 +193,15 @@ export class Users {
 
         // Cache miss - recalculate
         const membersData = await this.members.MembersDetails();
+        
+        // Create Map for O(1) member lookup instead of O(n) array.find()
+        const memberMap = new Map();
+        for (const member of membersData) {
+            memberMap.set(member.memberNumber, member);
+        }
+        
         const result = this.UserEntries.map(user => {
-            const member = membersData.find(member => member.memberNumber === user.memberNumber);
+            const member = memberMap.get(user.memberNumber);
             
             // Fast path: if member found, use member data directly; otherwise use defaults
             if (member) {
