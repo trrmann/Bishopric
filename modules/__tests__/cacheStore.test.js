@@ -57,6 +57,11 @@ describe('CacheStore', () => {
     test('Has returns true for existing key', () => {
       cache.Set('bar', 'baz', 1000);
       expect(cache.Has('bar')).toBe(true);
+      // Test the new has(key) alias
+      expect(cache.has('bar')).toBe(true);
+      cache.Delete('bar');
+      expect(cache.has('bar')).toBe(false);
+      expect(cache.Has('bar')).toBe(false);
     });
     test('Delete removes key', () => {
       cache.Set('baz', 42, 1000);

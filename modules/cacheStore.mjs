@@ -3,11 +3,11 @@
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
-    // ===== Instance Accessors =====
-    get Store() { return this._store; }
-    get CachePruneTimer() { return this._cachePruneTimer; }
-    get CachePruneIntervalMs() { return this._cachePruneIntervalMs; }
-    get Size() { return this._store.size; }
+    // Ergonomic alias for Has(key), matching Map API
+    has(key) {
+        return this.Has(key);
+    }
+
 
     // PascalCase alias for values() to match test expectation
     Values() {
