@@ -108,10 +108,10 @@ export function createStorageConfig({
 export class ObjectUtils {
     /**
      * Flattens a nested object into a single-level object with dot-separated keys.
-     * @param {Object} obj - The object to flatten.
-     * @param {string} parentKey - The prefix for the keys (used for recursion).
-     * @param {string} separator - The separator between keys.
-     * @returns {Object} The flattened object.
+     * @param {object} obj - The object to flatten.
+     * @param {string} [parentKey] - The prefix for the keys (used for recursion).
+     * @param {string} [separator='.'] - The separator between keys.
+     * @returns {object} The flattened object.
      */
     static flattenObject(obj, parentKey = '', separator = '.') {
         const result = {};
@@ -131,21 +131,21 @@ export class ObjectUtils {
 
     /**
      * Filters an array of objects by a property and value.
-     * @param {Array} array
-     * @param {string} property
-     * @param {*} value
-     * @returns {Array}
+     * @param {Array<object>} array - The array to filter.
+     * @param {string} property - The property name to match.
+     * @param {*} value - The value to match.
+     * @returns {Array<object>} Filtered array of objects.
      */
     static filterByProperty(array, property, value) {
         return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
     }
 
     /**
-     * Filters an array of objects by a property and value (alias for filterByProperty).
-     * @param {Array} array
-     * @param {string} property
-     * @param {*} value
-     * @returns {Array}
+     * Alias for filterByProperty. Filters an array of objects by a property and value.
+     * @param {Array<object>} array - The array to filter.
+     * @param {string} property - The property name to match.
+     * @param {*} value - The value to match.
+     * @returns {Array<object>} Filtered array of objects.
      */
     static filterBy(array, property, value) {
         return ObjectUtils.filterByProperty(array, property, value);
@@ -153,8 +153,8 @@ export class ObjectUtils {
 
     /**
      * Checks if an array has any elements.
-     * @param {Array} array
-     * @returns {boolean}
+     * @param {Array} array - The array to check.
+     * @returns {boolean} True if array has elements, false otherwise.
      */
     static hasAny(array) {
         return Array.isArray(array) && array.length > 0;
