@@ -1,3 +1,4 @@
 # Ignore Neon environment file
 neon.env
 data/secrets.json
+node_modules/
