@@ -23,6 +23,7 @@ export class CacheStore {
     static get DefaultCacheValueExpireMS() { return 900000; }
 
     static CopyFromJSON(dataJSON) {
+        if (!dataJSON) return null;
         const cache = new CacheStore();
         cache._store = new Map(dataJSON._store);
         cache._cachePruneIntervalMs = dataJSON._cachePruneIntervalMs;
@@ -78,16 +79,16 @@ export class CacheStore {
             return false;
         }
     }
-    Get(key) {
+    Get(key, defaultValue = undefined) {
         if (this._store.has(key)) {
             const entry = this._store.get(key);
             if (entry.expires && Date.now() > entry.expires) {
                 this.Delete(key);
-                return undefined;
+                return defaultValue;
             }
             return entry;
         } else {
-            return undefined;
+            return defaultValue;
         }
     }
     Clear() {
