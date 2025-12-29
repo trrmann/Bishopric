@@ -84,26 +84,26 @@ export class Storage {
         try {
             fileList = await storage._googleDrive.listFiles();
         } catch(error) {
-            console.log(error);
+            console.warn('Google Drive listFiles error:', error);
         }
         const myData = { foo: "bar", baz: 123 };
         let uploadResult = null;
         try {
             uploadResult = await storage._googleDrive.uploadFile("mydata.json", JSON.stringify(myData), "application/json");
         } catch(error) {
-            console.log(error);
+            console.warn('Google Drive uploadFile error:', error);
         }
         try {
             fileList = await storage._googleDrive.listFiles();
         } catch(error) {
-            console.log(error);
+            console.warn('Google Drive listFiles error:', error);
         }
         try {
             // Use uploadResult.id for downloadFile
             const fileDownload = await storage._googleDrive.downloadFile(uploadResult.id);
-            console.log(fileDownload);
+            // Optionally handle fileDownload result here if needed
         } catch(error) {
-            console.log(error);
+            console.warn('Google Drive downloadFile error:', error);
         }
         try {
             for (const file of fileList) {
@@ -111,15 +111,15 @@ export class Storage {
                     file.deleteResult = await storage._googleDrive.deleteFile(file.id);
                 }
             }
-            console.log(await fileList);
+            // Optionally handle fileList result here if needed
         } catch(error) {
-            console.log(error);
+            console.warn('Google Drive deleteFile error:', error);
         }
         try {
             fileList = await storage._googleDrive.listFiles();
-            console.log(fileList);
+            // Optionally handle fileList result here if needed
         } catch(error) {
-            console.log(error);
+            console.warn('Google Drive listFiles error:', error);
         }
     }
     RegisterKey(key, expire) {
