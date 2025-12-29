@@ -63,11 +63,27 @@ export class Callings {
                 this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
             }
         }
-        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        // 3. If still not found, try local storage
         if (!callingsObj) {
-            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
-            // If found, set in session storage and cache for future use
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Callings.CallingsLocalExpireMS });
+            // If found in local, set in session and cache for faster access next time
             if (callingsObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
+                }
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
+                }
+            }
+        }
+        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!callingsObj) {
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
+            // If found, set in local, session, and cache for future use
+            if (callingsObj) {
+                if (this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
+                    this.Storage.LocalStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsLocalExpireMS);
+                }
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
                 }
