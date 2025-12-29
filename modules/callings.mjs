@@ -53,7 +53,18 @@ export class Callings {
         if (!this.Storage) {
             throw new Error("Storage is not available in Callings. Ensure configuration is properly initialized.");
         }
-        let callingsObj = await this.Storage.Get(Callings.CallingsFilename, Callings.StorageConfig);
+        // Try to get from cache first
+        let callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: Callings.CallingsCacheExpireMS });
+        if (!callingsObj) {
+            // If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null });
+            // If found, set in cache for future use
+            if (callingsObj) {
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
+                }
+            }
+        }
         this.callings = callingsObj ? callingsObj : undefined;
     }
 
