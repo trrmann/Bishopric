@@ -69,12 +69,25 @@ export class Roles {
         }
         // 1. Try to get from cache
         let rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: Roles.RolesCacheExpireMS });
-        // 2. If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+        // 2. If not found, try session storage
         if (!rolesObj) {
-            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null });
-            // If found, set in cache for future use
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: Roles.RolesSessionExpireMS });
+            // If found in session, set in cache for faster access next time
             if (rolesObj && this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
                 this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
+            }
+        }
+        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!rolesObj) {
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
+            // If found, set in session storage and cache for future use
+            if (rolesObj) {
+                if (this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
+                    this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
+                }
+                if (this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
+                    this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
+                }
             }
         }
         this.roles = rolesObj ? rolesObj : undefined;
