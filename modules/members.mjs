@@ -86,12 +86,25 @@ export class Members {
         }
         // 1. Try to get from cache
         let membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: Members.MembersCacheExpireMS });
-        // 2. If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+        // 2. If not found, try session storage
         if (!membersObj) {
-            membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: null });
-            // If found, set in cache for future use
+            membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: null, sessionTtlMs: Members.MembersSessionExpireMS });
+            // If found in session, set in cache for faster access next time
             if (membersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Members.MembersFilename, membersObj, Members.MembersCacheExpireMS);
+            }
+        }
+        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!membersObj) {
+            membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
+            // If found, set in session storage and cache for future use
+            if (membersObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Members.MembersFilename, membersObj, Members.MembersSessionExpireMS);
+                }
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Members.MembersFilename, membersObj, Members.MembersCacheExpireMS);
+                }
             }
         }
         this.members = membersObj ? membersObj : undefined;
