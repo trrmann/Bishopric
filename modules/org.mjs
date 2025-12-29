@@ -51,7 +51,18 @@ export class Org {
 
     // ===== Data Fetching =====
     async Fetch() {
-        let orgObj = await this.Storage.Get(Org.OrgFilename, Org.StorageConfig);
+        // Try to get from cache first
+        let orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: Org.OrgCacheExpireMS });
+        if (!orgObj) {
+            // If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null });
+            // If found, set in cache for future use
+            if (orgObj) {
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
+                }
+            }
+        }
         this.organization = orgObj ? orgObj : undefined;
     }
 
