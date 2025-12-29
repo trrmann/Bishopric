@@ -140,7 +140,7 @@ async function accessSecret() {
     name: 'projects/PROJECT_ID/secrets/SECRET_ID/versions/latest',
   });
   const payload = version.payload.data.toString();
-  console.log(`Secret: ${payload}`);
+    // console.log(`Secret: ${payload}`); // Removed for production cleanliness
 }
 accessSecret();
     /**/
