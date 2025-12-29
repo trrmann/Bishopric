@@ -100,6 +100,8 @@ export class Site {
         this._modalBody = null;
         // Debounce timer for resize handler
         this._resizeTimer = null;
+        // Cache filter elements for performance
+        this._memberSearchInput = null;
     }
 
     // Debounce utility for resize events
@@ -129,6 +131,8 @@ export class Site {
             this._modal = document.getElementById('modal');
             this._modalTitle = document.getElementById('modalTitle');
             this._modalBody = document.getElementById('modalBody');
+            // Cache filter elements for performance
+            this._memberSearchInput = document.getElementById('memberSearch');
             if (this._toggleBtn && this._navBar) {
                 this._updateToggleVisibility();
                 // Debounce resize handler to improve performance (150ms delay)
@@ -233,9 +237,20 @@ export class Site {
     }
 
     filterMembers() {
-        const searchInput = document.getElementById('memberSearch');
+        // Use cached search input if available, otherwise query DOM
+        const searchInput = this._memberSearchInput || document.getElementById('memberSearch');
+        if (!searchInput) return;
+        
         const searchTerm = searchInput.value.toLowerCase();
         const tableRows = document.querySelectorAll('#membersBody tr');
+        
+        // Early exit if no search term - show all rows
+        if (!searchTerm) {
+            tableRows.forEach(row => { row.style.display = ''; });
+            return;
+        }
+        
+        // Filter rows by search term
         tableRows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(searchTerm) ? '' : 'none';

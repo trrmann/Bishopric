@@ -41,6 +41,7 @@ describe('Site Class', () => {
       expect(site._modalTitle).toBeNull();
       expect(site._modalBody).toBeNull();
       expect(site._resizeTimer).toBeNull();
+      expect(site._memberSearchInput).toBeNull();
     });
   });
 
@@ -94,6 +95,22 @@ describe('Site Class', () => {
       global.document.querySelectorAll = jest.fn(() => [{ textContent: 'foo', style: {} }, { textContent: 'bar', style: {} }]);
       site.filterMembers();
       expect(global.document.querySelectorAll).toHaveBeenCalledWith('#membersBody tr');
+    });
+    test('filterMembers uses cached search input when available', () => {
+      const mockSearchInput = { value: 'test' };
+      site._memberSearchInput = mockSearchInput;
+      global.document.querySelectorAll = jest.fn(() => [{ textContent: 'test value', style: {} }]);
+      site.filterMembers();
+      expect(global.document.getElementById).not.toHaveBeenCalledWith('memberSearch');
+    });
+    test('filterMembers shows all rows when search term is empty', () => {
+      const row1 = { textContent: 'foo', style: { display: 'none' } };
+      const row2 = { textContent: 'bar', style: { display: 'none' } };
+      site._memberSearchInput = { value: '' };
+      global.document.querySelectorAll = jest.fn(() => [row1, row2]);
+      site.filterMembers();
+      expect(row1.style.display).toBe('');
+      expect(row2.style.display).toBe('');
     });
   });
 
