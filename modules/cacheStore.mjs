@@ -64,7 +64,7 @@ export class CacheStore {
         return this._store.delete(key);
     }
     Has(key) {
-        if(this.Keys().includes(key)) {
+        if (this._store.has(key)) {
             const expires = this._store.get(key).expires;
             if (expires && Date.now() > expires) {
                 this.Delete(key);
