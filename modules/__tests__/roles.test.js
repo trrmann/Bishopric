@@ -1,28 +1,3 @@
-  test('RoleEntryById and HasRoleById use fast path and return correct result', () => {
-    roles.roles = {
-      roles: [
-        { id: '1', name: 'Leader', calling: 'c1', active: true },
-        { id: '2', name: 'Assistant', calling: 'c2', active: false }
-      ]
-    };
-    // First access builds the map
-    expect(roles.RoleEntryById('1')).toEqual([
-      { id: '1', name: 'Leader', calling: 'c1', active: true }
-    ]);
-    // Second access should use the map (fast path)
-    expect(roles.RoleEntryById('2')).toEqual([
-      { id: '2', name: 'Assistant', calling: 'c2', active: false }
-    ]);
-    // Non-existent id
-    expect(roles.RoleEntryById('999')).toEqual([]);
-    // Changing roles invalidates the map
-    roles.roles = { roles: [{ id: '3', name: 'Clerk', calling: 'c3', active: true }] };
-    expect(roles.RoleEntryById('3')).toEqual([
-      { id: '3', name: 'Clerk', calling: 'c3', active: true }
-    ]);
-    expect(roles.HasRoleById('3')).toBe(true);
-    expect(roles.HasRoleById('1')).toBe(false);
-  });
 import { Roles } from '../roles.mjs';
 import { Callings } from '../callings.mjs';
 import { ObjectUtils } from '../objectUtils.mjs';
@@ -78,10 +53,77 @@ describe('Roles Class', () => {
       expect(roles.SubRolesById('1')).toContain('2');
       expect(roles.SubRolesById('2')).toEqual([]);
     });
+    test('SubRolesById handles complex hierarchies efficiently', () => {
+      // Test with a more complex hierarchy to ensure Set-based deduplication works
+      roles.roles = {
+        roles: [
+          { id: '100', name: 'Top', calling: 'c1', active: true, subRoles: ['101', '102'] },
+          { id: '101', name: 'Mid1', calling: 'c2', active: true, subRoles: ['103'] },
+          { id: '102', name: 'Mid2', calling: 'c2', active: true, subRoles: ['103', '104'] },
+          { id: '103', name: 'Bottom1', calling: 'c3', active: true, subRoles: [] },
+          { id: '104', name: 'Bottom2', calling: 'c3', active: true, subRoles: [] }
+        ]
+      };
+      const subRoles = roles.SubRolesById('100');
+      // Should include all descendants: 101, 102, 103, 104
+      expect(subRoles).toHaveLength(4);
+      expect(subRoles).toContain('101');
+      expect(subRoles).toContain('102');
+      expect(subRoles).toContain('103');
+      expect(subRoles).toContain('104');
+      // 103 appears twice in the tree but should only be in result once (Set deduplication)
+      const roleId103Count = subRoles.filter(id => id === '103').length;
+      expect(roleId103Count).toBe(1);
+    });
     test('HasRoleById and HasRoleByName', () => {
       expect(roles.HasRoleById('1')).toBe(true);
       expect(roles.HasRoleByName('Leader')).toBe(true);
       expect(roles.HasRoleById('99')).toBe(false);
+    });
+    test('RoleEntryById and HasRoleById use fast path and return correct result', () => {
+      roles.roles = {
+        roles: [
+          { id: '1', name: 'Leader', calling: 'c1', active: true },
+          { id: '2', name: 'Assistant', calling: 'c2', active: false }
+        ]
+      };
+      // First access builds the map
+      expect(roles.RoleEntryById('1')).toEqual([
+        { id: '1', name: 'Leader', calling: 'c1', active: true }
+      ]);
+      // Second access should use the map (fast path)
+      expect(roles.RoleEntryById('2')).toEqual([
+        { id: '2', name: 'Assistant', calling: 'c2', active: false }
+      ]);
+      // Non-existent id
+      expect(roles.RoleEntryById('999')).toEqual([]);
+      // Changing roles invalidates the map
+      roles.roles = { roles: [{ id: '3', name: 'Clerk', calling: 'c3', active: true }] };
+      expect(roles.RoleEntryById('3')).toEqual([
+        { id: '3', name: 'Clerk', calling: 'c3', active: true }
+      ]);
+      expect(roles.HasRoleById('3')).toBe(true);
+      expect(roles.HasRoleById('1')).toBe(false);
+    });
+    test('RolesDetails caching works correctly', () => {
+      // First access should compute and cache
+      const details1 = roles.RolesDetails;
+      expect(details1).toHaveLength(3);
+      
+      // Second access should return the same cached instance
+      const details2 = roles.RolesDetails;
+      expect(details2).toBe(details1); // Same reference
+      
+      // Changing roles should invalidate cache
+      roles.roles = {
+        roles: [
+          { id: '10', name: 'New Role', calling: 'c1', active: true, subRoles: [] }
+        ]
+      };
+      const details3 = roles.RolesDetails;
+      expect(details3).not.toBe(details1); // Different reference
+      expect(details3).toHaveLength(1);
+      expect(details3[0].name).toBe('New Role');
     });
   });
 
@@ -104,6 +146,46 @@ describe('Roles Class', () => {
     test('RoleNameById and RoleIdByName', () => {
       expect(roles.RoleNameById('1')).toContain('Leader');
       expect(roles.RoleIdByName('Leader')).toContain('1');
+    });
+    test('RoleByName and HasRoleByName use fast path', () => {
+      // Test that name map is used for lookups
+      expect(roles.RoleByName('Leader')).toHaveLength(1);
+      expect(roles.RoleByName('Leader')[0].id).toBe('1');
+      expect(roles.HasRoleByName('Leader')).toBe(true);
+      expect(roles.HasRoleByName('NonExistent')).toBe(false);
+      
+      // Changing roles should invalidate the name map
+      roles.roles = {
+        roles: [
+          { id: '20', name: 'New Leader', calling: 'c1', active: true, subRoles: [] }
+        ]
+      };
+      expect(roles.RoleByName('New Leader')).toHaveLength(1);
+      expect(roles.RoleByName('New Leader')[0].id).toBe('20');
+      expect(roles.HasRoleByName('New Leader')).toBe(true);
+      expect(roles.HasRoleByName('Leader')).toBe(false);
+    });
+    test('RolesByCalling and HasRolesByCalling use fast path', () => {
+      // Test that calling map is used for lookups
+      const rolesWithC1 = roles.RolesByCalling('c1');
+      expect(rolesWithC1).toHaveLength(1);
+      expect(rolesWithC1[0].name).toBe('Leader');
+      expect(roles.HasRolesByCalling('c1')).toBe(true);
+      expect(roles.HasRolesByCalling('c999')).toBe(false);
+      
+      // Test multiple roles with same calling
+      roles.roles = {
+        roles: [
+          { id: '30', name: 'Role A', calling: 'c100', active: true, subRoles: [] },
+          { id: '31', name: 'Role B', calling: 'c100', active: true, subRoles: [] },
+          { id: '32', name: 'Role C', calling: 'c200', active: true, subRoles: [] }
+        ]
+      };
+      const rolesWithC100 = roles.RolesByCalling('c100');
+      expect(rolesWithC100).toHaveLength(2);
+      expect(roles.HasRolesByCalling('c100')).toBe(true);
+      expect(roles.HasRolesByCalling('c200')).toBe(true);
+      expect(roles.HasRolesByCalling('c1')).toBe(false);
     });
   });
 });
