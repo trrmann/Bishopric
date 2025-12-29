@@ -127,18 +127,25 @@ export class Users {
         if (!this.Storage) {
             throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
         }
+        
+        // Pre-create storage configs to avoid repeated object spreading
+        const baseConfig = Users.StorageConfig;
+        const cacheConfig = { ...baseConfig, cacheTtlMs: Users.UsersCacheExpireMS };
+        const sessionConfig = { ...baseConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS };
+        const localConfig = { ...baseConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS };
+        
         // 1. Try to get from cache
-        let usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: Users.UsersCacheExpireMS });
+        let usersObj = await this.Storage.Get(Users.UsersFilename, cacheConfig);
         // 2. If not found, try session storage
         if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS });
+            usersObj = await this.Storage.Get(Users.UsersFilename, sessionConfig);
             if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
             }
         }
         // 3. If still not found, try local storage
         if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
+            usersObj = await this.Storage.Get(Users.UsersFilename, localConfig);
             if (usersObj) {
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
@@ -150,7 +157,7 @@ export class Users {
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig });
+            usersObj = await this.Storage.Get(Users.UsersFilename, baseConfig);
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
         if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
