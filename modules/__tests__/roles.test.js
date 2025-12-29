@@ -125,5 +125,23 @@ describe('Roles Class', () => {
       expect(roles.RoleNameById('1')).toContain('Leader');
       expect(roles.RoleIdByName('Leader')).toContain('1');
     });
+    test('RoleByName and HasRoleByName use fast path', () => {
+      // Test that name map is used for lookups
+      expect(roles.RoleByName('Leader')).toHaveLength(1);
+      expect(roles.RoleByName('Leader')[0].id).toBe('1');
+      expect(roles.HasRoleByName('Leader')).toBe(true);
+      expect(roles.HasRoleByName('NonExistent')).toBe(false);
+      
+      // Changing roles should invalidate the name map
+      roles.roles = {
+        roles: [
+          { id: '20', name: 'New Leader', calling: 'c1', active: true, subRoles: [] }
+        ]
+      };
+      expect(roles.RoleByName('New Leader')).toHaveLength(1);
+      expect(roles.RoleByName('New Leader')[0].id).toBe('20');
+      expect(roles.HasRoleByName('New Leader')).toBe(true);
+      expect(roles.HasRoleByName('Leader')).toBe(false);
+    });
   });
 });
