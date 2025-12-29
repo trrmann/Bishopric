@@ -9,6 +9,16 @@ export class CacheStore {
     get CachePruneIntervalMs() { return this._cachePruneIntervalMs; }
     get Size() { return this._store.size; }
 
+    // PascalCase alias for values() to match test expectation
+    Values() {
+        return this.values();
+    }
+    // ===== Instance Accessors =====
+    get Store() { return this._store; }
+    get CachePruneTimer() { return this._cachePruneTimer; }
+    get CachePruneIntervalMs() { return this._cachePruneIntervalMs; }
+    get Size() { return this._store.size; }
+
     // ===== Constructor =====
     constructor(cachePruneIntervalMs = CacheStore.DefaultCachePruneIntervalMS) {
         this._store = new Map();
@@ -29,6 +39,15 @@ export class CacheStore {
         cache._store = new Map(dataJSON._store);
         cache._cachePruneIntervalMs = dataJSON._cachePruneIntervalMs;
         // Timer is not restored from JSON
+        return cache;
+    }
+    static FromJSON(obj) {
+        const cache = new CacheStore();
+        if (obj && typeof obj === 'object') {
+            for (const [key, value] of Object.entries(obj)) {
+                cache.Set(key, value);
+            }
+        }
         return cache;
     }
 
