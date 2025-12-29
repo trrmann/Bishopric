@@ -1,3 +1,4 @@
+// ...existing code...
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
@@ -124,6 +125,17 @@ export class CacheStore {
         return count;
     }
 
+    // Atomically replaces the value for a key if it exists and is not expired
+    replace(key, newValue) {
+        if (this.Has(key)) {
+            const entry = this._store.get(key);
+            entry.value = newValue;
+            this._store.set(key, entry);
+            return true;
+        }
+        return false;
+    }
+
     // Ergonomic alias for Keys(), returns all keys as an array
     keysArray() {
         return this.Keys();
@@ -139,8 +151,14 @@ export class CacheStore {
         return this.values();
     }
 
+
     // Ergonomic alias for Clear(), matching common cache APIs
     clearAll() {
+        return this.Clear();
+    }
+
+    // Lowercase alias for Clear(), matching Map API
+    clear() {
         return this.Clear();
     }
 
@@ -264,12 +282,16 @@ export class CacheStore {
         this._store.set(key, { value, expires });
         return this;
     }
+
+    // Lowercase alias for Set(), matching Map API
+    set(key, value, ttlMs = CacheStore.DefaultCacheValueExpireMS) {
+        return this.Set(key, value, ttlMs);
+    }
     Keys() {
         return Array.from(this._store.keys());
     }
     Delete(key) {
-        this._store.delete(key);
-        return this;
+        return this._store.delete(key);
     }
     Has(key) {
         if (this._store.has(key)) {

@@ -1,8 +1,10 @@
+// Jest ESM config
 export default {
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['js', 'mjs', 'json', 'node'],
+  testRegex: '.*\\.test\\.mjs$',
   transform: {
-    '^.+\\.(js|mjs)$': 'babel-jest',
+    '^.+\\.[jt]sx?$': 'babel-jest',
   },
   transformIgnorePatterns: [
     '/node_modules/(?!jsdom|@exodus|html-encoding-sniffer)/',
