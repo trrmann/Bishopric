@@ -40,6 +40,7 @@ export class CacheStore {
     static CopyFromObject(destination, source) {
         destination._store = new Map(source._store);
         destination._cachePruneIntervalMs = source._cachePruneIntervalMs;
+        return destination;
     }
 
     static async Factory(cachePruneIntervalMs = CacheStore.DefaultCachePruneIntervalMS) {
