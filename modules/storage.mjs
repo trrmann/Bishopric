@@ -198,8 +198,8 @@ export class Storage {
         return found;
     }
 
-    // Central set: cache, session, local, google, github
-    async set(key, value, options = {}) {
+    // Central Set: cache, session, local, google, github
+    async Set(key, value, options = {}) {
         const { cacheTtlMs = null, sessionTtlMs = null, localTtlMs = null, googleId = null, githubFilename = null, publicKey = null, secure = false } = options;
         if (secure) {
             await this._cache.setSecure(key, value, publicKey, cacheTtlMs);
