@@ -12,6 +12,16 @@ export class Site {
         this._modal = null;
         this._modalTitle = null;
         this._modalBody = null;
+        // Debounce timer for resize handler
+        this._resizeTimer = null;
+    }
+
+    // Debounce utility for resize events
+    _debounce(func, wait) {
+        return (...args) => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => func.apply(this, args), wait);
+        };
     }
 
     static async Factory(storageObject) {
@@ -35,7 +45,8 @@ export class Site {
             this._modalBody = document.getElementById('modalBody');
             if (this._toggleBtn && this._navBar) {
                 this._updateToggleVisibility();
-                window.addEventListener('resize', () => this._updateToggleVisibility());
+                // Debounce resize handler to improve performance (150ms delay)
+                window.addEventListener('resize', this._debounce(() => this._updateToggleVisibility(), 150));
                 this._toggleBtn.addEventListener('click', () => this._toggleMenu());
             }
         });

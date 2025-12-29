@@ -40,6 +40,7 @@ describe('Site Class', () => {
       expect(site._modal).toBeNull();
       expect(site._modalTitle).toBeNull();
       expect(site._modalBody).toBeNull();
+      expect(site._resizeTimer).toBeNull();
     });
   });
 
@@ -119,6 +120,44 @@ describe('Site Class', () => {
       site.closeModal();
       
       expect(mockModal.classList.remove).toHaveBeenCalledWith('show');
+    });
+  });
+
+  describe('Performance optimizations', () => {
+    test('_debounce delays function execution', (done) => {
+      jest.useFakeTimers();
+      const mockFn = jest.fn();
+      const debouncedFn = site._debounce(mockFn, 100);
+      
+      debouncedFn();
+      expect(mockFn).not.toHaveBeenCalled();
+      
+      jest.advanceTimersByTime(50);
+      expect(mockFn).not.toHaveBeenCalled();
+      
+      jest.advanceTimersByTime(50);
+      expect(mockFn).toHaveBeenCalledTimes(1);
+      
+      jest.useRealTimers();
+      done();
+    });
+
+    test('_debounce cancels previous calls', (done) => {
+      jest.useFakeTimers();
+      const mockFn = jest.fn();
+      const debouncedFn = site._debounce(mockFn, 100);
+      
+      debouncedFn();
+      jest.advanceTimersByTime(50);
+      debouncedFn();
+      jest.advanceTimersByTime(50);
+      expect(mockFn).not.toHaveBeenCalled();
+      
+      jest.advanceTimersByTime(50);
+      expect(mockFn).toHaveBeenCalledTimes(1);
+      
+      jest.useRealTimers();
+      done();
     });
   });
 });
