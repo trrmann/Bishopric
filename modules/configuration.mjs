@@ -57,6 +57,11 @@ export class Configuration {
     }
 
     // ===== Data Fetching =====
+    /**
+     * Fetches the configuration from cache, session, local storage, Google Drive, or GitHubDataObj in priority order.
+     * Updates the configuration property with the result.
+     * @returns {Promise<void>} Resolves when fetch is complete.
+     */
     async Fetch() {
         // 1. Try to get from cache
         let configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: Configuration.ConfigCacheExpireMS });
