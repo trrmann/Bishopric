@@ -23,7 +23,7 @@ export class Org {
      */
     static CopyFromJSON(dataJSON) {
         const org = new Org(dataJSON._storageObj);
-        org.organization = dataJSON.org;
+        org._restoreOrgState(dataJSON._storageObj, dataJSON.org);
         return org;
     }
     /**
@@ -43,9 +43,13 @@ export class Org {
      * @param {Org} source - Source Org instance.
      */
     static CopyFromObject(destination, source) {
-        destination.storage = source.storage;
-        destination.organization = source.organization;
+        destination._restoreOrgState(source.storage, source.organization);
     }
+        // Protected: encapsulate org state restoration for maintainability
+        _restoreOrgState(storage, organization) {
+            this.storage = storage;
+            this.organization = organization;
+        }
     /**
      * Factory method to create and initialize an Org instance.
      * @param {object} configuration - Configuration object containing _storageObj.
@@ -77,16 +81,16 @@ export class Org {
         // 1. Try to get from cache
         let orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: Org.OrgCacheExpireMS });
         // 2. If not found, try session storage
-        if (!orgObj) {
+        if (orgObj === undefined) {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: Org.OrgSessionExpireMS });
-            if (orgObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+            if (orgObj !== undefined && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
             }
         }
         // 3. If still not found, try local storage
-        if (!orgObj) {
+        if (orgObj === undefined) {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Org.OrgLocalExpireMS });
-            if (orgObj) {
+            if (orgObj !== undefined) {
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
                 }
@@ -96,14 +100,14 @@ export class Org {
             }
         }
         // 4. If still not found, use GoogleDrive for read/write priority
-        if (!orgObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
+        if (orgObj === undefined && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig });
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
-        if (!orgObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
+        if (orgObj === undefined && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
             orgObj = await this.Storage._gitHubDataObj.fetchJsonFile(Org.OrgFilename);
         }
-        this.organization = orgObj ? orgObj : undefined;
+        this.organization = orgObj !== undefined ? orgObj : undefined;
     }
 
     // ===== Core Data Accessors =====
