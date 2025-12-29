@@ -151,7 +151,8 @@ export class Org {
      * @returns {object|undefined} Stake object or undefined.
      */
     StakeByUnitNumber(unitNumber) {
-        /*...*/
+        if (!Array.isArray(this.Stakes)) return undefined;
+        return this.Stakes.find(stake => stake.unitNumber === unitNumber);
     }
 
     /**
@@ -160,7 +161,8 @@ export class Org {
      * @returns {object|undefined} Stake object or undefined.
      */
     StakeByName(stakeName) {
-        /*...*/
+        if (!Array.isArray(this.Stakes)) return undefined;
+        return this.Stakes.find(stake => stake.name === stakeName);
     }
 
     /**
@@ -169,7 +171,8 @@ export class Org {
      * @returns {Array<object>} Array of unit objects.
      */
     StakeUnits(stakeUnitNumber) {
-        /*...*/
+        const stake = this.StakeByUnitNumber(stakeUnitNumber);
+        return stake && Array.isArray(stake.units) ? stake.units : [];
     }
 
     /**
@@ -178,7 +181,7 @@ export class Org {
      * @returns {Array<object>} Array of ward unit objects.
      */
     StakeWards(stakeUnitNumber) {
-        /*...*/
+        return this.StakeUnits(stakeUnitNumber).filter(unit => unit.type === "ward");
     }
 
     /**
@@ -187,7 +190,7 @@ export class Org {
      * @returns {Array<object>} Array of branch unit objects.
      */
     StakeBranches(stakeUnitNumber) {
-        /*...*/
+        return this.StakeUnits(stakeUnitNumber).filter(unit => unit.type === "branch");
     }
 
     /**
@@ -196,7 +199,7 @@ export class Org {
      * @returns {object|undefined} Unit object or undefined.
      */
     UnitByNumber(unitNumber) {
-        /*...*/
+        return this.Units.find(unit => unit.unitNumber === unitNumber);
     }
 
     /**
@@ -205,7 +208,7 @@ export class Org {
      * @returns {object|undefined} Ward object or undefined.
      */
     WardByNumber(unitNumber) {
-        /*...*/
+        return this.Wards.find(unit => unit.unitNumber === unitNumber);
     }
 
     /**
@@ -214,7 +217,7 @@ export class Org {
      * @returns {object|undefined} Branch object or undefined.
      */
     BranchByNumber(unitNumber) {
-        /*...*/
+        return this.Branches.find(unit => unit.unitNumber === unitNumber);
     }
 
     /**
@@ -223,7 +226,7 @@ export class Org {
      * @returns {object|undefined} Unit object or undefined.
      */
     UnitByName(unitName) {
-        /*...*/
+        return this.Units.find(unit => unit.name === unitName);
     }
     /**
      * Checks if a stake exists by name.
