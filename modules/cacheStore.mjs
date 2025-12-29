@@ -89,6 +89,7 @@ export class CacheStore {
     }
     Clear() {
         this._store.clear();
+        return this;
     }
     CachePrune() {
         const now = Date.now();
