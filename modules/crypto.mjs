@@ -24,8 +24,13 @@ export class CryptoKeyPair {
         };
     }
     static CopyFromObject(destination, source) {
-        destination.publicKey = source.publicKey;
-        destination.privateKey = source.privateKey;
+        destination._restoreKeyPairState(source.publicKey, source.privateKey);
+    }
+
+    // Protected: encapsulate key pair state restoration for maintainability
+    _restoreKeyPairState(publicKey, privateKey) {
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
     }
     static async Factory(publicKey = null, privateKey = null) {
         return new CryptoKeyPair(publicKey, privateKey);
