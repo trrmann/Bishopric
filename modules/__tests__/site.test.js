@@ -177,4 +177,28 @@ describe('Site Class', () => {
       done();
     });
   });
+
+  describe('Cleanup and disposal', () => {
+    test('dispose clears timers and event listeners', () => {
+      jest.useFakeTimers();
+      site._resizeTimer = setTimeout(() => {}, 1000);
+      site._boundHandlers = {
+        resize: jest.fn(),
+        toggleClick: jest.fn(),
+        windowClick: jest.fn()
+      };
+      site._toggleBtn = { removeEventListener: jest.fn() };
+      global.window.removeEventListener = jest.fn();
+      
+      site.dispose();
+      
+      expect(site._resizeTimer).toBeNull();
+      expect(site._boundHandlers).toBeNull();
+      expect(site._toggleBtn).toBeNull();
+      expect(window.showSection).toBeNull();
+      expect(window.openModal).toBeNull();
+      
+      jest.useRealTimers();
+    });
+  });
 });

@@ -102,6 +102,12 @@ export class Site {
         this._resizeTimer = null;
         // Cache filter elements for performance
         this._memberSearchInput = null;
+        // Store bound event handlers for cleanup
+        this._boundHandlers = {
+            resize: null,
+            toggleClick: null,
+            windowClick: null
+        };
     }
 
     // Debounce utility for resize events
@@ -135,9 +141,12 @@ export class Site {
             this._memberSearchInput = document.getElementById('memberSearch');
             if (this._toggleBtn && this._navBar) {
                 this._updateToggleVisibility();
+                // Store bound handlers for cleanup
+                this._boundHandlers.resize = this._debounce(() => this._updateToggleVisibility(), 150);
+                this._boundHandlers.toggleClick = () => this._toggleMenu();
                 // Debounce resize handler to improve performance (150ms delay)
-                window.addEventListener('resize', this._debounce(() => this._updateToggleVisibility(), 150));
-                this._toggleBtn.addEventListener('click', () => this._toggleMenu());
+                window.addEventListener('resize', this._boundHandlers.resize);
+                this._toggleBtn.addEventListener('click', this._boundHandlers.toggleClick);
             }
         });
         // Section navigation
@@ -156,11 +165,12 @@ export class Site {
         // Modal and edit functions
         window.openModal = this.openModal.bind(this);
         window.closeModal = this.closeModal.bind(this);
-        window.onclick = (event) => {
+        this._boundHandlers.windowClick = (event) => {
             if (this._modal && event.target === this._modal) {
                 this._modal.classList.remove('show');
             }
         };
+        window.onclick = this._boundHandlers.windowClick;
         // Edit and CRUD
         window.editMember = this.editMember.bind(this);
         window.deleteMember = this.deleteMember.bind(this);
@@ -318,6 +328,60 @@ export class Site {
     editEvent(eventId) { alert(`Edit event ${eventId}`); }
     previousMonth() { alert('Previous month'); }
     nextMonth() { alert('Next month'); }
+
+    // Cleanup method to prevent memory leaks
+    dispose() {
+        // Clear debounce timer
+        if (this._resizeTimer) {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = null;
+        }
+        
+        // Remove event listeners
+        if (this._boundHandlers.resize) {
+            window.removeEventListener('resize', this._boundHandlers.resize);
+        }
+        if (this._boundHandlers.toggleClick && this._toggleBtn) {
+            this._toggleBtn.removeEventListener('click', this._boundHandlers.toggleClick);
+        }
+        if (this._boundHandlers.windowClick) {
+            window.onclick = null;
+        }
+        
+        // Clear window function bindings
+        window.showSection = null;
+        window.changeMembersPage = null;
+        window.filterMembers = null;
+        window.filterAssignments = null;
+        window.filterSchedule = null;
+        window.quickAction = null;
+        window.openModal = null;
+        window.closeModal = null;
+        window.editMember = null;
+        window.deleteMember = null;
+        window.editAssignment = null;
+        window.markComplete = null;
+        window.viewAssignment = null;
+        window.openAddMember = null;
+        window.openNewAssignment = null;
+        window.openScheduleEvent = null;
+        window.openForm = null;
+        window.generateReport = null;
+        window.exportReport = null;
+        window.editEvent = null;
+        window.previousMonth = null;
+        window.nextMonth = null;
+        
+        // Clear cached DOM references
+        this._toggleBtn = null;
+        this._navBar = null;
+        this._icon = null;
+        this._modal = null;
+        this._modalTitle = null;
+        this._modalBody = null;
+        this._memberSearchInput = null;
+        this._boundHandlers = null;
+    }
 
     // _buildConfigFromConfiguration is now obsolete due to direct use of Configuration.Fetch in Factory
 }
