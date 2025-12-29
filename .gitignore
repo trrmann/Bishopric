@@ -1,3 +1,9 @@
 # Ignore Neon environment file
 neon.env
 data/secrets.json
+
+# Dependencies
+node_modules/
+
+# Package lock
+package-lock.json
