@@ -204,7 +204,7 @@ export class Storage {
         if (secure) {
             await this._cache.setSecure(key, value, publicKey, cacheTtlMs);
             await this._sessionStorage.setSecureItem(key, value, publicKey, sessionTtlMs);
-            // TODO: Implement secure storage for LocalStorage if needed
+            // ...existing code...
         } else {
             this._cache.Set(key, value, cacheTtlMs);
             this._sessionStorage.setItem(key, value, sessionTtlMs);

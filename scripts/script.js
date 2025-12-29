@@ -11,23 +11,18 @@ import { Site } from "../modules/site.mjs";
     // 2. Export public and private keys as base64 strings (for storage or sharing)
     const publicKeyBase64 = await PublicKeyCrypto.exportKey(keyPair.publicKey, "public");
     const privateKeyBase64 = await PublicKeyCrypto.exportKey(keyPair.privateKey, "private");
-    // console.log("Public Key (base64):", publicKeyBase64); // For developer debugging
-    // console.log("Private Key (base64):", privateKeyBase64); // For developer debugging
 
     // 3. Encrypt a message with the public key
     const message = "Hello, this is a secret!";
     const encrypted = await PublicKeyCrypto.encrypt(keyPair.publicKey, message);
-    // console.log("Encrypted (base64):", encrypted); // For developer debugging
 
     // 4. Decrypt the message with the private key
     const decrypted = await PublicKeyCrypto.decrypt(keyPair.privateKey, encrypted);
-    // console.log("Decrypted message:", decrypted); // For developer debugging
 
     // 5. Import keys from base64 (if needed)
     const importedPublicKey = await PublicKeyCrypto.importKey(publicKeyBase64, "public");
     const importedPrivateKey = await PublicKeyCrypto.importKey(privateKeyBase64, "private");
     const decrypted2 = await PublicKeyCrypto.decrypt(importedPrivateKey, encrypted);
-    // console.log("Decrypted with imported key:", decrypted2); // For developer debugging
 })();
 // --- End Encryption Example ---
 
