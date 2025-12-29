@@ -310,17 +310,3 @@ export class Site {
 
     // _buildConfigFromConfiguration is now obsolete due to direct use of Configuration.Fetch in Factory
 }
-
-
-
-// Edit functions
-
-window.editMember = function(id) {
-    alert(`Edit member ${id}`);
-};
-
-window.deleteMember = function(id) {
-    if (confirm('Are you sure you want to delete this member?')) {
-        alert(`Member ${id} deleted`);
-    }
-}
