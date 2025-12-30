@@ -254,13 +254,17 @@
             <!-- Configuration Section -->
             <section id="configuration" class="section">
                 <h2>System Configuration</h2>
-                <div class="section-toolbar configuration-toolbar" style="margin-bottom: 1em; display: flex; flex-wrap: wrap; gap: 0.5em; align-items: center;">
-                    <input type="text" id="configurationSearch" placeholder="Search configuration..." style="flex:1; min-width:200px; max-width:300px;" />
-                    <button class="btn-secondary" id="configImportBtn">Import</button>
-                    <button class="btn-secondary" id="configExportBtn">Export</button>
-                    <button class="btn-secondary" id="configRekeyBtn">Encryption Rekey</button>
-                    <button class="btn-secondary" id="configCloudMigrateBtn">Cloud Store Migration</button>
-                    <button class="btn-primary" id="configAddBtn">Add</button>
+                <div class="section-toolbar configuration-toolbar improved-toolbar">
+                    <div class="config-toolbar-row">
+                        <input type="text" id="configurationSearch" class="config-search" placeholder="Search configuration..." />
+                        <div class="config-toolbar-buttons">
+                            <button class="btn-secondary" id="configImportBtn">Import</button>
+                            <button class="btn-secondary" id="configExportBtn">Export</button>
+                            <button class="btn-secondary" id="configRekeyBtn">Encryption Rekey</button>
+                            <button class="btn-secondary" id="configCloudMigrateBtn">Cloud Store Migration</button>
+                            <button class="btn-primary" id="configAddBtn">Add Setting</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="configurationTable" class="configuration-table">
                     <table>

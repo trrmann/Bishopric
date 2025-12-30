@@ -1,3 +1,58 @@
+/* Improved configuration toolbar layout */
+.improved-toolbar {
+    margin-bottom: 1.2em;
+    background: #f8fafc;
+    border-radius: 0.7em;
+    padding: 1em 1.2em 0.7em 1.2em;
+    box-shadow: 0 1px 6px 0 rgba(60,80,120,0.04);
+}
+.config-toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.2em;
+}
+.config-search {
+    flex: 1 1 220px;
+    min-width: 180px;
+    max-width: 320px;
+    padding: 0.6em 1em;
+    border: 1px solid #c3c8d0;
+    border-radius: 0.4em;
+    font-size: 1.05em;
+    background: #fff;
+    margin-right: 0.5em;
+    transition: border 0.2s;
+}
+.config-search:focus {
+    border-color: #7baaf7;
+    outline: none;
+}
+.config-toolbar-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em;
+}
+.config-toolbar-buttons button {
+    min-width: 120px;
+    font-size: 1.01em;
+    padding: 0.5em 1.1em;
+}
+@media (max-width: 700px) {
+    .config-toolbar-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.7em;
+    }
+    .config-toolbar-buttons {
+        justify-content: flex-start;
+    }
+    .config-toolbar-buttons button {
+        min-width: 90px;
+        font-size: 0.98em;
+        padding: 0.45em 0.7em;
+    }
+}
 .configuration-table .config-row-actions {
         display: inline-flex;
         gap: 0.4em;
