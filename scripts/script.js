@@ -53,6 +53,9 @@ window.showSection = function(sectionId) {
     if (sectionId === 'roles') {
         renderRolesFromClass(window.Storage);
     }
+    if (sectionId === 'users') {
+        renderUsersFromClass(window.Storage);
+    }
     if (sectionId === 'eventscheduletemplate') {
         import('./eventscheduletemplate.ui.js').then(mod => {
             if (mod && typeof mod.renderEventScheduleTemplateTable === 'function') {
@@ -137,6 +140,9 @@ window.addEventListener('DOMContentLoaded', () => {
             renderCallingsFromClass(window.Storage);
         }
         tryRenderRoles();
+        if (typeof renderUsersFromClass === 'function') {
+            renderUsersFromClass(window.Storage);
+        }
     }
 });
 
@@ -196,6 +202,14 @@ window.markComplete = function(id) {
 
 window.viewAssignment = function(id) {
     alert(`View assignment ${id}`);
+    const tryRenderUsers = () => {
+        if (window.Storage && typeof renderUsersFromClass === 'function') {
+            // console.log('[DEBUG] Rendering users table from Users class...');
+            renderUsersFromClass(window.Storage);
+        } else {
+            setTimeout(tryRenderUsers, 100);
+        }
+    };
 };
 
 window.openAddMember = function() {
@@ -205,6 +219,7 @@ window.openAddMember = function() {
             <input type="text" placeholder="Enter first name" required>
         </div>
         <div class="form-group">
+        tryRenderUsers();
             <label>Last Name</label>
             <input type="text" placeholder="Enter last name" required>
         </div>
