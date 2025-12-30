@@ -27,6 +27,7 @@ window.openEditConfiguration = function() {
             <select id="configTheme">
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
+// ...existing code...
             </select>
         </div>
     `);
@@ -40,6 +41,7 @@ import { renderConfigurationTable } from './configuration.ui.js';
 // Render configuration table when Configuration section is shown
 const originalShowSection = window.showSection;
 // ...existing code...
+// ...existing code...
 window.showSection = function(sectionId) {
     originalShowSection(sectionId);
     if (sectionId === 'configuration') {
@@ -47,6 +49,9 @@ window.showSection = function(sectionId) {
     }
     if (sectionId === 'callings') {
         renderCallingsFromClass(window.Storage);
+    }
+    if (sectionId === 'roles') {
+        renderRolesFromClass(window.Storage);
     }
     if (sectionId === 'eventscheduletemplate') {
         import('./eventscheduletemplate.ui.js').then(mod => {
@@ -111,7 +116,18 @@ import { Site } from "../modules/site.mjs";
 
 // DEBUG: Render configuration table on page load to verify function is called
 import { renderCallingsFromClass } from './callings.ui.js';
+import { renderRolesFromClass } from './roles.ui.js';
+
 window.addEventListener('DOMContentLoaded', () => {
+    const tryRenderRoles = () => {
+        if (window.Storage && typeof renderRolesFromClass === 'function') {
+            // console.log('[DEBUG] Rendering roles table from Roles class...');
+            renderRolesFromClass(window.Storage);
+        } else {
+            // console.log('[DEBUG] Storage or renderRolesFromClass not ready, retrying...');
+            setTimeout(tryRenderRoles, 100);
+        }
+    };
     if (window.Storage) {
         renderConfigurationTable(window.Storage);
         if (typeof window.renderOrganizationTable === 'function') {
@@ -120,6 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof renderCallingsFromClass === 'function') {
             renderCallingsFromClass(window.Storage);
         }
+        tryRenderRoles();
     }
 });
 
@@ -143,6 +160,7 @@ function filterMembers() {
         row.style.display = text.includes(searchTerm) ? '' : 'none';
     });
 }
+
 
 // Assignment filter
 function filterAssignments() {

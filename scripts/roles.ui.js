@@ -8,12 +8,23 @@ export function renderRolesTable(roles) {
     roles.forEach(role => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${role.role}</td>
-            <td>${role.description}</td>
-            <td><button onclick="editRole('${role.role}')">Edit</button></td>
+            <td>${role.name}</td>
+            <td>${role.callingName || ''}</td>
+            <td>
+                <button class="roles-edit-btn" onclick="editRole(${role.id})">Edit</button>
+                <button class="roles-delete-btn" onclick="deleteRole(${role.id})">Delete</button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+import { Roles } from '../modules/roles.mjs';
+import { Callings } from '../modules/callings.mjs';
+export async function renderRolesFromClass(storageObj) {
+    const store = storageObj || window.Storage;
+    const rolesInstance = await Roles.Factory({ _storageObj: store });
+    renderRolesTable(rolesInstance.RolesDetails);
 }
 
 export function openAddRole() {
@@ -21,7 +32,11 @@ export function openAddRole() {
 }
 
 window.renderRolesTable = renderRolesTable;
+window.renderRolesFromClass = renderRolesFromClass;
 window.openAddRole = openAddRole;
-window.editRole = function(role) {
-    alert('Edit role: ' + role);
+window.editRole = function(id) {
+    alert('Edit role: ' + id);
+};
+window.deleteRole = function(id) {
+    alert('Delete role: ' + id);
 };
