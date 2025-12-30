@@ -118,32 +118,47 @@ export class Members {
         }
         // 1. Try to get from cache
         let membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: Members.MembersCacheExpireMS });
+        let foundIn = null;
+        if (membersObj !== undefined && membersObj !== null) foundIn = 'cache';
         // 2. If not found, try session storage
-        if (!membersObj) {
+        if (membersObj === undefined || membersObj === null) {
             membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: null, sessionTtlMs: Members.MembersSessionExpireMS });
-            if (membersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                this.Storage.Cache.Set(Members.MembersFilename, membersObj, Members.MembersCacheExpireMS);
-            }
+            if (membersObj !== undefined && membersObj !== null) foundIn = 'session';
         }
         // 3. If still not found, try local storage
-        if (!membersObj) {
+        if (membersObj === undefined || membersObj === null) {
             membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Members.MembersLocalExpireMS });
-            if (membersObj) {
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Members.MembersFilename, membersObj, Members.MembersSessionExpireMS);
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    this.Storage.Cache.Set(Members.MembersFilename, membersObj, Members.MembersCacheExpireMS);
-                }
-            }
+            if (membersObj !== undefined && membersObj !== null) foundIn = 'local';
         }
         // 4. If still not found, use GoogleDrive for read/write priority
-        if (!membersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
+        if ((membersObj === undefined || membersObj === null) && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
             membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig });
+            if (membersObj !== undefined && membersObj !== null) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
-        if (!membersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
+        if ((membersObj === undefined || membersObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
             membersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Members.MembersFilename);
+            if (membersObj !== undefined && membersObj !== null) foundIn = 'github';
+        }
+
+        // Write to all storage tiers if missing
+        if (membersObj !== undefined && membersObj !== null) {
+            // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
+            if (this.Storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Storage.Set === 'function') {
+                await this.Storage.Set(Members.MembersFilename, membersObj, { ...Members.StorageConfig });
+            }
+            // Write to local storage if not found there
+            if (foundIn !== 'local' && this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
+                this.Storage.LocalStorage.Set(Members.MembersFilename, membersObj, Members.MembersLocalExpireMS);
+            }
+            // Write to session storage if not found there
+            if (foundIn !== 'session' && this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                this.Storage.SessionStorage.Set(Members.MembersFilename, membersObj, Members.MembersSessionExpireMS);
+            }
+            // Write to cache if not found there
+            if (foundIn !== 'cache' && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                this.Storage.Cache.Set(Members.MembersFilename, membersObj, Members.MembersCacheExpireMS);
+            }
         }
         this.members = membersObj ? membersObj : undefined;
     }
