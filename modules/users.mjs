@@ -102,10 +102,21 @@ export class Users {
         return this.members && this.members.Roles && this.members.Roles.Callings ? this.members.Roles.Callings : undefined;
     }
     get Storage() {
+        // Allow test injection of storage
+        if (this.hasOwnProperty('_testStorage')) {
+            if (!this._testStorage) {
+                throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
+            }
+            return this._testStorage;
+        }
         if (!this.Callings || !this.Callings.storage) {
             throw new Error("Callings instance or its storage is not set on Users.");
         }
         return this.Callings.storage;
+    }
+    set Storage(val) {
+        // Allow test injection of storage
+        this._testStorage = val;
     }
     get Users() { return this.users; }
     set Users(val) {
@@ -222,32 +233,54 @@ export class Users {
         if (!this.Storage) {
             throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
         }
-        // 1. Try to get from cache
         let usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: Users.UsersCacheExpireMS });
-        // 2. If not found, try session storage
+        // If not found in cache, try session
         if (!usersObj) {
             usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS });
+            // If found in session, only write to cache if not already present
             if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
-            }
-        }
-        // 3. If still not found, try local storage
-        if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
-            if (usersObj) {
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
+                let cacheVal;
+                if (this.Storage.Cache.Get) {
+                    cacheVal = this.Storage.Cache.Get(Users.UsersFilename);
+                    if (cacheVal instanceof Promise) cacheVal = await cacheVal;
                 }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                if (!cacheVal) {
                     this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
                 }
             }
         }
-        // 4. If still not found, use GoogleDrive for read/write priority
+        // If not found in cache/session, try local
+        if (!usersObj) {
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
+            // If found in local, only write to session/cache if not already present
+            if (usersObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    let sessionVal;
+                    if (this.Storage.SessionStorage.Get) {
+                        sessionVal = this.Storage.SessionStorage.Get(Users.UsersFilename);
+                        if (sessionVal instanceof Promise) sessionVal = await sessionVal;
+                    }
+                    if (!sessionVal) {
+                        this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
+                    }
+                }
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    let cacheVal;
+                    if (this.Storage.Cache.Get) {
+                        cacheVal = this.Storage.Cache.Get(Users.UsersFilename);
+                        if (cacheVal instanceof Promise) cacheVal = await cacheVal;
+                    }
+                    if (!cacheVal) {
+                        this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
+                    }
+                }
+            }
+        }
+        // If not found in any local tier, try GoogleDrive
         if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
             usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig });
         }
-        // 5. If still not found, fallback to GitHubDataObj for read-only
+        // If not found in GoogleDrive, try GitHubDataObj (read-only)
         if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
             usersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Users.UsersFilename);
         }
