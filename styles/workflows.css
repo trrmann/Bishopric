@@ -1,0 +1,87 @@
+/* Workflows Table Styling */
+.workflows-table {
+  width: 100%;
+  max-width: 1100px;
+  margin: 2em auto 2em auto;
+  padding: 1.5em 2em;
+  background: #fff;
+  border-radius: 1em;
+  box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+}
+.workflows-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5em;
+}
+.workflows-table th, .workflows-table td {
+  padding: 1em 1.2em;
+  font-size: 1.08em;
+  text-align: left;
+}
+.workflows-table th {
+  background: #f5f7fa;
+  color: #234;
+  border-bottom: 2px solid #e3e8f0;
+}
+.workflows-table tr {
+  transition: background 0.2s;
+}
+.workflows-table tr:hover td {
+  background: #f0f4fa !important;
+}
+.workflows-table td:last-child {
+  white-space: nowrap;
+}
+.workflows-table button {
+  margin-right: 0.5em;
+  padding: 0.4em 1em;
+  border-radius: 0.4em;
+  border: none;
+  background: #e3e8f0;
+  color: #234;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.workflows-table button:hover {
+  background: #d0d7e5;
+}
+
+/* Toolbar and Search Bar Styling */
+.workflows-toolbar {
+  margin-bottom: 1.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.workflows-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+.workflows-toolbar-buttons {
+  display: flex;
+  gap: 0.7em;
+}
+.workflows-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 350px;
+  padding: 0.6em 1em;
+  border: 1px solid #d0d7e5;
+  border-radius: 0.4em;
+  font-size: 1em;
+  background: #f8fafc;
+  margin-right: 1em;
+}
+.workflows-toolbar .btn-secondary {
+  background: #f5f7fa;
+  color: #234;
+  border: 1px solid #e3e8f0;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.workflows-toolbar .btn-secondary:hover {
+  background: #e3e8f0;
+}
