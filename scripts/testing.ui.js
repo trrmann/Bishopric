@@ -40,6 +40,113 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+                                    // --- Members ---
+                                    function getMembersInstance() {
+                                        if (window.Members && typeof window.Members === 'object') {
+                                            return window.Members;
+                                        }
+                                        if (window.Storage && window.Storage.Members && typeof window.Storage.Members === 'object') {
+                                            return window.Storage.Members;
+                                        }
+                                        return null;
+                                    }
+
+                                    const importRawMembersInput = document.getElementById('importRawMembersInput');
+                                    const exportRawMembersBtn = document.getElementById('exportRawMembersBtn');
+                                    const importRawMembersBtn = document.getElementById('importRawMembersBtn');
+                                    const exportDetailedMembersBtn = document.getElementById('exportDetailedMembersBtn');
+                                    const importDetailedMembersInput = document.getElementById('importDetailedMembersInput');
+                                    const importDetailedMembersBtn = document.getElementById('importDetailedMembersBtn');
+
+                                    // Export Raw: export members as-is
+                                    if (exportRawMembersBtn) exportRawMembersBtn.onclick = () => {
+                                        const membersInstance = getMembersInstance();
+                                        if (!membersInstance || !membersInstance.members) {
+                                            alert('No members found to export.');
+                                            return;
+                                        }
+                                        const blob = new Blob([JSON.stringify(membersInstance.members, null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = 'members.raw.json';
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                    };
+
+                                    // Import Raw: import members as-is
+                                    if (importRawMembersInput) importRawMembersInput.onchange = (e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = function(evt) {
+                                            try {
+                                                const data = JSON.parse(evt.target.result);
+                                                const membersInstance = getMembersInstance();
+                                                if (membersInstance) {
+                                                    membersInstance.members = data;
+                                                    alert('Raw members import successful.');
+                                                } else {
+                                                    alert('No members instance found.');
+                                                }
+                                            } catch (err) {
+                                                alert('Raw members import failed: ' + err.message);
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    };
+
+                                    // Export Detailed: export full members object (including storageObj)
+                                    if (exportDetailedMembersBtn) exportDetailedMembersBtn.onclick = () => {
+                                        const membersInstance = getMembersInstance();
+                                        if (!membersInstance) {
+                                            alert('No members found to export.');
+                                            return;
+                                        }
+                                        const detailed = (typeof membersInstance.constructor.CopyToJSON === 'function')
+                                            ? membersInstance.constructor.CopyToJSON(membersInstance)
+                                            : membersInstance;
+                                        const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = 'members.detailed.json';
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                    };
+
+                                    // Import Detailed: import full members object (including storageObj)
+                                    if (importDetailedMembersInput) importDetailedMembersInput.onchange = (e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = function(evt) {
+                                            try {
+                                                const data = JSON.parse(evt.target.result);
+                                                let membersInstance = getMembersInstance();
+                                                if (membersInstance && typeof membersInstance.constructor.CopyFromObject === 'function') {
+                                                    membersInstance.constructor.CopyFromObject(membersInstance, data);
+                                                    alert('Detailed members import successful.');
+                                                } else if (membersInstance) {
+                                                    Object.assign(membersInstance, data);
+                                                    alert('Detailed members import successful (fallback).');
+                                                } else {
+                                                    alert('No members instance found.');
+                                                }
+                                            } catch (err) {
+                                                alert('Detailed members import failed: ' + err.message);
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    };
+
+                                    // Button triggers file input for import
+                                    if (importRawMembersBtn && importRawMembersInput) importRawMembersBtn.onclick = () => importRawMembersInput.click();
+                                    if (importDetailedMembersBtn && importDetailedMembersInput) importDetailedMembersBtn.onclick = () => importDetailedMembersInput.click();
                             // --- Roles ---
                             function getRolesInstance() {
                                 if (window.Roles && typeof window.Roles === 'object') {

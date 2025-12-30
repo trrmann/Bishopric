@@ -16,6 +16,96 @@ class MockCacheStore {
 // --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+                    describe('Members Import/Export Buttons', () => {
+                        beforeEach(() => {
+                            document.body.innerHTML = `
+                                <button id="exportRawMembersBtn"></button>
+                                <button id="importRawMembersBtn"></button>
+                                <input type="file" id="importRawMembersInput">
+                                <button id="exportDetailedMembersBtn"></button>
+                                <button id="importDetailedMembersBtn"></button>
+                                <input type="file" id="importDetailedMembersInput">
+                            `;
+                            window.alert = jest.fn();
+                            window.URL.createObjectURL = jest.fn(() => 'blob:url');
+                            window.URL.revokeObjectURL = jest.fn();
+                            document.createElement = jest.fn((tag) => {
+                                if (tag === 'a') {
+                                    return { click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} };
+                                }
+                                return document.createElement._orig(tag);
+                            });
+                            document.createElement._orig = document.createElement.bind(document);
+                            document.body.appendChild = jest.fn();
+                            document.body.removeChild = jest.fn();
+                        });
+
+                        afterEach(() => {
+                            jest.resetModules();
+                        });
+
+                        it('Export Raw Members button downloads members as JSON', () => {
+                            window.Members = { members: { foo: 'bar' } };
+                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                            attachTestingTabHandlers();
+                            document.getElementById('exportRawMembersBtn').dispatchEvent(new window.Event('click'));
+                            expect(window.URL.createObjectURL).toHaveBeenCalled();
+                        });
+
+                        it('Import Raw Members button imports members from JSON', () => {
+                            window.Members = { members: {} };
+                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                            attachTestingTabHandlers();
+                            // Simulate FileReader
+                            const origFileReader = window.FileReader;
+                            function MockFileReader() {
+                                this.readAsText = function(f) { this.onload({ target: { result: '{ "foo": "bar" }' } }); };
+                            }
+                            window.FileReader = MockFileReader;
+                            const input = document.getElementById('importRawMembersInput');
+                            const file = new Blob([JSON.stringify({ foo: 'bar' })], { type: 'application/json' });
+                            file.name = 'test.json';
+                            Object.defineProperty(input, 'files', { value: [file] });
+                            input.dispatchEvent(new window.Event('change'));
+                            expect(window.Members.members).toEqual({ foo: 'bar' });
+                            expect(window.alert).toHaveBeenCalledWith('Raw members import successful.');
+                            window.FileReader = origFileReader;
+                        });
+
+                        it('Export Detailed Members button downloads detailed members as JSON', () => {
+                            const copyToJSON = jest.fn(() => ({ foo: 'detailed' }));
+                            window.Members = { constructor: { CopyToJSON: copyToJSON } };
+                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                            attachTestingTabHandlers();
+                            document.getElementById('exportDetailedMembersBtn').dispatchEvent(new window.Event('click'));
+                            expect(window.URL.createObjectURL).toHaveBeenCalled();
+                            expect(copyToJSON).toHaveBeenCalledWith(window.Members);
+                        });
+
+                        it('Import Detailed Members button imports detailed members from JSON', () => {
+                            const copyFromObject = jest.fn((dest, src) => { dest.members = src.members; dest._storageObj = src._storageObj; });
+                            window.Members = { members: {}, _storageObj: {}, constructor: { CopyFromObject: copyFromObject } };
+                            window.alert = jest.fn();
+                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                            attachTestingTabHandlers();
+                            // Simulate FileReader
+                            const origFileReader = window.FileReader;
+                            function MockFileReader() {
+                                this.readAsText = function(f) { this.onload({ target: { result: '{ "members": { "foo": "bar" }, "_storageObj": { "type": "mockStorage" } }' } }); };
+                            }
+                            window.FileReader = MockFileReader;
+                            const input = document.getElementById('importDetailedMembersInput');
+                            const file = new Blob([JSON.stringify({ members: { foo: 'bar' }, _storageObj: { type: 'mockStorage' } })], { type: 'application/json' });
+                            file.name = 'test.json';
+                            Object.defineProperty(input, 'files', { value: [file] });
+                            input.dispatchEvent(new window.Event('change'));
+                            expect(copyFromObject).toHaveBeenCalled();
+                            expect(window.Members.members).toEqual({ foo: 'bar' });
+                            expect(window.Members._storageObj).toEqual({ type: 'mockStorage' });
+                            expect(window.alert).toHaveBeenCalledWith('Detailed members import successful.');
+                            window.FileReader = origFileReader;
+                        });
+                    });
                 describe('Roles Import/Export Buttons', () => {
                     beforeEach(() => {
                         document.body.innerHTML = `
