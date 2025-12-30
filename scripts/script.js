@@ -39,15 +39,16 @@ import { renderConfigurationTable } from './configuration.ui.js';
 
 // Render configuration table when Configuration section is shown
 const originalShowSection = window.showSection;
+// ...existing code...
 window.showSection = function(sectionId) {
-    // console.log('[DEBUG] showSection called with:', sectionId);
     originalShowSection(sectionId);
     if (sectionId === 'configuration') {
-        // console.log('[DEBUG] Calling renderConfigurationTable for configuration section');
         renderConfigurationTable(window.Storage);
     }
+    if (sectionId === 'callings') {
+        renderCallingsFromClass(window.Storage);
+    }
     if (sectionId === 'eventscheduletemplate') {
-        // Dynamically import and render the Event Schedule Template tab logic
         import('./eventscheduletemplate.ui.js').then(mod => {
             if (mod && typeof mod.renderEventScheduleTemplateTable === 'function') {
                 mod.renderEventScheduleTemplateTable();
@@ -109,11 +110,15 @@ import { Site } from "../modules/site.mjs";
 // Pagination rendering is now handled by Site class and Auth class as needed
 
 // DEBUG: Render configuration table on page load to verify function is called
+import { renderCallingsFromClass } from './callings.ui.js';
 window.addEventListener('DOMContentLoaded', () => {
     if (window.Storage) {
         renderConfigurationTable(window.Storage);
         if (typeof window.renderOrganizationTable === 'function') {
             window.renderOrganizationTable(window.Storage);
+        }
+        if (typeof renderCallingsFromClass === 'function') {
+            renderCallingsFromClass(window.Storage);
         }
     }
 });
