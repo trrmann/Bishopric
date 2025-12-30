@@ -40,10 +40,10 @@ import { renderConfigurationTable } from './configuration.ui.js';
 // Render configuration table when Configuration section is shown
 const originalShowSection = window.showSection;
 window.showSection = function(sectionId) {
-    console.log('[DEBUG] showSection called with:', sectionId);
+    // console.log('[DEBUG] showSection called with:', sectionId);
     originalShowSection(sectionId);
     if (sectionId === 'configuration') {
-        console.log('[DEBUG] Calling renderConfigurationTable for configuration section');
+        // console.log('[DEBUG] Calling renderConfigurationTable for configuration section');
         renderConfigurationTable(window.Storage);
     }
     if (sectionId === 'eventscheduletemplate') {
@@ -111,10 +111,10 @@ import { Site } from "../modules/site.mjs";
 // DEBUG: Render configuration table on page load to verify function is called
 window.addEventListener('DOMContentLoaded', () => {
     if (window.Storage) {
-        console.log('[DEBUG] Calling renderConfigurationTable on page load');
+        // console.log('[DEBUG] Calling renderConfigurationTable on page load');
         renderConfigurationTable(window.Storage);
     } else {
-        console.warn('[DEBUG] window.Storage not set on DOMContentLoaded');
+        // console.warn('[DEBUG] window.Storage not set on DOMContentLoaded');
     }
 });
 
