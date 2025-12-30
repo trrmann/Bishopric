@@ -65,9 +65,25 @@ describe('Testing Tab UI', () => {
         });
     });
 
-    it('resetLocalStorage triggers modal/alert', () => {
+    it('resetLocalStorage triggers modal/alert and clears all local storage', () => {
+        // Mock localStorage using defineProperty for robustness
+        const clearMock = jest.fn();
+        const origLocalStorage = window.localStorage;
+        Object.defineProperty(window, 'localStorage', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: { clear: clearMock }
+        });
         resetLocalStorage();
-        expect(window.alert).toHaveBeenCalledWith('Local Storage reset triggered.');
+        expect(clearMock).toHaveBeenCalled();
+        expect(window.alert).toHaveBeenCalledWith('Local Storage reset triggered. All local storage entries removed.');
+        Object.defineProperty(window, 'localStorage', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: origLocalStorage
+        });
     });
 
     it('resetCloudStorage triggers modal/alert', () => {
@@ -93,7 +109,7 @@ describe('Testing Tab UI', () => {
         expect(window.alert).toHaveBeenCalledWith('Session Storage reset triggered. All session storage entries removed.');
         window.sessionStorage = origSessionStorage;
         resetLocalStorage();
-        expect(window.alert).toHaveBeenCalledWith('Local Storage reset triggered.');
+        expect(window.alert).toHaveBeenCalledWith('Local Storage reset triggered. All local storage entries removed.');
         resetCloudStorage();
         expect(window.alert).toHaveBeenCalledWith('Cloud Storage reset triggered.');
     });

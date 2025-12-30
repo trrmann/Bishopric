@@ -22,7 +22,10 @@ export function resetSessionStorage() {
 }
 export function resetLocalStorage() {
     if (typeof window !== 'undefined') {
-        alert('Local Storage reset triggered.');
+        if (window.localStorage && typeof window.localStorage.clear === 'function') {
+            window.localStorage.clear();
+        }
+        alert('Local Storage reset triggered. All local storage entries removed.');
     }
 }
 export function resetCloudStorage() {
