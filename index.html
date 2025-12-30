@@ -156,11 +156,37 @@
                                                             <section id="testing" class="section">
                                                                 <h2>Testing & Utilities</h2>
                                                                 <div class="section-toolbar testing-toolbar improved-toolbar">
-                                                                    <div class="testing-toolbar-row">
-                                                                        <button class="btn-primary" id="resetCacheBtn">Reset Cache</button>
-                                                                        <button class="btn-primary" id="resetSessionStorageBtn">Reset Session Storage</button>
-                                                                        <button class="btn-primary" id="resetLocalStorageBtn">Reset Local Storage</button>
-                                                                        <button class="btn-primary" id="resetCloudStorageBtn">Reset Cloud Storage</button>
+                                                                    <div class="testing-toolbar-group">
+                                                                        <h3>Cache</h3>
+                                                                        <button class="btn-primary" id="resetCacheBtn">Reset</button>
+                                                                        <button class="btn-secondary" id="viewCacheBtn">View</button>
+                                                                        <button class="btn-secondary" id="exportCacheBtn">Export</button>
+                                                                        <label class="btn-secondary" for="importCacheInput" style="margin-bottom:0;">Import</label>
+                                                                        <input type="file" id="importCacheInput" style="display:none;" accept="application/json" />
+                                                                    </div>
+                                                                    <div class="testing-toolbar-group">
+                                                                        <h3>Session Storage</h3>
+                                                                        <button class="btn-primary" id="resetSessionStorageBtn">Reset</button>
+                                                                        <button class="btn-secondary" id="viewSessionStorageBtn">View</button>
+                                                                        <button class="btn-secondary" id="exportSessionStorageBtn">Export</button>
+                                                                        <label class="btn-secondary" for="importSessionStorageInput" style="margin-bottom:0;">Import</label>
+                                                                        <input type="file" id="importSessionStorageInput" style="display:none;" accept="application/json" />
+                                                                    </div>
+                                                                    <div class="testing-toolbar-group">
+                                                                        <h3>Local Storage</h3>
+                                                                        <button class="btn-primary" id="resetLocalStorageBtn">Reset</button>
+                                                                        <button class="btn-secondary" id="viewLocalStorageBtn">View</button>
+                                                                        <button class="btn-secondary" id="exportLocalStorageBtn">Export</button>
+                                                                        <label class="btn-secondary" for="importLocalStorageInput" style="margin-bottom:0;">Import</label>
+                                                                        <input type="file" id="importLocalStorageInput" style="display:none;" accept="application/json" />
+                                                                    </div>
+                                                                    <div class="testing-toolbar-group">
+                                                                        <h3>Cloud Storage</h3>
+                                                                        <button class="btn-primary" id="resetCloudStorageBtn">Reset</button>
+                                                                        <button class="btn-secondary" id="viewCloudStorageBtn">View</button>
+                                                                        <button class="btn-secondary" id="exportCloudStorageBtn">Export</button>
+                                                                        <label class="btn-secondary" for="importCloudStorageInput" style="margin-bottom:0;">Import</label>
+                                                                        <input type="file" id="importCloudStorageInput" style="display:none;" accept="application/json" />
                                                                     </div>
                                                                 </div>
                                                                 <div id="testingUtilities" class="testing-utilities">
