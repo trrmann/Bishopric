@@ -16,6 +16,96 @@ class MockCacheStore {
 // --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+                describe('Roles Import/Export Buttons', () => {
+                    beforeEach(() => {
+                        document.body.innerHTML = `
+                            <button id="exportRawRolesBtn"></button>
+                            <button id="importRawRolesBtn"></button>
+                            <input type="file" id="importRawRolesInput">
+                            <button id="exportDetailedRolesBtn"></button>
+                            <button id="importDetailedRolesBtn"></button>
+                            <input type="file" id="importDetailedRolesInput">
+                        `;
+                        window.alert = jest.fn();
+                        window.URL.createObjectURL = jest.fn(() => 'blob:url');
+                        window.URL.revokeObjectURL = jest.fn();
+                        document.createElement = jest.fn((tag) => {
+                            if (tag === 'a') {
+                                return { click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} };
+                            }
+                            return document.createElement._orig(tag);
+                        });
+                        document.createElement._orig = document.createElement.bind(document);
+                        document.body.appendChild = jest.fn();
+                        document.body.removeChild = jest.fn();
+                    });
+
+                    afterEach(() => {
+                        jest.resetModules();
+                    });
+
+                    it('Export Raw Roles button downloads roles as JSON', () => {
+                        window.Roles = { roles: { foo: 'bar' } };
+                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                        attachTestingTabHandlers();
+                        document.getElementById('exportRawRolesBtn').dispatchEvent(new window.Event('click'));
+                        expect(window.URL.createObjectURL).toHaveBeenCalled();
+                    });
+
+                    it('Import Raw Roles button imports roles from JSON', () => {
+                        window.Roles = { roles: {} };
+                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                        attachTestingTabHandlers();
+                        // Simulate FileReader
+                        const origFileReader = window.FileReader;
+                        function MockFileReader() {
+                            this.readAsText = function(f) { this.onload({ target: { result: '{ "foo": "bar" }' } }); };
+                        }
+                        window.FileReader = MockFileReader;
+                        const input = document.getElementById('importRawRolesInput');
+                        const file = new Blob([JSON.stringify({ foo: 'bar' })], { type: 'application/json' });
+                        file.name = 'test.json';
+                        Object.defineProperty(input, 'files', { value: [file] });
+                        input.dispatchEvent(new window.Event('change'));
+                        expect(window.Roles.roles).toEqual({ foo: 'bar' });
+                        expect(window.alert).toHaveBeenCalledWith('Raw roles import successful.');
+                        window.FileReader = origFileReader;
+                    });
+
+                    it('Export Detailed Roles button downloads detailed roles as JSON', () => {
+                        const copyToJSON = jest.fn(() => ({ foo: 'detailed' }));
+                        window.Roles = { constructor: { CopyToJSON: copyToJSON } };
+                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                        attachTestingTabHandlers();
+                        document.getElementById('exportDetailedRolesBtn').dispatchEvent(new window.Event('click'));
+                        expect(window.URL.createObjectURL).toHaveBeenCalled();
+                        expect(copyToJSON).toHaveBeenCalledWith(window.Roles);
+                    });
+
+                    it('Import Detailed Roles button imports detailed roles from JSON', () => {
+                        const copyFromObject = jest.fn((dest, src) => { dest.roles = src.roles; dest._storageObj = src._storageObj; });
+                        window.Roles = { roles: {}, _storageObj: {}, constructor: { CopyFromObject: copyFromObject } };
+                        window.alert = jest.fn();
+                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                        attachTestingTabHandlers();
+                        // Simulate FileReader
+                        const origFileReader = window.FileReader;
+                        function MockFileReader() {
+                            this.readAsText = function(f) { this.onload({ target: { result: '{ "roles": { "foo": "bar" }, "_storageObj": { "type": "mockStorage" } }' } }); };
+                        }
+                        window.FileReader = MockFileReader;
+                        const input = document.getElementById('importDetailedRolesInput');
+                        const file = new Blob([JSON.stringify({ roles: { foo: 'bar' }, _storageObj: { type: 'mockStorage' } })], { type: 'application/json' });
+                        file.name = 'test.json';
+                        Object.defineProperty(input, 'files', { value: [file] });
+                        input.dispatchEvent(new window.Event('change'));
+                        expect(copyFromObject).toHaveBeenCalled();
+                        expect(window.Roles.roles).toEqual({ foo: 'bar' });
+                        expect(window.Roles._storageObj).toEqual({ type: 'mockStorage' });
+                        expect(window.alert).toHaveBeenCalledWith('Detailed roles import successful.');
+                        window.FileReader = origFileReader;
+                    });
+                });
             describe('Callings Import/Export Buttons', () => {
                 beforeEach(() => {
                     document.body.innerHTML = `

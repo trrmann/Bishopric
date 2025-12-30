@@ -40,6 +40,113 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+                            // --- Roles ---
+                            function getRolesInstance() {
+                                if (window.Roles && typeof window.Roles === 'object') {
+                                    return window.Roles;
+                                }
+                                if (window.Storage && window.Storage.Roles && typeof window.Storage.Roles === 'object') {
+                                    return window.Storage.Roles;
+                                }
+                                return null;
+                            }
+
+                            const importRawRolesInput = document.getElementById('importRawRolesInput');
+                            const exportRawRolesBtn = document.getElementById('exportRawRolesBtn');
+                            const importRawRolesBtn = document.getElementById('importRawRolesBtn');
+                            const exportDetailedRolesBtn = document.getElementById('exportDetailedRolesBtn');
+                            const importDetailedRolesInput = document.getElementById('importDetailedRolesInput');
+                            const importDetailedRolesBtn = document.getElementById('importDetailedRolesBtn');
+
+                            // Export Raw: export roles as-is
+                            if (exportRawRolesBtn) exportRawRolesBtn.onclick = () => {
+                                const rolesInstance = getRolesInstance();
+                                if (!rolesInstance || !rolesInstance.roles) {
+                                    alert('No roles found to export.');
+                                    return;
+                                }
+                                const blob = new Blob([JSON.stringify(rolesInstance.roles, null, 2)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'roles.raw.json';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                            };
+
+                            // Import Raw: import roles as-is
+                            if (importRawRolesInput) importRawRolesInput.onchange = (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = function(evt) {
+                                    try {
+                                        const data = JSON.parse(evt.target.result);
+                                        const rolesInstance = getRolesInstance();
+                                        if (rolesInstance) {
+                                            rolesInstance.roles = data;
+                                            alert('Raw roles import successful.');
+                                        } else {
+                                            alert('No roles instance found.');
+                                        }
+                                    } catch (err) {
+                                        alert('Raw roles import failed: ' + err.message);
+                                    }
+                                };
+                                reader.readAsText(file);
+                            };
+
+                            // Export Detailed: export full roles object (including storageObj)
+                            if (exportDetailedRolesBtn) exportDetailedRolesBtn.onclick = () => {
+                                const rolesInstance = getRolesInstance();
+                                if (!rolesInstance) {
+                                    alert('No roles found to export.');
+                                    return;
+                                }
+                                const detailed = (typeof rolesInstance.constructor.CopyToJSON === 'function')
+                                    ? rolesInstance.constructor.CopyToJSON(rolesInstance)
+                                    : rolesInstance;
+                                const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'roles.detailed.json';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                            };
+
+                            // Import Detailed: import full roles object (including storageObj)
+                            if (importDetailedRolesInput) importDetailedRolesInput.onchange = (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = function(evt) {
+                                    try {
+                                        const data = JSON.parse(evt.target.result);
+                                        let rolesInstance = getRolesInstance();
+                                        if (rolesInstance && typeof rolesInstance.constructor.CopyFromObject === 'function') {
+                                            rolesInstance.constructor.CopyFromObject(rolesInstance, data);
+                                            alert('Detailed roles import successful.');
+                                        } else if (rolesInstance) {
+                                            Object.assign(rolesInstance, data);
+                                            alert('Detailed roles import successful (fallback).');
+                                        } else {
+                                            alert('No roles instance found.');
+                                        }
+                                    } catch (err) {
+                                        alert('Detailed roles import failed: ' + err.message);
+                                    }
+                                };
+                                reader.readAsText(file);
+                            };
+
+                            // Button triggers file input for import
+                            if (importRawRolesBtn && importRawRolesInput) importRawRolesBtn.onclick = () => importRawRolesInput.click();
+                            if (importDetailedRolesBtn && importDetailedRolesInput) importDetailedRolesBtn.onclick = () => importDetailedRolesInput.click();
                     // --- Callings ---
                     function getCallingsInstance() {
                         if (window.Callings && typeof window.Callings === 'object') {
