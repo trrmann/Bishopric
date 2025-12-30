@@ -1,4 +1,9 @@
 
+// Polyfill TextEncoder for Node.js/jsdom (must be first)
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = require('util').TextEncoder;
+}
+
 import { Auth } from '../auth.mjs';
 import { JSDOM } from 'jsdom';
 

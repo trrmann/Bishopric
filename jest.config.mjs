@@ -1,5 +1,6 @@
 // Jest ESM config
 export default {
+  setupFiles: ["<rootDir>/jest.setup.js"],
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['js', 'mjs', 'json', 'node'],
   testRegex: '.*\\.test\\.(mjs|js)$',

@@ -14,7 +14,8 @@ describe('TimerUtils', () => {
     const callback = jest.fn();
     TimerUtils.start(obj, 'timer', 'interval', callback, 1000);
     expect(obj.interval).toBe(1000);
-    expect(typeof obj.timer).toBe('object');
+    // Node.js setInterval returns a number, browser returns object
+    expect(['number', 'object']).toContain(typeof obj.timer);
     jest.advanceTimersByTime(2000);
     expect(callback).toHaveBeenCalledTimes(2);
   });
@@ -31,7 +32,7 @@ describe('TimerUtils', () => {
     TimerUtils.start(obj, 'timer', 'interval', callback, 1000);
     TimerUtils.pause(obj, 'timer');
     TimerUtils.resume(obj, 'timer', 'interval', callback);
-    expect(typeof obj.timer).toBe('object');
+    expect(['number', 'object']).toContain(typeof obj.timer);
     jest.advanceTimersByTime(1000);
     expect(callback).toHaveBeenCalled();
   });
