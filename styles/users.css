@@ -46,3 +46,42 @@
 .users-table button:hover {
   background: #d0d7e5;
 }
+
+/* Toolbar and Search Bar Styling */
+.users-toolbar {
+  margin-bottom: 1.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.users-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+.users-toolbar-buttons {
+  display: flex;
+  gap: 0.7em;
+}
+.users-search, .members-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 350px;
+  padding: 0.6em 1em;
+  border: 1px solid #d0d7e5;
+  border-radius: 0.4em;
+  font-size: 1em;
+  background: #f8fafc;
+  margin-right: 1em;
+}
+.users-toolbar .btn-secondary {
+  background: #f5f7fa;
+  color: #234;
+  border: 1px solid #e3e8f0;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.users-toolbar .btn-secondary:hover {
+  background: #e3e8f0;
+}
