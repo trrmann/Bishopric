@@ -16,6 +16,51 @@ class MockCacheStore {
 // --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+                                    describe('Event Schedule Templates Import/Export Buttons (Mock)', () => {
+                                        beforeEach(() => {
+                                            document.body.innerHTML = `
+                                                <button id="exportRawEventScheduleTemplatesBtn"></button>
+                                                <button id="importRawEventScheduleTemplatesBtn"></button>
+                                                <input type="file" id="importRawEventScheduleTemplatesInput">
+                                                <button id="exportDetailedEventScheduleTemplatesBtn"></button>
+                                                <button id="importDetailedEventScheduleTemplatesBtn"></button>
+                                                <input type="file" id="importDetailedEventScheduleTemplatesInput">
+                                            `;
+                                            window.alert = jest.fn();
+                                        });
+
+                                        afterEach(() => {
+                                            jest.resetModules();
+                                        });
+
+                                        it('Export Raw Event Schedule Templates button triggers mock alert', () => {
+                                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                            attachTestingTabHandlers();
+                                            document.getElementById('exportRawEventScheduleTemplatesBtn').dispatchEvent(new window.Event('click'));
+                                            expect(window.alert).toHaveBeenCalledWith('Mock: Export Raw Event Schedule Templates triggered.');
+                                        });
+
+                                        it('Import Raw Event Schedule Templates input triggers mock alert', () => {
+                                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                            attachTestingTabHandlers();
+                                            document.getElementById('importRawEventScheduleTemplatesInput').dispatchEvent(new window.Event('change'));
+                                            expect(window.alert).toHaveBeenCalledWith('Mock: Import Raw Event Schedule Templates triggered.');
+                                        });
+
+                                        it('Export Detailed Event Schedule Templates button triggers mock alert', () => {
+                                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                            attachTestingTabHandlers();
+                                            document.getElementById('exportDetailedEventScheduleTemplatesBtn').dispatchEvent(new window.Event('click'));
+                                            expect(window.alert).toHaveBeenCalledWith('Mock: Export Detailed Event Schedule Templates triggered.');
+                                        });
+
+                                        it('Import Detailed Event Schedule Templates input triggers mock alert', () => {
+                                            const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                            attachTestingTabHandlers();
+                                            document.getElementById('importDetailedEventScheduleTemplatesInput').dispatchEvent(new window.Event('change'));
+                                            expect(window.alert).toHaveBeenCalledWith('Mock: Import Detailed Event Schedule Templates triggered.');
+                                        });
+                                    });
                                 describe('Workflows Import/Export Buttons (Mock)', () => {
                                     beforeEach(() => {
                                         document.body.innerHTML = `

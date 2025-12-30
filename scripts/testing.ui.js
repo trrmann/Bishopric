@@ -40,6 +40,28 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+                                                                    // --- Event Schedule Templates (Mock, unique vars) ---
+                                                                    const est_importRawInput = document.getElementById('importRawEventScheduleTemplatesInput');
+                                                                    const est_exportRawBtn = document.getElementById('exportRawEventScheduleTemplatesBtn');
+                                                                    const est_importRawBtn = document.getElementById('importRawEventScheduleTemplatesBtn');
+                                                                    const est_exportDetailedBtn = document.getElementById('exportDetailedEventScheduleTemplatesBtn');
+                                                                    const est_importDetailedInput = document.getElementById('importDetailedEventScheduleTemplatesInput');
+                                                                    const est_importDetailedBtn = document.getElementById('importDetailedEventScheduleTemplatesBtn');
+
+                                                                    if (est_exportRawBtn) est_exportRawBtn.onclick = () => {
+                                                                        alert('Mock: Export Raw Event Schedule Templates triggered.');
+                                                                    };
+                                                                    if (est_importRawInput) est_importRawInput.onchange = () => {
+                                                                        alert('Mock: Import Raw Event Schedule Templates triggered.');
+                                                                    };
+                                                                    if (est_exportDetailedBtn) est_exportDetailedBtn.onclick = () => {
+                                                                        alert('Mock: Export Detailed Event Schedule Templates triggered.');
+                                                                    };
+                                                                    if (est_importDetailedInput) est_importDetailedInput.onchange = () => {
+                                                                        alert('Mock: Import Detailed Event Schedule Templates triggered.');
+                                                                    };
+                                                                    if (est_importRawBtn && est_importRawInput) est_importRawBtn.onclick = () => est_importRawInput.click();
+                                                                    if (est_importDetailedBtn && est_importDetailedInput) est_importDetailedBtn.onclick = () => est_importDetailedInput.click();
                                                             // --- Workflows (Mock, unique vars) ---
                                                             const wf_importRawInput = document.getElementById('importRawWorkflowsInput');
                                                             const wf_exportRawBtn = document.getElementById('exportRawWorkflowsBtn');
