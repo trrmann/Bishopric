@@ -14,6 +14,37 @@ describe('Roles Tab UI', () => {
         global.deleteRole = jest.fn((id) => alert('Delete role: ' + id));
     });
 
+    it('displays roles data from the Roles class (integration)', async () => {
+        // Mock Storage with roles and callings data
+        const mockRoles = {
+            roles: [
+                { id: 101, name: 'President', calling: 201, active: true },
+                { id: 102, name: 'Secretary', calling: 202, active: true }
+            ]
+        };
+        const mockCallings = {
+            callings: [
+                { id: 201, name: 'President', active: true },
+                { id: 202, name: 'Secretary', active: true }
+            ]
+        };
+        const mockStorage = {
+            Get: jest.fn(async (filename) => {
+                if (filename.includes('roles')) return mockRoles;
+                if (filename.includes('callings')) return mockCallings;
+                return undefined;
+            }),
+            Cache: { Set: jest.fn() },
+            SessionStorage: { Set: jest.fn() },
+            _gitHubDataObj: { fetchJsonFile: jest.fn() }
+        };
+        await renderRolesFromClass(mockStorage);
+        const rows = document.querySelectorAll('#rolesBody tr');
+        expect(rows.length).toBe(2);
+        expect(rows[0].innerHTML).toContain('President');
+        expect(rows[1].innerHTML).toContain('Secretary');
+    });
+
     it('renders roles table with provided roles and buttons', () => {
         const roles = [
             { id: 1, name: 'Bishop', callingName: 'Bishop', active: true },
