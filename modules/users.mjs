@@ -1,27 +1,10 @@
-//TODO #02 review the members module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
-//TODO #03 review the users module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
-//TODO #04 review the auth module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
-//TODO #05 review the site module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #06 read the additional roles from the users record
 //TODO #07 validate the additional roles do not have a calling associated with them
 //TODO #08 add additional roles to the roleIDs in the userDetails output
 //TODO #09 add additional roles to the roleNames in the userDetails output
 //TODO #10 ensure the additional roles are available in the role selector on the dashboard
-//TODO #11 add configuration tab for system admin, developer and tester
-//TODO #12 add organization tab for system admin, developer and tester
-//TODO #13 add callings tab for system admin, developer and tester
-//TODO #14 add roles tab for system admin, developer and tester
-//TODO #15 add users tab for system admin, developer and tester
-//TODO #16 add testing tab for developer and tester
-//TODO #17 add reset cache/storage functions to testing tab and add full use of these cache tiers to the entire site
-//TODO #18 add export / import to configuration, callings, roles, users (users and members) tabs
-//TODO #19 add role rights to the new tabs
-//TODO #20 add save functions to the special tabs
-//TODO #21 add encryption rekey function to configuration tab
-//TODO #22 add cloud store migration function to configuration tab
-//TODO #23 add workflows / schedule template tab for system admin
+
 //TODO #24 add tasks module - integrate into assignments tab
-//TODO #25 add church authentication - field to user for church username and church password and a call to authenticate against the church auth services.
 //TODO #26 add callings scrape function to callings tab
 //TODO #27 add members scrape function to users tab
 //TODO #28 add schedule module integrate into the schedule tab
