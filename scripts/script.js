@@ -34,24 +34,17 @@ window.openEditConfiguration = function() {
 };
 
 // Example: Render configuration table (placeholder, should be replaced with real config data)
-function renderConfigurationTable() {
-    const config = [
-        { key: 'Site Title', value: 'Unit Management Tools' },
-        { key: 'Admin Email', value: 'admin@example.com' },
-        { key: 'Debug Mode', value: 'Off' },
-        { key: 'Theme', value: 'Light' }
-    ];
-    const tbody = document.getElementById('configurationBody');
-    if (!tbody) return;
-    tbody.innerHTML = config.map(row => `<tr><td>${row.key}</td><td>${row.value}</td></tr>`).join('');
-}
+
+import { renderConfigurationTable } from './configuration.ui.js';
 
 // Render configuration table when Configuration section is shown
 const originalShowSection = window.showSection;
 window.showSection = function(sectionId) {
+    console.log('[DEBUG] showSection called with:', sectionId);
     originalShowSection(sectionId);
     if (sectionId === 'configuration') {
-        renderConfigurationTable();
+        console.log('[DEBUG] Calling renderConfigurationTable for configuration section');
+        renderConfigurationTable(window.Storage);
     }
     if (sectionId === 'eventscheduletemplate') {
         // Dynamically import and render the Event Schedule Template tab logic
@@ -96,6 +89,7 @@ import { Site } from "../modules/site.mjs";
     window.membersPerPage = 10;
     // Instantiate Site (handles all UI logic)
     const store = await Storage.Factory();
+    window.Storage = store; // Make store globally available for configuration rendering
     window.siteInstance = await Site.Factory(store);
     // Render members table on page load
     window.siteInstance.renderMembersTable();
@@ -114,36 +108,18 @@ import { Site } from "../modules/site.mjs";
 
 // Pagination rendering is now handled by Site class and Auth class as needed
 
-
-// Section navigation
-function showSection(sectionId) {
-    // Hide all sections
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(section => section.classList.remove('active'));
-
-    // Show the selected section
-    const selectedSection = document.getElementById(sectionId);
-    if (selectedSection) {
-        selectedSection.classList.add('active');
+// DEBUG: Render configuration table on page load to verify function is called
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.Storage) {
+        console.log('[DEBUG] Calling renderConfigurationTable on page load');
+        renderConfigurationTable(window.Storage);
+    } else {
+        console.warn('[DEBUG] window.Storage not set on DOMContentLoaded');
     }
+});
 
-    // Update active nav button
-    // Use document.activeElement to find the button if event is not available
-    let navBtn = null;
-    if (window.event && window.event.target) {
-        navBtn = window.event.target.closest('.nav-btn');
-    } else if (document.activeElement && document.activeElement.classList.contains('nav-btn')) {
-        navBtn = document.activeElement;
-    }
-    if (navBtn) {
-        const navButtons = document.querySelectorAll('.nav-btn');
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        navBtn.classList.add('active');
-    }
-}
 
-// Expose showSection to global scope for HTML inline event handler
-window.showSection = showSection;
+// (Removed duplicate window.showSection definition. The version with configuration logic and debug logs is now the only one in use.)
 
 // Quick action handler
 function quickAction(action) {
