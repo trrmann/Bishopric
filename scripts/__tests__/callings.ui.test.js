@@ -147,17 +147,33 @@ describe('Callings Tab UI', () => {
     it('renders callings table with provided callings and buttons', () => {
         const { renderCallingsTable } = require('../callings.ui.js');
         const callings = [
-            { id: 1, name: 'Bishop', member: 'John Doe', active: true },
-            { id: 2, name: 'Clerk', member: 'Jane Smith', active: false }
+            { id: 1, name: 'Bishop', level: 'Ward', hasTitle: true, title: 'President', titleOrdinal: 1, status: 'Active' },
+            { id: 2, name: 'Clerk', level: 'Ward', hasTitle: false, title: '', titleOrdinal: '', status: 'Inactive' }
         ];
         renderCallingsTable(callings);
         const rows = document.querySelectorAll('#callingsBody tr');
         expect(rows.length).toBe(2);
-        expect(rows[0].innerHTML).toContain('Bishop');
-        expect(rows[1].innerHTML).toContain('Clerk');
+        // Check columns for first row
+        const cells0 = rows[0].querySelectorAll('td');
+        expect(cells0[0].textContent).toBe('Bishop');
+        expect(cells0[1].textContent).toBe('Ward');
+        expect(cells0[2].textContent).toBe('Yes');
+        expect(cells0[3].textContent).toBe('President');
+        expect(cells0[4].textContent).toBe('1');
+        expect(cells0[5].textContent).toBe('Active');
+        // Check columns for second row
+        const cells1 = rows[1].querySelectorAll('td');
+        expect(cells1[0].textContent).toBe('Clerk');
+        expect(cells1[1].textContent).toBe('Ward');
+        expect(cells1[2].textContent).toBe('No');
+        expect(cells1[3].textContent).toBe('');
+        expect(cells1[4].textContent).toBe('');
+        expect(cells1[5].textContent).toBe('Inactive');
         // Buttons present
         expect(rows[0].querySelector('.callings-edit-btn')).toBeTruthy();
         expect(rows[0].querySelector('.callings-delete-btn')).toBeTruthy();
+        expect(rows[1].querySelector('.callings-edit-btn')).toBeTruthy();
+        expect(rows[1].querySelector('.callings-delete-btn')).toBeTruthy();
     });
 
     it('edit button triggers editCalling', () => {

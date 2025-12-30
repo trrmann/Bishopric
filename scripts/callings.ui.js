@@ -18,7 +18,10 @@ export function renderCallingsTable(callings) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${calling.name || calling.calling || ''}</td>
-            <td>${calling.member || ''}</td>
+            <td>${calling.level || ''}</td>
+            <td>${calling.hasTitle ? 'Yes' : 'No'}</td>
+            <td>${calling.title || ''}</td>
+            <td>${calling.titleOrdinal != null ? calling.titleOrdinal : ''}</td>
             <td>${calling.status || (calling.active ? 'Active' : 'Inactive')}</td>
             <td style="white-space:nowrap;">
                 <button class="callings-edit-btn" data-calling-id="${calling.id}">Edit</button>
