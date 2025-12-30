@@ -18,6 +18,9 @@ export class Members {
     get Org() { return this.org; }
 
     // ===== Constructor =====
+    /**
+     * Always use Members.Factory to ensure dependencies are ready before use.
+     */
     constructor() {
         this.members = undefined;
         this.roles = undefined;
@@ -79,6 +82,11 @@ export class Members {
         }
     }
 
+    /**
+     * Async factory. Always use this to ensure roles, org, and storage are ready before use.
+     * @param {Object} configuration
+     * @returns {Promise<Members>}
+     */
     static async Factory(configuration) {
         const members = new Members();
         members.roles = await Roles.Factory(configuration);

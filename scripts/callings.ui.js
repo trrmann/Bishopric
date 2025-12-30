@@ -2,10 +2,8 @@ import { Callings } from '../modules/callings.mjs';
 // Render callings from Callings class (async)
 export async function renderCallingsFromClass(storageObj) {
     const store = storageObj || window.Storage;
-    const callingsInstance = new Callings({ _storageObj: store });
-    if (typeof callingsInstance.Fetch === 'function') {
-        await callingsInstance.Fetch();
-    }
+    // Use async factory for proper initialization
+    const callingsInstance = await Callings.Factory({ _storageObj: store });
     const callings = callingsInstance.CallingsDetails;
     renderCallingsTable(callings);
 }
@@ -69,10 +67,8 @@ if (typeof window !== 'undefined') {
 
         // Fetch and store all callings for search
         async function fetchAndRenderCallings() {
-            const callingsInstance = new Callings({ _storageObj: window.Storage });
-            if (typeof callingsInstance.Fetch === 'function') {
-                await callingsInstance.Fetch();
-            }
+            // Use async factory for proper initialization
+            const callingsInstance = await Callings.Factory({ _storageObj: window.Storage });
             allCallings = callingsInstance.CallingsDetails || [];
             renderCallingsTable(allCallings);
         }

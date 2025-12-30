@@ -9,7 +9,13 @@ export class Callings {
     get Storage() { return this.storage; }
 
     // ===== Constructor =====
+    /**
+     * @param {Object} configuration - Must have a valid _storageObj with async Get/Set methods.
+     */
     constructor(configuration) {
+        if (!configuration || !configuration._storageObj || typeof configuration._storageObj.Get !== 'function' || typeof configuration._storageObj.Set !== 'function') {
+            throw new Error('Callings: configuration._storageObj must be provided and implement async Get/Set methods.');
+        }
         this.storage = configuration._storageObj;
         this.callings = undefined;
         this.#_idMap = null;
@@ -70,6 +76,11 @@ export class Callings {
         destination.storage = source.storage;
         destination.callings = source.callings;
     }
+    /**
+     * Async factory. Always use this to ensure storage is ready before use.
+     * @param {Object} configuration
+     * @returns {Promise<Callings>}
+     */
     static async Factory(configuration) {
         const callings = new Callings(configuration);
         await callings.Fetch();

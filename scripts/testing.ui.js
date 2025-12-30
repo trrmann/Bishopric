@@ -40,6 +40,482 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+    // CONFIGURATION
+    const resetConfigBtn = document.getElementById('resetConfigBtn');
+    const viewConfigBtn = document.getElementById('viewConfigBtn');
+    const importConfigBtn = document.getElementById('importConfigBtn');
+    const importConfigInput = document.getElementById('importConfigInput');
+    const exportConfigBtn = document.getElementById('exportConfigBtn');
+    function getConfigInstance() {
+        if (window.Configuration && typeof window.Configuration === 'object') {
+            return window.Configuration;
+        }
+        if (window.Storage && window.Storage.Configuration && typeof window.Storage.Configuration === 'object') {
+            return window.Storage.Configuration;
+        }
+        return null;
+    }
+    if (resetConfigBtn) resetConfigBtn.onclick = async () => {
+        try {
+            const data = await fetchGithubJson('configuration.json');
+            const configInstance = getConfigInstance();
+            if (configInstance) {
+                configInstance.configuration = data;
+                alert('Configuration reset to GitHub values.');
+            }
+        } catch (err) { alert('Reset failed: ' + err.message); }
+    };
+    if (viewConfigBtn) viewConfigBtn.onclick = () => {
+        const configInstance = getConfigInstance();
+        alert('Configuration:\n' + JSON.stringify(configInstance?.configuration, null, 2));
+    };
+    if (importConfigBtn && importConfigInput) {
+        importConfigBtn.onclick = () => importConfigInput.click();
+        importConfigInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                const configInstance = getConfigInstance();
+                if (configInstance) {
+                    configInstance.configuration = data;
+                    alert('Configuration imported.');
+                }
+            } catch (err) { alert('Import failed: ' + err.message); }
+            importConfigInput.value = '';
+        };
+    }
+    if (exportConfigBtn) exportConfigBtn.onclick = () => {
+        const configInstance = getConfigInstance();
+        const data = configInstance?.configuration;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'configuration.json';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 0);
+    };
+                                                                            // --- Non-storage group reset/view logic ---
+                                                                            // Helper: fetch JSON from GitHub raw
+                                                                            async function fetchGithubJson(filename) {
+                                                                                const repo = 'trrmann/UnitManagementTools';
+                                                                                const branch = 'main';
+                                                                                const url = `https://raw.githubusercontent.com/${repo}/${branch}/data/${filename}`;
+                                                                                const resp = await fetch(url);
+                                                                                if (!resp.ok) throw new Error('Failed to fetch ' + filename);
+                                                                                return await resp.json();
+                                                                            }
+
+                                                                            // USERS
+                                                                            const resetUsersBtn = document.getElementById('resetUsersBtn');
+                                                                            const viewRawUsersBtn = document.getElementById('viewRawUsersBtn');
+                                                                            const viewDetailedUsersBtn = document.getElementById('viewDetailedUsersBtn');
+                                                                            if (resetUsersBtn) resetUsersBtn.onclick = async () => {
+                                                                                try {
+                                                                                    const data = await fetchGithubJson('users.json');
+                                                                                    const usersInstance = getUsersInstance();
+                                                                                    if (usersInstance) {
+                                                                                        usersInstance.users = data;
+                                                                                        alert('Users reset to GitHub values.');
+                                                                                    }
+                                                                                } catch (err) { alert('Reset failed: ' + err.message); }
+                                                                            };
+                                                                            if (viewRawUsersBtn) viewRawUsersBtn.onclick = () => {
+                                                                                const usersInstance = getUsersInstance();
+                                                                                alert('Users (Raw):\n' + JSON.stringify(usersInstance?.users, null, 2));
+                                                                            };
+                                                                            if (viewDetailedUsersBtn) viewDetailedUsersBtn.onclick = () => {
+                                                                                const usersInstance = getUsersInstance();
+                                                                                let detailed = usersInstance;
+                                                                                if (usersInstance && typeof usersInstance.constructor.CopyToJSON === 'function')
+                                                                                    detailed = usersInstance.constructor.CopyToJSON(usersInstance);
+                                                                                alert('Users (Detailed):\n' + JSON.stringify(detailed, null, 2));
+                                                                            };
+
+                                                                            // MEMBERS
+                                                                            const resetMembersBtn = document.getElementById('resetMembersBtn');
+                                                                            const viewRawMembersBtn = document.getElementById('viewRawMembersBtn');
+                                                                            const viewDetailedMembersBtn = document.getElementById('viewDetailedMembersBtn');
+                                                                            if (resetMembersBtn) resetMembersBtn.onclick = async () => {
+                                                                                try {
+                                                                                    const data = await fetchGithubJson('members.json');
+                                                                                    const membersInstance = getMembersInstance();
+                                                                                    if (membersInstance) {
+                                                                                        membersInstance.members = data;
+                                                                                        alert('Members reset to GitHub values.');
+                                                                                    }
+                                                                                } catch (err) { alert('Reset failed: ' + err.message); }
+                                                                            };
+                                                                            if (viewRawMembersBtn) viewRawMembersBtn.onclick = () => {
+                                                                                const membersInstance = getMembersInstance();
+                                                                                alert('Members (Raw):\n' + JSON.stringify(membersInstance?.members, null, 2));
+                                                                            };
+                                                                            if (viewDetailedMembersBtn) viewDetailedMembersBtn.onclick = () => {
+                                                                                const membersInstance = getMembersInstance();
+                                                                                let detailed = membersInstance;
+                                                                                if (membersInstance && typeof membersInstance.constructor.CopyToJSON === 'function')
+                                                                                    detailed = membersInstance.constructor.CopyToJSON(membersInstance);
+                                                                                alert('Members (Detailed):\n' + JSON.stringify(detailed, null, 2));
+                                                                            };
+
+                                                                            // ROLES
+                                                                            const resetRolesBtn = document.getElementById('resetRolesBtn');
+                                                                            const viewRawRolesBtn = document.getElementById('viewRawRolesBtn');
+                                                                            const viewDetailedRolesBtn = document.getElementById('viewDetailedRolesBtn');
+                                                                            if (resetRolesBtn) resetRolesBtn.onclick = async () => {
+                                                                                try {
+                                                                                    const data = await fetchGithubJson('roles.json');
+                                                                                    const rolesInstance = getRolesInstance();
+                                                                                    if (rolesInstance) {
+                                                                                        rolesInstance.roles = data;
+                                                                                        alert('Roles reset to GitHub values.');
+                                                                                    }
+                                                                                } catch (err) { alert('Reset failed: ' + err.message); }
+                                                                            };
+                                                                            if (viewRawRolesBtn) viewRawRolesBtn.onclick = () => {
+                                                                                const rolesInstance = getRolesInstance();
+                                                                                alert('Roles (Raw):\n' + JSON.stringify(rolesInstance?.roles, null, 2));
+                                                                            };
+                                                                            if (viewDetailedRolesBtn) viewDetailedRolesBtn.onclick = () => {
+                                                                                const rolesInstance = getRolesInstance();
+                                                                                let detailed = rolesInstance;
+                                                                                if (rolesInstance && typeof rolesInstance.constructor.CopyToJSON === 'function')
+                                                                                    detailed = rolesInstance.constructor.CopyToJSON(rolesInstance);
+                                                                                alert('Roles (Detailed):\n' + JSON.stringify(detailed, null, 2));
+                                                                            };
+
+                                                                            // CALLINGS
+                                                                            const resetCallingsBtn = document.getElementById('resetCallingsBtn');
+                                                                            const viewCallingsBtn = document.getElementById('viewCallingsBtn');
+                                                                            const importCallingsBtn = document.getElementById('importCallingsBtn');
+                                                                            const importCallingsInput = document.getElementById('importCallingsInput');
+                                                                            const exportCallingsBtn = document.getElementById('exportCallingsBtn');
+                                                                            if (resetCallingsBtn) resetCallingsBtn.onclick = async () => {
+                                                                                try {
+                                                                                    const data = await fetchGithubJson('callings.json');
+                                                                                    const callingsInstance = getCallingsInstance();
+                                                                                    if (callingsInstance) {
+                                                                                        callingsInstance.callings = data;
+                                                                                        alert('Callings reset to GitHub values.');
+                                                                                    }
+                                                                                } catch (err) { alert('Reset failed: ' + err.message); }
+                                                                            };
+                                                                            if (viewCallingsBtn) viewCallingsBtn.onclick = () => {
+                                                                                const callingsInstance = getCallingsInstance();
+                                                                                alert('Callings:\n' + JSON.stringify(callingsInstance?.callings, null, 2));
+                                                                            };
+                                                                            if (importCallingsBtn && importCallingsInput) {
+                                                                                importCallingsBtn.onclick = () => importCallingsInput.click();
+                                                                                importCallingsInput.onchange = async (e) => {
+                                                                                    const file = e.target.files[0];
+                                                                                    if (!file) return;
+                                                                                    try {
+                                                                                        const text = await file.text();
+                                                                                        const data = JSON.parse(text);
+                                                                                        const callingsInstance = getCallingsInstance();
+                                                                                        if (callingsInstance) {
+                                                                                            callingsInstance.callings = data;
+                                                                                            alert('Callings imported.');
+                                                                                        }
+                                                                                    } catch (err) { alert('Import failed: ' + err.message); }
+                                                                                    importCallingsInput.value = '';
+                                                                                };
+                                                                            }
+                                                                            if (exportCallingsBtn) exportCallingsBtn.onclick = () => {
+                                                                                const callingsInstance = getCallingsInstance();
+                                                                                const data = callingsInstance?.callings;
+                                                                                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                                                const url = URL.createObjectURL(blob);
+                                                                                const a = document.createElement('a');
+                                                                                a.href = url;
+                                                                                a.download = 'callings.json';
+                                                                                document.body.appendChild(a);
+                                                                                a.click();
+                                                                                setTimeout(() => {
+                                                                                    document.body.removeChild(a);
+                                                                                    URL.revokeObjectURL(url);
+                                                                                }, 0);
+                                                                            };
+
+                                                                            // ORGANIZATION
+                                                                            const resetOrgBtn = document.getElementById('resetOrgBtn');
+                                                                            const viewOrgBtn = document.getElementById('viewOrgBtn');
+                                                                            const importOrgBtn = document.getElementById('importOrgBtn');
+                                                                            const importOrgInput = document.getElementById('importOrgInput');
+                                                                            const exportOrgBtn = document.getElementById('exportOrgBtn');
+                                                                            if (resetOrgBtn) resetOrgBtn.onclick = async () => {
+                                                                                try {
+                                                                                    const data = await fetchGithubJson('organizations.json');
+                                                                                    const orgInstance = getOrgInstance();
+                                                                                    if (orgInstance) {
+                                                                                        orgInstance.organization = data;
+                                                                                        alert('Organization reset to GitHub values.');
+                                                                                    }
+                                                                                } catch (err) { alert('Reset failed: ' + err.message); }
+                                                                            };
+                                                                            if (viewOrgBtn) viewOrgBtn.onclick = () => {
+                                                                                const orgInstance = getOrgInstance();
+                                                                                alert('Organization:\n' + JSON.stringify(orgInstance?.organization, null, 2));
+                                                                            };
+                                                                            if (importOrgBtn && importOrgInput) {
+                                                                                importOrgBtn.onclick = () => importOrgInput.click();
+                                                                                importOrgInput.onchange = async (e) => {
+                                                                                    const file = e.target.files[0];
+                                                                                    if (!file) return;
+                                                                                    try {
+                                                                                        const text = await file.text();
+                                                                                        const data = JSON.parse(text);
+                                                                                        const orgInstance = getOrgInstance();
+                                                                                        if (orgInstance) {
+                                                                                            orgInstance.organization = data;
+                                                                                            alert('Organization imported.');
+                                                                                        }
+                                                                                    } catch (err) { alert('Import failed: ' + err.message); }
+                                                                                    importOrgInput.value = '';
+                                                                                };
+                                                                            }
+                                                                            if (exportOrgBtn) exportOrgBtn.onclick = () => {
+                                                                                const orgInstance = getOrgInstance();
+                                                                                const data = orgInstance?.organization;
+                                                                                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                                                const url = URL.createObjectURL(blob);
+                                                                                const a = document.createElement('a');
+                                                                                a.href = url;
+                                                                                a.download = 'organizations.json';
+                                                                                document.body.appendChild(a);
+                                                                                a.click();
+                                                                                setTimeout(() => {
+                                                                                    document.body.removeChild(a);
+                                                                                    URL.revokeObjectURL(url);
+                                                                                }, 0);
+                                                                            };
+
+                                                                            // EVENT SCHEDULE TEMPLATES (mock)
+                                                                            const resetEventScheduleTemplatesBtn = document.getElementById('resetEventScheduleTemplatesBtn');
+                                                                            const viewRawEventScheduleTemplatesBtn = document.getElementById('viewRawEventScheduleTemplatesBtn');
+                                                                            const viewDetailedEventScheduleTemplatesBtn = document.getElementById('viewDetailedEventScheduleTemplatesBtn');
+                                                                            if (resetEventScheduleTemplatesBtn) resetEventScheduleTemplatesBtn.onclick = () => {
+                                                                                alert('Mock: Reset Event Schedule Templates to GitHub values.');
+                                                                            };
+                                                                            if (viewRawEventScheduleTemplatesBtn) viewRawEventScheduleTemplatesBtn.onclick = () => {
+                                                                                alert('Mock: View Raw Event Schedule Templates.');
+                                                                            };
+                                                                            if (viewDetailedEventScheduleTemplatesBtn) viewDetailedEventScheduleTemplatesBtn.onclick = () => {
+                                                                                alert('Mock: View Detailed Event Schedule Templates.');
+                                                                            };
+
+                                                                            // WORKFLOWS (mock)
+                                                                            const resetWorkflowsBtn = document.getElementById('resetWorkflowsBtn');
+                                                                            const viewRawWorkflowsBtn = document.getElementById('viewRawWorkflowsBtn');
+                                                                            const viewDetailedWorkflowsBtn = document.getElementById('viewDetailedWorkflowsBtn');
+                                                                            if (resetWorkflowsBtn) resetWorkflowsBtn.onclick = () => {
+                                                                                alert('Mock: Reset Workflows to GitHub values.');
+                                                                            };
+                                                                            if (viewRawWorkflowsBtn) viewRawWorkflowsBtn.onclick = () => {
+                                                                                alert('Mock: View Raw Workflows.');
+                                                                            };
+                                                                            if (viewDetailedWorkflowsBtn) viewDetailedWorkflowsBtn.onclick = () => {
+                                                                                alert('Mock: View Detailed Workflows.');
+                                                                            };
+                                                                        // --- Storage Groups: Cache, Session Storage, Local Storage, Cloud Storage ---
+                                                                        // --- Cache ---
+                                                                        const importCacheInput = document.getElementById('importCacheInput');
+                                                                        const importCacheBtn = document.getElementById('importCacheBtn');
+                                                                        const exportCacheBtn = document.getElementById('exportCacheBtn');
+                                                                        if (importCacheBtn && importCacheInput) importCacheBtn.onclick = () => importCacheInput.click();
+                                                                        if (exportCacheBtn) exportCacheBtn.onclick = () => {
+                                                                            let cacheData = null;
+                                                                            if (window.Storage && window.Storage.Cache && typeof window.Storage.Cache.dump === 'function') {
+                                                                                cacheData = window.Storage.Cache.dump();
+                                                                            } else if (window.CacheStore && typeof window.CacheStore.dump === 'function') {
+                                                                                cacheData = window.CacheStore.dump();
+                                                                            } else if (window.localStorage) {
+                                                                                // fallback: dump all localStorage keys starting with 'cache:'
+                                                                                cacheData = {};
+                                                                                for (let i = 0; i < window.localStorage.length; i++) {
+                                                                                    const key = window.localStorage.key(i);
+                                                                                    if (key && key.startsWith('cache:')) {
+                                                                                        cacheData[key] = window.localStorage.getItem(key);
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            if (!cacheData) {
+                                                                                alert('No cache data found to export.');
+                                                                                return;
+                                                                            }
+                                                                            const blob = new Blob([JSON.stringify(cacheData, null, 2)], { type: 'application/json' });
+                                                                            const url = URL.createObjectURL(blob);
+                                                                            const a = document.createElement('a');
+                                                                            a.href = url;
+                                                                            a.download = 'cache.json';
+                                                                            document.body.appendChild(a);
+                                                                            a.click();
+                                                                            document.body.removeChild(a);
+                                                                            URL.revokeObjectURL(url);
+                                                                        };
+                                                                        if (importCacheInput) importCacheInput.onchange = (e) => {
+                                                                            const file = e.target.files[0];
+                                                                            if (!file) return;
+                                                                            const reader = new FileReader();
+                                                                            reader.onload = function(evt) {
+                                                                                try {
+                                                                                    const data = JSON.parse(evt.target.result);
+                                                                                    if (window.Storage && window.Storage.Cache && typeof window.Storage.Cache.load === 'function') {
+                                                                                        window.Storage.Cache.load(data);
+                                                                                    } else if (window.CacheStore && typeof window.CacheStore.load === 'function') {
+                                                                                        window.CacheStore.load(data);
+                                                                                    } else {
+                                                                                        // fallback: store each key in localStorage
+                                                                                        for (const key in data) {
+                                                                                            if (data.hasOwnProperty(key)) {
+                                                                                                window.localStorage.setItem(key, data[key]);
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    alert('Cache import successful.');
+                                                                                } catch (err) {
+                                                                                    alert('Cache import failed: ' + err.message);
+                                                                                }
+                                                                            };
+                                                                            reader.readAsText(file);
+                                                                        };
+
+                                                                        // --- Session Storage ---
+                                                                        const importSessionStorageInput = document.getElementById('importSessionStorageInput');
+                                                                        const importSessionStorageBtn = document.getElementById('importSessionStorageBtn');
+                                                                        const exportSessionStorageBtn = document.getElementById('exportSessionStorageBtn');
+                                                                        if (importSessionStorageBtn && importSessionStorageInput) importSessionStorageBtn.onclick = () => importSessionStorageInput.click();
+                                                                        if (exportSessionStorageBtn) exportSessionStorageBtn.onclick = () => {
+                                                                            if (!window.sessionStorage) {
+                                                                                alert('Session Storage not available.');
+                                                                                return;
+                                                                            }
+                                                                            const data = {};
+                                                                            for (let i = 0; i < window.sessionStorage.length; i++) {
+                                                                                const key = window.sessionStorage.key(i);
+                                                                                data[key] = window.sessionStorage.getItem(key);
+                                                                            }
+                                                                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                                            const url = URL.createObjectURL(blob);
+                                                                            const a = document.createElement('a');
+                                                                            a.href = url;
+                                                                            a.download = 'sessionStorage.json';
+                                                                            document.body.appendChild(a);
+                                                                            a.click();
+                                                                            document.body.removeChild(a);
+                                                                            URL.revokeObjectURL(url);
+                                                                        };
+                                                                        if (importSessionStorageInput) importSessionStorageInput.onchange = (e) => {
+                                                                            const file = e.target.files[0];
+                                                                            if (!file) return;
+                                                                            const reader = new FileReader();
+                                                                            reader.onload = function(evt) {
+                                                                                try {
+                                                                                    const data = JSON.parse(evt.target.result);
+                                                                                    for (const key in data) {
+                                                                                        if (data.hasOwnProperty(key)) {
+                                                                                            window.sessionStorage.setItem(key, data[key]);
+                                                                                        }
+                                                                                    }
+                                                                                    alert('Session Storage import successful.');
+                                                                                } catch (err) {
+                                                                                    alert('Session Storage import failed: ' + err.message);
+                                                                                }
+                                                                            };
+                                                                            reader.readAsText(file);
+                                                                        };
+
+                                                                        // --- Local Storage ---
+                                                                        const importLocalStorageInput = document.getElementById('importLocalStorageInput');
+                                                                        const importLocalStorageBtn = document.getElementById('importLocalStorageBtn');
+                                                                        const exportLocalStorageBtn = document.getElementById('exportLocalStorageBtn');
+                                                                        if (importLocalStorageBtn && importLocalStorageInput) importLocalStorageBtn.onclick = () => importLocalStorageInput.click();
+                                                                        if (exportLocalStorageBtn) exportLocalStorageBtn.onclick = () => {
+                                                                            if (!window.localStorage) {
+                                                                                alert('Local Storage not available.');
+                                                                                return;
+                                                                            }
+                                                                            const data = {};
+                                                                            for (let i = 0; i < window.localStorage.length; i++) {
+                                                                                const key = window.localStorage.key(i);
+                                                                                data[key] = window.localStorage.getItem(key);
+                                                                            }
+                                                                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                                            const url = URL.createObjectURL(blob);
+                                                                            const a = document.createElement('a');
+                                                                            a.href = url;
+                                                                            a.download = 'localStorage.json';
+                                                                            document.body.appendChild(a);
+                                                                            a.click();
+                                                                            document.body.removeChild(a);
+                                                                            URL.revokeObjectURL(url);
+                                                                        };
+                                                                        if (importLocalStorageInput) importLocalStorageInput.onchange = (e) => {
+                                                                            const file = e.target.files[0];
+                                                                            if (!file) return;
+                                                                            const reader = new FileReader();
+                                                                            reader.onload = function(evt) {
+                                                                                try {
+                                                                                    const data = JSON.parse(evt.target.result);
+                                                                                    for (const key in data) {
+                                                                                        if (data.hasOwnProperty(key)) {
+                                                                                            window.localStorage.setItem(key, data[key]);
+                                                                                        }
+                                                                                    }
+                                                                                    alert('Local Storage import successful.');
+                                                                                } catch (err) {
+                                                                                    alert('Local Storage import failed: ' + err.message);
+                                                                                }
+                                                                            };
+                                                                            reader.readAsText(file);
+                                                                        };
+
+                                                                        // --- Cloud Storage (Mock) ---
+                                                                        const importCloudStorageInput = document.getElementById('importCloudStorageInput');
+                                                                        const importCloudStorageBtn = document.getElementById('importCloudStorageBtn');
+                                                                        const exportCloudStorageBtn = document.getElementById('exportCloudStorageBtn');
+                                                                        if (importCloudStorageBtn && importCloudStorageInput) importCloudStorageBtn.onclick = () => importCloudStorageInput.click();
+                                                                        if (exportCloudStorageBtn) exportCloudStorageBtn.onclick = () => {
+                                                                            if (window.CloudStorage && typeof window.CloudStorage.dump === 'function') {
+                                                                                const data = window.CloudStorage.dump();
+                                                                                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                                                const url = URL.createObjectURL(blob);
+                                                                                const a = document.createElement('a');
+                                                                                a.href = url;
+                                                                                a.download = 'cloudStorage.json';
+                                                                                document.body.appendChild(a);
+                                                                                a.click();
+                                                                                document.body.removeChild(a);
+                                                                                URL.revokeObjectURL(url);
+                                                                            } else {
+                                                                                alert('Cloud Storage export is not implemented.');
+                                                                            }
+                                                                        };
+                                                                        if (importCloudStorageInput) importCloudStorageInput.onchange = (e) => {
+                                                                            const file = e.target.files[0];
+                                                                            if (!file) return;
+                                                                            const reader = new FileReader();
+                                                                            reader.onload = function(evt) {
+                                                                                try {
+                                                                                    const data = JSON.parse(evt.target.result);
+                                                                                    if (window.CloudStorage && typeof window.CloudStorage.load === 'function') {
+                                                                                        window.CloudStorage.load(data);
+                                                                                        alert('Cloud Storage import successful.');
+                                                                                    } else {
+                                                                                        alert('Cloud Storage import is not implemented.');
+                                                                                    }
+                                                                                } catch (err) {
+                                                                                    alert('Cloud Storage import failed: ' + err.message);
+                                                                                }
+                                                                            };
+                                                                            reader.readAsText(file);
+                                                                        };
                                                                     // --- Event Schedule Templates (Mock, unique vars) ---
                                                                     const est_importRawInput = document.getElementById('importRawEventScheduleTemplatesInput');
                                                                     const est_exportRawBtn = document.getElementById('exportRawEventScheduleTemplatesBtn');

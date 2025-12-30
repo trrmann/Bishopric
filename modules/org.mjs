@@ -10,7 +10,13 @@ export class Org {
      * Creates an Org instance.
      * @param {object} configuration - Configuration object containing _storageObj.
      */
+    /**
+     * @param {Object} configuration - Must have a valid _storageObj with async Get/Set methods.
+     */
     constructor(configuration) {
+        if (!configuration || !configuration._storageObj || typeof configuration._storageObj.Get !== 'function' || typeof configuration._storageObj.Set !== 'function') {
+            throw new Error('Org: configuration._storageObj must be provided and implement async Get/Set methods.');
+        }
         this.storage = configuration._storageObj;
         this.organization = undefined;
     }
@@ -54,6 +60,11 @@ export class Org {
      * Factory method to create and initialize an Org instance.
      * @param {object} configuration - Configuration object containing _storageObj.
      * @returns {Promise<Org>} Initialized Org instance.
+     */
+    /**
+     * Async factory. Always use this to ensure storage is ready before use.
+     * @param {Object} configuration
+     * @returns {Promise<Org>}
      */
     static async Factory(configuration) {
         const org = new Org(configuration);

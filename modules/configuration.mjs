@@ -11,7 +11,13 @@ export class Configuration {
      * Creates a Configuration instance.
      * @param {Object} storageObject - The storage object used for config persistence and retrieval.
      */
+    /**
+     * @param {Object} storageObject - Must be a valid storage object with async Get/Set methods.
+     */
     constructor(storageObject) {
+        if (!storageObject || typeof storageObject.Get !== 'function' || typeof storageObject.Set !== 'function') {
+            throw new Error('Configuration: storageObject must be provided and implement async Get/Set methods.');
+        }
         this._storageObj = storageObject;
         this.configuration = undefined;
     }
@@ -39,6 +45,11 @@ export class Configuration {
         this.configuration = configuration;
     }
 
+    /**
+     * Async factory. Always use this to ensure storage is ready before use.
+     * @param {Object} storageObject
+     * @returns {Promise<Configuration>}
+     */
     static async Factory(storageObject) {
         const config = new Configuration(storageObject);
         await config.Fetch();

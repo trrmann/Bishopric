@@ -48,6 +48,23 @@ export class Users {
     // ===== Instance Accessors =====
 
     /**
+     * Always use Users.Factory to ensure dependencies are ready before use.
+     */
+    // (Constructor is defined below, only one allowed per class)
+
+    /**
+     * Async factory. Always use this to ensure members, roles, org, and storage are ready before use.
+     * @param {Object} configuration
+     * @returns {Promise<Users>}
+     */
+    static async Factory(configuration) {
+        const users = new Users();
+        users.members = await Members.Factory(configuration);
+        await users.Fetch?.();
+        return users;
+    }
+
+    /**
      * Explicitly invalidates the cached users details. Call this after any mutation to users or members data.
      * This ensures that UsersDetails() returns up-to-date information.
      */

@@ -21,6 +21,9 @@ export class Roles {
     get Roles() { return this.roles; }
 
     // ===== Constructor =====
+    /**
+     * Always use Roles.Factory to ensure dependencies are ready before use.
+     */
     constructor() {
         this.callings = undefined;
         this.roles = undefined;
@@ -48,6 +51,11 @@ export class Roles {
         }
         destination.roles = source.roles;
     }
+    /**
+     * Async factory. Always use this to ensure callings and storage are ready before use.
+     * @param {Object} configuration
+     * @returns {Promise<Roles>}
+     */
     static async Factory(configuration) {
         const roles = new Roles();
         roles.callings = await Callings.Factory(configuration);
