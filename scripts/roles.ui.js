@@ -9,7 +9,9 @@ export function renderRolesTable(roles) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${role.name}</td>
-            <td>${role.callingName || ''}</td>
+            <td>${role.callingName ? role.callingName : 'none'}</td>
+            <td>${Array.isArray(role.subRoleNames) ? role.subRoleNames.join(', ') : ''}</td>
+            <td>${role.status || (role.active ? 'Active' : 'Inactive')}</td>
             <td>
                 <button class="roles-edit-btn" onclick="editRole(${role.id})">Edit</button>
                 <button class="roles-delete-btn" onclick="deleteRole(${role.id})">Delete</button>

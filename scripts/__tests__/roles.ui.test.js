@@ -101,16 +101,35 @@ describe('Roles Tab UI', () => {
         expect(rows[1].innerHTML).toContain('Secretary');
     });
 
-    it('renders roles table with provided roles and buttons', () => {
+    it('renders roles table with new columns and buttons', () => {
         const roles = [
-            { id: 1, name: 'Bishop', callingName: 'Bishop', active: true },
-            { id: 2, name: 'Clerk', callingName: 'Clerk', active: true }
+            { id: 1, name: 'Bishop', callingName: 'Bishop', subRoleNames: ['Assistant'], status: 'Active' },
+            { id: 2, name: 'Clerk', callingName: '', subRoleNames: [], status: 'Inactive' },
+            { id: 3, name: 'Teacher', subRoleNames: ['Junior', 'Senior'], status: 'Active' }
         ];
         renderRolesTable(roles);
         const rows = document.querySelectorAll('#rolesBody tr');
-        expect(rows.length).toBe(2);
-        expect(rows[0].innerHTML).toContain('Bishop');
-        expect(rows[1].innerHTML).toContain('Clerk');
+        expect(rows.length).toBe(3);
+        // Check columns for first row
+        const cells = rows[0].querySelectorAll('td');
+        expect(cells[0].textContent).toBe('Bishop'); // Role Name
+        expect(cells[1].textContent).toBe('Bishop'); // Calling Name
+        expect(cells[2].textContent).toBe('Assistant'); // Sub Role Names
+        expect(cells[3].textContent).toBe('Active'); // Status
+        // Second row: callingName empty, should show 'none'
+        expect(cells.length).toBe(5);
+        const cells2 = rows[1].querySelectorAll('td');
+        expect(cells2[0].textContent).toBe('Clerk');
+        expect(cells2[1].textContent).toBe('none');
+        expect(cells2[2].textContent).toBe('');
+        expect(cells2[3].textContent).toBe('Inactive');
+        // Third row: multiple subRoleNames
+        const cells3 = rows[2].querySelectorAll('td');
+        expect(cells3[0].textContent).toBe('Teacher');
+        expect(cells3[1].textContent).toBe('none');
+        expect(cells3[2].textContent).toBe('Junior, Senior');
+        expect(cells3[3].textContent).toBe('Active');
+        // Buttons
         expect(rows[0].querySelector('.roles-edit-btn')).toBeTruthy();
         expect(rows[0].querySelector('.roles-delete-btn')).toBeTruthy();
     });
