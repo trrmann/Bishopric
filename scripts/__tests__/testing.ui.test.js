@@ -150,8 +150,10 @@ describe('Testing Tab UI', () => {
         expect(window.alert).toHaveBeenCalledWith('Cloud Storage reset triggered. All cloud storage entries removed.');
     });
     it('viewCacheBtn shows cache entries in modal', () => {
-        window.CacheStore = {
-            entries: () => [['foo', 'bar'], ['baz', 123]]
+        window.Storage = {
+            Cache: {
+                entries: () => [['foo', 'bar'], ['baz', 123]]
+            }
         };
         document.body.innerHTML += '<button id="viewCacheBtn"></button>';
         const openModalMock = jest.fn();

@@ -1137,8 +1137,8 @@ export function attachTestingTabHandlers() {
         if (resetCacheBtn) resetCacheBtn.onclick = resetCache;
         if (viewCacheBtn) viewCacheBtn.onclick = () => {
             let entries = [];
-            if (window.CacheStore && typeof window.CacheStore.entries === 'function') {
-                entries = window.CacheStore.entries();
+            if (window.Storage && window.Storage.Cache && typeof window.Storage.Cache.entries === 'function') {
+                entries = window.Storage.Cache.entries();
             }
             const pretty = `<pre style="max-height:400px;overflow:auto;">${JSON.stringify(entries, null, 2)}</pre>`;
             if (typeof window.openModal === 'function') {
