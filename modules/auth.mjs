@@ -617,47 +617,7 @@ export class Auth {
             this.membersInstance = await Members.Factory({configuration: this.configuration, _storageObj:this._storageObj});
         }
         const members = await this.membersInstance.MembersDetails();
-        let filteredMembers = members;
-        let showUnitColumn = false;
-        const user = this.currentUser;
-        let userMember = null;
-        if (user && user.memberNumber) {
-            userMember = members.find(m => m.memberNumber === user.memberNumber);
-        }
-        // Determine calling level from member's callings
-        let callingLevel = null;
-        if (userMember && Array.isArray(userMember.levels) && userMember.levels.length > 0) {
-            if (userMember.levels.includes('mission')) callingLevel = 'mission';
-            else if (userMember.levels.includes('stake')) callingLevel = 'stake';
-            else if (userMember.levels.includes('ward')) callingLevel = 'ward';
-        }
-        if (callingLevel === 'mission' && userMember && userMember.stakeUnitNumber) {
-            filteredMembers = members.filter(m => m.stakeUnitNumber === userMember.stakeUnitNumber);
-            showUnitColumn = true;
-        } else if ((callingLevel === 'stake' || callingLevel === 'ward') && userMember && userMember.unitNumber) {
-            filteredMembers = members.filter(
-                m => m.unitNumber === userMember.unitNumber
-            );
-            showUnitColumn = false;
-        } else {
-            filteredMembers = members;
-        }
-        // Show/hide Unit column header (always show for mission-level users)
-        const unitHeader = document.getElementById('unitHeader');
-        if (unitHeader) {
-            if (showUnitColumn) {
-                unitHeader.style.display = '';
-            } else {
-                unitHeader.style.display = 'none';
-            }
-        }
-        const tbody = document.getElementById('membersBody');
-        if (tbody) tbody.innerHTML = '';
-        // Update dashboard total members stat
-        const dashboardTotalMembers = document.getElementById('dashboardTotalMembers');
-        if (dashboardTotalMembers) {
-            dashboardTotalMembers.textContent = filteredMembers.length;
-        }
+        window.allMembers = members;
         // Pagination logic
         let membersPerPage = window.membersPerPage || 10;
         let membersCurrentPage = window.membersCurrentPage || 1;
@@ -666,106 +626,30 @@ export class Auth {
             const val = parseInt(pageSizeSelect.value, 10);
             if (!isNaN(val) && val > 0) membersPerPage = val;
         }
-        const totalPages = Math.ceil(filteredMembers.length / membersPerPage) || 1;
+        const totalPages = Math.ceil(members.length / membersPerPage) || 1;
         if (membersCurrentPage > totalPages) membersCurrentPage = totalPages;
         const startIdx = (membersCurrentPage - 1) * membersPerPage;
         const endIdx = startIdx + membersPerPage;
-        const pageMembers = filteredMembers.slice(startIdx, endIdx);
+        const pageMembers = members.slice(startIdx, endIdx);
+        // Render table and pagination
+        if (typeof window.renderMembersTable === 'function') {
+            window.renderMembersTable(pageMembers);
+        }
+        if (typeof window.renderMembersPagination === 'function') {
+            window.renderMembersPagination(membersCurrentPage, totalPages);
+        }
+        // Wire up page change handlers
+        window.changeMembersPage = function(page) {
+            window.membersCurrentPage = page;
+            if (window.authInstance && typeof window.authInstance.renderMembersTable === 'function') {
+                window.authInstance.renderMembersTable();
+            }
+        };
         window.changeMembersPageSize = function() {
             window.membersCurrentPage = 1;
             if (window.authInstance && typeof window.authInstance.renderMembersTable === 'function') {
                 window.authInstance.renderMembersTable();
             }
         };
-        if (typeof window.renderMembersPagination === 'function') {
-            window.renderMembersPagination(membersCurrentPage, totalPages);
-        }
-        if (tbody) {
-            pageMembers.forEach(async member => {
-                const tr = document.createElement('tr');
-                // Name (titleless)
-                const nameTd = document.createElement('td');
-                nameTd.textContent = member.titlelessFullname || member.fullname || '';
-                tr.appendChild(nameTd);
-                // Email
-                const emailTd = document.createElement('td');
-                emailTd.textContent = member.email || '';
-                tr.appendChild(emailTd);
-                // Phone
-                const phoneTd = document.createElement('td');
-                phoneTd.textContent = member.phone || '';
-                tr.appendChild(phoneTd);
-                // Unit (only for mission-level users)
-                if (showUnitColumn) {
-                    const unitTd = document.createElement('td');
-                    let unitDisplay = '';
-                    if (member.unitName) {
-                        unitDisplay = member.unitName;
-                        if (member.unitType) {
-                            unitDisplay += ` ${member.unitType.charAt(0).toUpperCase() + member.unitType.slice(1)}`;
-                        }
-                    } else if (member.unitNumber) {
-                        unitDisplay = member.unitNumber;
-                    }
-                    unitTd.textContent = unitDisplay;
-                    tr.appendChild(unitTd);
-                } else {
-                    const unitTd = document.createElement('td');
-                    unitTd.style.display = 'none';
-                    tr.appendChild(unitTd);
-                }
-                // Calling(s)
-                const callingTd = document.createElement('td');
-                if (Array.isArray(member.callingNames) && member.callingNames.length > 0 && member.callingNames.some(n => n)) {
-                    callingTd.textContent = member.callingNames.filter(Boolean).join(', ');
-                } else {
-                    callingTd.textContent = 'no calling';
-                }
-                tr.appendChild(callingTd);
-                // Actions (only show if user has access)
-                const actionsTd = document.createElement('td');
-                let canEdit = false;
-                let canRemove = false;
-                // Check access config for current role
-                const config = this.configuration;
-                let selectedRoleID = null;
-                if (this.currentUser && this.currentUser.activeRole && Array.isArray(this.currentUser.roleNames) && Array.isArray(this.currentUser.roleIDs)) {
-                    const idx = this.currentUser.roleNames.indexOf(this.currentUser.activeRole);
-                    if (idx !== -1) {
-                        selectedRoleID = this.currentUser.roleIDs[idx];
-                    }
-                }
-                // Fallback to all userRoleIDs if no selectedRoleID
-                const userRoleIDs = (this.currentUser && Array.isArray(this.currentUser.roleIDs)) ? this.currentUser.roleIDs : [];
-                // EditMember access
-                const editAccess = config && config.access && config.access.members && config.access.members.parts && config.access.members.parts.EditMember;
-                if (editAccess) {
-                    if (selectedRoleID !== null && editAccess.includes(selectedRoleID)) canEdit = true;
-                    else if (selectedRoleID === null && userRoleIDs.some(id => editAccess.includes(id))) canEdit = true;
-                }
-                // RemoveMember access
-                const removeAccess = config && config.access && config.access.members && config.access.members.parts && config.access.members.parts.RemoveMember;
-                if (removeAccess) {
-                    if (selectedRoleID !== null && removeAccess.includes(selectedRoleID)) canRemove = true;
-                    else if (selectedRoleID === null && userRoleIDs.some(id => removeAccess.includes(id))) canRemove = true;
-                }
-                if (canEdit) {
-                    const editBtn = document.createElement('button');
-                    editBtn.className = 'btn-small members-EditMember';
-                    editBtn.textContent = 'Edit';
-                    editBtn.onclick = () => window.editMember(member.memberNumber);
-                    actionsTd.appendChild(editBtn);
-                }
-                if (canRemove) {
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'btn-small danger members-RemoveMember';
-                    deleteBtn.textContent = 'Delete';
-                    deleteBtn.onclick = () => window.deleteMember(member.memberNumber);
-                    actionsTd.appendChild(deleteBtn);
-                }
-                tr.appendChild(actionsTd);
-                tbody.appendChild(tr);
-            });
-        }
     }
 }

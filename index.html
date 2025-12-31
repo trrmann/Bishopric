@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles/users.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type="module" src="scripts/script.js"></script>
+    <script type="module" src="scripts/members.ui.js"></script>
 </head>
 <body>
 
@@ -540,10 +541,13 @@
             <section id="members" class="section">
                 <h2>Member Directory</h2>
                 <div class="section-toolbar">
-                    <input type="text members-SearchMember" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
-                    <button class="btn-primary members-AddMember" onclick="openAddMember()">
-                        <i class="fas fa-user-plus"></i> Add Member
-                    </button>
+                    <div style="display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap;">
+                        <input type="text members-SearchMember" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
+                        <button class="btn-secondary" id="syncMembersBtn"><i class="fas fa-sync-alt"></i> Sync Members</button>
+                        <button class="btn-primary members-AddMember" onclick="openAddMember()">
+                            <i class="fas fa-user-plus"></i> Add Member
+                        </button>
+                    </div>
                 </div>
                 <div id="membersTable" class="members-table">
                     <table>
@@ -551,9 +555,13 @@
                             <tr>
                                 <th id="nameHeader">Name</th>
                                 <th id="emailHeader">Email</th>
+                                <th id="genderHeader">Gender</th>
+                                <th id="memberNumberHeader">Member #</th>
                                 <th id="phoneHeader">Phone</th>
                                 <th id="unitHeader" style="display:none;">Unit</th>
                                 <th id="callingHeader">Calling</th>
+                                <th id="stakeNumberHeader">Stake #</th>
+                                <th id="unitNumberHeader">Unit #</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
