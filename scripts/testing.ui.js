@@ -704,52 +704,27 @@ export function attachTestingTabHandlers() {
 
                                             // Export Raw: export users as-is
                                             if (exportRawUsersBtn) exportRawUsersBtn.onclick = () => {
-                                                (async () => {
-                                                    let usersData = [];
-                                                    if (window.Storage && window.Storage.Users && typeof window.Storage.Users.UsersDetails === 'function') {
-                                                        try {
-                                                            usersData = await window.Storage.Users.UsersDetails();
-                                                        } catch (err) {
-                                                            usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
-                                                        }
-                                                    } else if (window.Users && typeof window.Users.UsersDetails === 'function') {
-                                                        try {
-                                                            usersData = await window.Users.UsersDetails();
-                                                        } catch (err) {
-                                                            usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
-                                                        }
-                                                    } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.UserEntries)) {
-                                                        usersData = window.Storage.Users.UserEntries;
-                                                    } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.users)) {
-                                                        usersData = window.Storage.Users.users;
-                                                    } else if (window.Users && Array.isArray(window.Users.UserEntries)) {
-                                                        usersData = window.Users.UserEntries;
-                                                    } else if (window.Users && Array.isArray(window.Users.users)) {
-                                                        usersData = window.Users.users;
-                                                    } else if (window.Storage && typeof window.Storage.Get === 'function') {
-                                                        try {
-                                                            const raw = await window.Storage.Get('users.json');
-                                                            if (raw && Array.isArray(raw.users)) {
-                                                                usersData = raw.users;
-                                                            }
-                                                        } catch (err) {
-                                                            usersData = [{ error: 'Failed to fetch users.json: ' + err.message }];
-                                                        }
-                                                    }
-                                                    if (!usersData || usersData.length === 0) {
-                                                        alert('No users found to export.');
-                                                        return;
-                                                    }
-                                                    const blob = new Blob([JSON.stringify(usersData, null, 2)], { type: 'application/json' });
-                                                    const url = URL.createObjectURL(blob);
-                                                    const a = document.createElement('a');
-                                                    a.href = url;
-                                                    a.download = 'users.raw.json';
-                                                    document.body.appendChild(a);
-                                                    a.click();
-                                                    document.body.removeChild(a);
-                                                    URL.revokeObjectURL(url);
-                                                })();
+                                                let usersData = [];
+                                                // Always use UserEntries from users class
+                                                const usersInstance = getUsersInstance();
+                                                if (usersInstance && Array.isArray(usersInstance.UserEntries)) {
+                                                    usersData = usersInstance.UserEntries;
+                                                } else if (usersInstance && Array.isArray(usersInstance.users)) {
+                                                    usersData = usersInstance.users;
+                                                }
+                                                if (!usersData || usersData.length === 0) {
+                                                    alert('No users found to export.');
+                                                    return;
+                                                }
+                                                const blob = new Blob([JSON.stringify(usersData, null, 2)], { type: 'application/json' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = 'users.raw.json';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
                                             };
 
                                             // Import Raw: import users as-is
@@ -759,29 +734,39 @@ export function attachTestingTabHandlers() {
                                                 const reader = new FileReader();
                                                 reader.onload = async function(evt) {
                                                     try {
-                                                        const data = JSON.parse(evt.target.result);
-                                                        let usersInstance = getUsersInstance();
-                                                        // Auto-create users instance if missing
-                                                        if (!usersInstance) {
+                                                        const imported = JSON.parse(evt.target.result);
+                                                        // Always use the users object inside the auth object
+                                                        let usersInstance = null;
+                                                        if (window.auth && window.auth.users) {
+                                                            usersInstance = window.auth.users;
+                                                        } else if (window.Users) {
+                                                            usersInstance = window.Users;
+                                                        } else if (window.Storage && window.Storage.Users) {
+                                                            usersInstance = window.Storage.Users;
+                                                        } else {
                                                             window.Users = { users: [] };
                                                             usersInstance = window.Users;
                                                         }
-                                                        usersInstance.users = data;
+                                                        // Overwrite all users with imported
+                                                        const importedArr = Array.isArray(imported) ? imported : (Array.isArray(imported.users) ? imported.users : []);
+                                                        usersInstance.users = importedArr;
+                                                        // Ensure window.Users, window.Storage.Users, and window.auth.users reference the same object
+                                                        if (window.Storage) window.Storage.Users = usersInstance;
+                                                        window.Users = usersInstance;
+                                                        if (window.auth) window.auth.users = usersInstance;
                                                         // Save to all storage layers via Storage class
                                                         if (window.Storage && typeof window.Storage.Set === 'function') {
-                                                            await window.Storage.Set('users.json', data, { googleId: 'users.json' });
-                                                            await window.Storage.Set('users.json', data, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
-                                                            await window.Storage.Set('users.json', data, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
-                                                            await window.Storage.Set('users.json', data, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                                                            await window.Storage.Set('users.json', { users: importedArr }, { googleId: 'users.json' });
+                                                            await window.Storage.Set('users.json', { users: importedArr }, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                                                            await window.Storage.Set('users.json', { users: importedArr }, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                                                            await window.Storage.Set('users.json', { users: importedArr }, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
                                                         }
                                                         alert('Raw users import successful.');
                                                         // Force reload and re-render users from storage
                                                         if (typeof window.Storage.Get === 'function') {
                                                             try {
                                                                 const raw = await window.Storage.Get('users.json');
-                                                                if (raw && Array.isArray(raw)) {
-                                                                    renderUsersTable(raw);
-                                                                } else if (raw && Array.isArray(raw.users)) {
+                                                                if (raw && Array.isArray(raw.users)) {
                                                                     renderUsersTable(raw.users);
                                                                 } else {
                                                                     renderUsersTable([]);
@@ -798,15 +783,23 @@ export function attachTestingTabHandlers() {
                                             };
 
                                             // Export Detailed: export full users object (including storageObj)
-                                            if (exportDetailedUsersBtn) exportDetailedUsersBtn.onclick = () => {
+                                            if (exportDetailedUsersBtn) exportDetailedUsersBtn.onclick = async () => {
                                                 const usersInstance = getUsersInstance();
                                                 if (!usersInstance) {
                                                     alert('No users found to export.');
                                                     return;
                                                 }
-                                                const detailed = (typeof usersInstance.constructor.CopyToJSON === 'function')
-                                                    ? usersInstance.constructor.CopyToJSON(usersInstance)
-                                                    : usersInstance;
+                                                // Always use UsersDetails from users class
+                                                let detailed = [];
+                                                if (typeof usersInstance.UsersDetails === 'function') {
+                                                    try {
+                                                        detailed = await usersInstance.UsersDetails();
+                                                    } catch (err) {
+                                                        detailed = [{ error: 'Failed to get UsersDetails: ' + err.message }];
+                                                    }
+                                                } else if (Array.isArray(usersInstance.UserEntries)) {
+                                                    detailed = usersInstance.UserEntries;
+                                                }
                                                 const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
                                                 const url = URL.createObjectURL(blob);
                                                 const a = document.createElement('a');
@@ -823,19 +816,43 @@ export function attachTestingTabHandlers() {
                                                 const file = e.target.files[0];
                                                 if (!file) return;
                                                 const reader = new FileReader();
-                                                reader.onload = function(evt) {
+                                                reader.onload = async function(evt) {
                                                     try {
-                                                        const data = JSON.parse(evt.target.result);
-                                                        let usersInstance = getUsersInstance();
-                                                        if (usersInstance && typeof usersInstance.constructor.CopyFromObject === 'function') {
-                                                            usersInstance.constructor.CopyFromObject(usersInstance, data);
-                                                            alert('Detailed users import successful.');
-                                                        } else if (usersInstance) {
-                                                            Object.assign(usersInstance, data);
-                                                            alert('Detailed users import successful (fallback).');
-                                                        } else {
-                                                            alert('No users instance found.');
+                                                        const detailedData = JSON.parse(evt.target.result);
+                                                        // Always set usersInstance.users to rawData from details
+                                                        function mockConvertDetailedToRaw(detailsArr) {
+                                                            // Assume each detail has memberNumber, fullname, email, roleNames, active
+                                                            return detailsArr.map(d => ({
+                                                                memberNumber: d.memberNumber,
+                                                                fullname: d.fullname,
+                                                                email: d.email,
+                                                                roleNames: d.roleNames,
+                                                                active: d.active
+                                                            }));
                                                         }
+                                                        const rawData = Array.isArray(detailedData)
+                                                            ? mockConvertDetailedToRaw(detailedData)
+                                                            : (Array.isArray(detailedData.details) ? mockConvertDetailedToRaw(detailedData.details) : []);
+                                                        let usersInstance = getUsersInstance();
+                                                        if (!usersInstance) {
+                                                            window.Users = { users: [] };
+                                                            usersInstance = window.Users;
+                                                        }
+                                                        usersInstance.users = rawData;
+                                                        // Save to all storage layers via Storage class
+                                                        const storage = window.Storage;
+                                                        const expireMS = storage?._cache_default_value_expireMS || 1000;
+                                                        const sessionMS = storage?._sessionStorage_default_value_expireMS || 1000;
+                                                        const localMS = storage?._localStorage_default_value_expireMS || 1000;
+                                                        if (storage && typeof storage.Set === 'function') {
+                                                            await storage.Set('users.json', { users: rawData }, {
+                                                                cacheTtlMs: expireMS,
+                                                                sessionTtlMs: sessionMS,
+                                                                localTtlMs: localMS,
+                                                                googleId: 'users.json'
+                                                            });
+                                                        }
+                                                        alert('Mock: Detailed users imported, converted to raw, and saved to all storages.');
                                                     } catch (err) {
                                                         alert('Detailed users import failed: ' + err.message);
                                                     }

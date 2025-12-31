@@ -154,17 +154,17 @@
                                                                 <div class="section-toolbar testing-toolbar improved-toolbar">
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Users</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Users..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <button class="btn-primary users-Superuser" id="superuserBtn"><i class="fas fa-user-shield"></i> Superuser</button>
                                                                         <button class="btn-primary" id="resetUsersBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewRawUsersBtn">View Raw</button>
                                                                         <button class="btn-secondary" id="viewDetailedUsersBtn">View Detailed</button>
-                                                                        <button class="btn-secondary" id="importRawUsersBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawUsersInput" style="display:none;" accept="application/json" />
-                                                                        <button class="btn-secondary" id="exportRawUsersBtn">Export Raw</button>
                                                                         <button class="btn-secondary" id="importDetailedUsersBtn">Import Detailed</button>
                                                                         <input type="file" id="importDetailedUsersInput" style="display:none;" accept="application/json" />
                                                                         <button class="btn-secondary" id="exportDetailedUsersBtn">Export Detailed</button>
-                                                                        <button class="btn-primary users-Superuser" id="superuserBtn"><i class="fas fa-user-shield"></i> Superuser</button>
+                                                                        <button class="btn-secondary" id="viewRawUsersBtn">View Raw</button>
+                                                                        <button class="btn-secondary" id="importRawUsersBtn">Import Raw</button>
+                                                                        <input type="file" id="importRawUsersInput" style="display:none;" accept="application/json" />
+                                                                        <button class="btn-secondary" id="exportRawUsersBtn">Export Raw</button>
+                                                                        <input type="text" class="testing-group-search" placeholder="Search Users..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Members</h3>
@@ -848,17 +848,11 @@
         <!-- Modal for adding/editing items -->
         <div id="modal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
+                <button class="modal-close-btn" onclick="closeModal()" aria-label="Close modal"><i class="fas fa-times"></i></button>
                 <h3 id="modalTitle">Modal Title</h3>
-                <form id="modalForm">
-                    <div id="modalBody">
-                        <!-- Dynamic form content goes here -->
-                    </div>
-                    <div class="modal-actions">
-                        <button type="submit" class="btn-primary">Save</button>
-                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-                    </div>
-                </form>
+                <div id="modalBody">
+                    <!-- Dynamic content goes here -->
+                </div>
             </div>
         </div>
     </div>

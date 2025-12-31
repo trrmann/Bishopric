@@ -27,6 +27,7 @@ import { Members } from "./members.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
 
 export class Users {
+    // Internal computed result cache for merged user/member details (not a general-purpose cache)
     #_usersDetailsCache = undefined;
     // ===== Instance Accessors =====
 
@@ -85,7 +86,7 @@ export class Users {
         return this.members && this.members.Roles && this.members.Roles.Callings ? this.members.Roles.Callings : undefined;
     }
     get Storage() {
-        // Allow test injection of storage
+        // Always use the central storage object for cache
         if (this.hasOwnProperty('_testStorage')) {
             if (!this._testStorage) {
                 throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");

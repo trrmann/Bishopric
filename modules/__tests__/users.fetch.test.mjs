@@ -6,11 +6,13 @@ import { jest } from '@jest/globals';
 
 // Mock storage tiers
 function createMockStorage({ cacheData, sessionData, localData, driveData, githubData }) {
+    // Central cache mock
+    const cacheMock = {
+        Get: jest.fn((key) => cacheData[key]),
+        Set: jest.fn((key, val) => { cacheData[key] = val; return Promise.resolve(); }),
+    };
     return {
-        Cache: {
-            Get: jest.fn((key) => cacheData[key]),
-            Set: jest.fn((key, val) => { cacheData[key] = val; return Promise.resolve(); }),
-        },
+        Cache: cacheMock,
         SessionStorage: {
             Get: jest.fn((key) => sessionData[key]),
             Set: jest.fn((key, val) => { sessionData[key] = val; return Promise.resolve(); }),
@@ -32,6 +34,8 @@ function createMockStorage({ cacheData, sessionData, localData, driveData, githu
         _gitHubDataObj: {
             fetchJsonFile: jest.fn((key) => githubData[key]),
         },
+        // Validate that only the central cache is used
+        getCentralCache: () => cacheMock
     };
 }
 
@@ -56,6 +60,8 @@ describe('Users.Fetch multi-tiered storage', () => {
         cache[Users.UsersFilename] = usersData;
         await users.Fetch();
         expect(users.users).toEqual(usersData);
+        // Validate central cache is used for presence and writes only
+        expect(storage.Cache.Set).not.toHaveBeenCalled();
     });
 
     it('reads from session if cache missing, does not write to cache if already present', async () => {
