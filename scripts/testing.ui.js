@@ -124,18 +124,57 @@ export function attachTestingTabHandlers() {
                                                                             const viewRawUsersBtn = document.getElementById('viewRawUsersBtn');
                                                                             const viewDetailedUsersBtn = document.getElementById('viewDetailedUsersBtn');
                                                                             if (resetUsersBtn) resetUsersBtn.onclick = async () => {
+                                                                                                    // Overwrite users.json with empty array in all storage layers
+                                                                                                    if (window.Storage && typeof window.Storage.Set === 'function') {
+                                                                                                        const emptyUsersObj = { users: [] };
+                                                                                                        await window.Storage.Set('users.json', emptyUsersObj, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                                                                                                        await window.Storage.Set('users.json', emptyUsersObj, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                                                                                                        await window.Storage.Set('users.json', emptyUsersObj, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                                                                                                        await window.Storage.Set('users.json', emptyUsersObj, { googleId: 'users.json' });
+                                                                                                    }
                                                                                 try {
-                                                                                    // Clear users class data
+                                                                                    // Clear users class data and all possible sources
                                                                                     const usersInstance = getUsersInstance();
                                                                                     if (usersInstance) {
-                                                                                        usersInstance.users = [];
+                                                                                        if (Array.isArray(usersInstance.users)) usersInstance.users = [];
+                                                                                        if (Array.isArray(usersInstance.UserEntries)) usersInstance.UserEntries = [];
+                                                                                        if (typeof usersInstance.UsersDetails === 'function') {
+                                                                                            usersInstance.UsersDetails = async () => [];
+                                                                                        }
+                                                                                    }
+                                                                                    if (window.Storage && window.Storage.Users) {
+                                                                                        if (Array.isArray(window.Storage.Users.users)) window.Storage.Users.users = [];
+                                                                                        if (Array.isArray(window.Storage.Users.UserEntries)) window.Storage.Users.UserEntries = [];
+                                                                                        if (typeof window.Storage.Users.UsersDetails === 'function') {
+                                                                                            window.Storage.Users.UsersDetails = async () => [];
+                                                                                        }
+                                                                                    }
+                                                                                    if (window.Users) {
+                                                                                        if (Array.isArray(window.Users.users)) window.Users.users = [];
+                                                                                        if (Array.isArray(window.Users.UserEntries)) window.Users.UserEntries = [];
+                                                                                        if (typeof window.Users.UsersDetails === 'function') {
+                                                                                            window.Users.UsersDetails = async () => [];
+                                                                                        }
                                                                                     }
                                                                                     // Clear cache, session, local, Google Drive via Storage class
-                                                                                    if (window.Storage && typeof window.Storage.Set === 'function') {
-                                                                                        await window.Storage.Set('users.json', [], { cacheTtlMs: window.Storage._cache_default_value_expireMS });
-                                                                                        await window.Storage.Set('users.json', [], { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
-                                                                                        await window.Storage.Set('users.json', [], { localTtlMs: window.Storage._localStorage_default_value_expireMS });
-                                                                                        await window.Storage.Set('users.json', [], { googleId: 'users.json' });
+                                                                                    if (window.Storage) {
+                                                                                        if (window.Storage.Cache && typeof window.Storage.Cache.Clear === 'function') {
+                                                                                            window.Storage.Cache.Clear();
+                                                                                        }
+                                                                                        if (window.Storage.SessionStorage && typeof window.Storage.SessionStorage.Clear === 'function') {
+                                                                                            window.Storage.SessionStorage.Clear();
+                                                                                        }
+                                                                                        if (window.Storage.LocalStorage && typeof window.Storage.LocalStorage.Clear === 'function') {
+                                                                                            window.Storage.LocalStorage.Clear();
+                                                                                        }
+                                                                                        if (window.Storage.GoogleDrive && typeof window.Storage.GoogleDrive.listFiles === 'function' && typeof window.Storage.GoogleDrive.deleteFile === 'function') {
+                                                                                            const files = await window.Storage.GoogleDrive.listFiles("name = 'users.json'");
+                                                                                            for (const file of files) {
+                                                                                                if (file.name === 'users.json') {
+                                                                                                    await window.Storage.GoogleDrive.deleteFile(file.id);
+                                                                                                }
+                                                                                            }
+                                                                                        }
                                                                                     }
                                                                                     alert('Users data cleared from all storage layers.');
                                                                                 } catch (err) { alert('Reset failed: ' + err.message); }
@@ -705,23 +744,35 @@ export function attachTestingTabHandlers() {
                                                 reader.onload = async function(evt) {
                                                     try {
                                                         const data = JSON.parse(evt.target.result);
-                                                        const usersInstance = getUsersInstance();
-                                                        if (usersInstance) {
-                                                            usersInstance.users = data;
-                                                            // Save to all storage layers via Storage class
-                                                            if (window.Storage && typeof window.Storage.Set === 'function') {
-                                                                // Save to Google Drive
-                                                                await window.Storage.Set('users.json', data, { googleId: 'users.json' });
-                                                                // Save to local storage with default expire time
-                                                                await window.Storage.Set('users.json', data, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
-                                                                // Save to session storage with default storage time
-                                                                await window.Storage.Set('users.json', data, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
-                                                                // Save to cache storage with default expire time
-                                                                await window.Storage.Set('users.json', data, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                                                        let usersInstance = getUsersInstance();
+                                                        // Auto-create users instance if missing
+                                                        if (!usersInstance) {
+                                                            window.Users = { users: [] };
+                                                            usersInstance = window.Users;
+                                                        }
+                                                        usersInstance.users = data;
+                                                        // Save to all storage layers via Storage class
+                                                        if (window.Storage && typeof window.Storage.Set === 'function') {
+                                                            await window.Storage.Set('users.json', data, { googleId: 'users.json' });
+                                                            await window.Storage.Set('users.json', data, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                                                            await window.Storage.Set('users.json', data, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                                                            await window.Storage.Set('users.json', data, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                                                        }
+                                                        alert('Raw users import successful.');
+                                                        // Force reload and re-render users from storage
+                                                        if (typeof window.Storage.Get === 'function') {
+                                                            try {
+                                                                const raw = await window.Storage.Get('users.json');
+                                                                if (raw && Array.isArray(raw)) {
+                                                                    renderUsersTable(raw);
+                                                                } else if (raw && Array.isArray(raw.users)) {
+                                                                    renderUsersTable(raw.users);
+                                                                } else {
+                                                                    renderUsersTable([]);
+                                                                }
+                                                            } catch (err) {
+                                                                renderUsersTable([]);
                                                             }
-                                                            alert('Raw users import successful.');
-                                                        } else {
-                                                            alert('No users instance found.');
                                                         }
                                                     } catch (err) {
                                                         alert('Raw users import failed: ' + err.message);

@@ -49,6 +49,46 @@ describe('Users Tab UI', () => {
                 <div class="users-toolbar-row">
                     <input type="text" id="usersSearch" class="users-search" placeholder="Search users..." />
                     <input type="text" id="membersSearch" class="members-search" placeholder="Search members..." />
+
+                describe('Import Raw Users Storage Overwrite', () => {
+                    beforeEach(() => {
+                        window.Storage = {
+                            Set: jest.fn(async () => {}),
+                            Get: jest.fn(async () => []),
+                            _cache_default_value_expireMS: 1000,
+                            _sessionStorage_default_value_expireMS: 1000,
+                            _localStorage_default_value_expireMS: 1000
+                        };
+                    });
+
+                    it('overwrites cache, session, local, and Google Drive', async () => {
+                        // Simulate import raw users
+                        const data = [{ memberNumber: '999', fullname: 'Test User', email: 'test@example.com', roles: ['Tester'] }];
+                        // Simulate the import logic
+                        await window.Storage.Set('users.json', data, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                        await window.Storage.Set('users.json', data, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                        await window.Storage.Set('users.json', data, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                        await window.Storage.Set('users.json', data, { googleId: 'users.json' });
+                        expect(window.Storage.Set).toHaveBeenCalledWith('users.json', data, expect.objectContaining({ cacheTtlMs: expect.any(Number) }));
+                        expect(window.Storage.Set).toHaveBeenCalledWith('users.json', data, expect.objectContaining({ sessionTtlMs: expect.any(Number) }));
+                        expect(window.Storage.Set).toHaveBeenCalledWith('users.json', data, expect.objectContaining({ localTtlMs: expect.any(Number) }));
+                        expect(window.Storage.Set).toHaveBeenCalledWith('users.json', data, expect.objectContaining({ googleId: 'users.json' }));
+                    });
+
+                    it('does NOT overwrite GitHub data', async () => {
+                        // Simulate GitHub fallback logic
+                        const githubSet = jest.fn();
+                        window.Storage.GitHub = { Set: githubSet };
+                        // Simulate import raw users
+                        const data = [{ memberNumber: '888', fullname: 'GitHub User', email: 'github@example.com', roles: ['GH'] }];
+                        // The import logic should NOT call GitHub Set
+                        await window.Storage.Set('users.json', data, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                        await window.Storage.Set('users.json', data, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                        await window.Storage.Set('users.json', data, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                        await window.Storage.Set('users.json', data, { googleId: 'users.json' });
+                        expect(githubSet).not.toHaveBeenCalled();
+                    });
+                });
                     <div class="users-toolbar-buttons">
                         <button class="btn-secondary" id="importUsersBtn">Import Users</button>
                         <button class="btn-secondary" id="importMembersBtn">Import Members</button>

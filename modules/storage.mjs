@@ -211,7 +211,9 @@ export class Storage {
             // ...existing code...
         } else {
             this._cache.Set(key, value, cacheTtlMs);
-            this._sessionStorage.setItem(key, value, sessionTtlMs);
+            if (typeof this._sessionStorage.Set === 'function') {
+                this._sessionStorage.Set(key, value, sessionTtlMs);
+            }
             this._localStorage.Set(key, value, localTtlMs);
         }
         if (this._googleDrive && googleId) {

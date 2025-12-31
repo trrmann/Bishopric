@@ -560,24 +560,29 @@ describe('Configuration Testing Tab Buttons', () => {
 });
 it('resetUsersBtn clears users class and all storage layers', async () => {
     // Setup mocks
-    const setMock = jest.fn(async () => {});
+    const cacheClearMock = jest.fn();
+    const sessionClearMock = jest.fn();
+    const localClearMock = jest.fn();
+    const gdListFilesMock = jest.fn(async () => [{ id: 'gd1', name: 'users.json' }]);
+    const gdDeleteFileMock = jest.fn(async () => true);
     window.Storage = {
-        Set: setMock,
-        _localStorage_default_value_expireMS: 1111,
-        _sessionStorage_default_value_expireMS: 2222,
-        _cache_default_value_expireMS: 3333,
+        Cache: { Clear: cacheClearMock },
+        SessionStorage: { Clear: sessionClearMock },
+        LocalStorage: { Clear: localClearMock },
+        GoogleDrive: { listFiles: gdListFilesMock, deleteFile: gdDeleteFileMock },
+        Users: { users: [{ id: 1, name: 'Alice' }] },
     };
     window.getUsersInstance = () => window.Storage.Users;
-    window.Storage.Users = { users: [{ id: 1, name: 'Alice' }] };
     document.body.innerHTML += '<button id="resetUsersBtn"></button>';
     window.alert = jest.fn();
     const { attachTestingTabHandlers } = require('../testing.ui.js');
     attachTestingTabHandlers();
     await document.getElementById('resetUsersBtn').onclick();
     expect(window.Storage.Users.users).toEqual([]);
-    expect(setMock).toHaveBeenCalledWith('users.json', [], { cacheTtlMs: 3333 });
-    expect(setMock).toHaveBeenCalledWith('users.json', [], { sessionTtlMs: 2222 });
-    expect(setMock).toHaveBeenCalledWith('users.json', [], { localTtlMs: 1111 });
-    expect(setMock).toHaveBeenCalledWith('users.json', [], { googleId: 'users.json' });
+    expect(cacheClearMock).toHaveBeenCalled();
+    expect(sessionClearMock).toHaveBeenCalled();
+    expect(localClearMock).toHaveBeenCalled();
+    expect(gdListFilesMock).toHaveBeenCalledWith("name = 'users.json'");
+    expect(gdDeleteFileMock).toHaveBeenCalledWith('gd1');
     expect(window.alert).toHaveBeenCalledWith('Users data cleared from all storage layers.');
 });
