@@ -1,4 +1,5 @@
 import { ObjectUtils, createStorageConfig } from "./objectUtils.mjs";
+import { Storage } from "./storage.mjs";
 
 /**
  * Configuration class provides robust, multi-tiered, async configuration management.
@@ -31,40 +32,43 @@ export class Configuration {
     #initTimeoutMS = 5000; // default max wait time in ms
     // ===== Instance Accessors =====
     /**
-     * Async accessor for the storage object.
-     * @returns {Promise<Object>} The storage object.
+     * Synchronous accessor for the storage object.
+     * Waits for initialization if needed.
+     * @returns {Object} The storage object.
      * @example
-     *   const storage = await config.Storage;
+     *   const storage = config.Storage;
      */
-    async get Storage() {
-        await this._initPromise;
+    get Storage() {
+        if (this._initPromise && !this._initPromise.resolved) {
+            throw new Error("Configuration: Storage not initialized yet. Await Configuration.Factory or _initPromise before accessing Storage.");
+        }
         return this.#storage;
     }
     // Protected setter for Storage
-    // Protected async setter for Storage
-    async set _Storage(val) {
-        await this._initPromise;
+    // Synchronous setter for Storage (should only be called after initialization)
+    set _Storage(val) {
         if (!val || typeof val.Get !== 'function' || typeof val.Set !== 'function') {
             throw new Error('Configuration: storageObject must be provided and implement async Get/Set methods.');
         }
         this.#storage = val;
     }
     /**
-     * Async accessor for the configuration data.
-     * Always fetches from SessionStorage under key 'configuration'.
-     * @returns {Promise<any>} The configuration data.
+     * Synchronous accessor for the configuration data.
+     * Returns the cached configuration if available, otherwise throws if not initialized.
+     * @returns {any} The configuration data.
      * @example
-     *   const configData = await config.Configuration;
+     *   const configData = config.Configuration;
      */
-    async get Configuration() {
-        await this._initPromise;
-        return await this.#fetch();
+    get Configuration() {
+        if (this._initPromise && !this._initPromise.resolved) {
+            throw new Error("Configuration: Not initialized yet. Await Configuration.Factory or _initPromise before accessing Configuration.");
+        }
+        return this._keyMap ? Object.fromEntries(this._keyMap) : undefined;
     }
     // Protected setter for Configuration
-    // Protected async setter for Configuration
-    async set _Configuration(val) {
-        await this._initPromise;
-        await this.#post(val);
+    // Synchronous setter for Configuration (should only be called after initialization)
+    set _Configuration(val) {
+        this.#post(val); // Note: #post is still async, but we do not await it here
         this.InvalidateCache();
     }
 
@@ -77,23 +81,7 @@ export class Configuration {
      * @param {Object} storageObject - Must be a valid storage object with async Get/Set methods.
      */
     constructor(storageObject) {
-        // Persistently wait for storage initialization with timeout
-        const start = Date.now();
-        const tryInit = async (resolve, reject) => {
-            try {
-                await this._Storage = storageObject;
-                resolve();
-            } catch (e) {
-                if (Date.now() - start > this.#initTimeoutMS) {
-                    reject(new Error('Configuration: Storage initialization timed out.'));
-                } else {
-                    setTimeout(() => tryInit(resolve, reject), 50);
-                }
-            }
-        };
-        this._initPromise = new Promise((resolve, reject) => {
-            tryInit(resolve, reject);
-        });
+        this._Storage = storageObject;
     }
 
     // ===== Static Methods =====
@@ -105,19 +93,15 @@ export class Configuration {
      *   const config = await Configuration.Factory(storage);
      */
     static async Factory(storageObject) {
-        const instance = new Configuration(storageObject);
-        await instance._initPromise;
-        return instance;
+        return new Configuration(storageObject);
     }
     static async CopyFromJSON(dataJSON) {
         const config = new Configuration(dataJSON.storage);
-        await config._initPromise;
         await config._restoreConfigState(dataJSON.storage, dataJSON.configuration);
         return config;
     }
 
     static async CopyToJSON(instance) {
-        await instance._initPromise;
         return {
             storage: await instance.Storage,
             configuration: await instance.Configuration
@@ -125,14 +109,12 @@ export class Configuration {
     }
 
     static async CopyFromObject(destination, source) {
-        await destination._initPromise;
         await destination._restoreConfigState(source.storage, source.configuration);
     }
     // Protected: encapsulate config state restoration for maintainability
     async _restoreConfigState(storageObj, configuration) {
-        await this._initPromise;
-        await this._Storage = storageObj;
-        await this._Configuration = configuration;
+        this._Storage = storageObj;
+        this._Configuration = configuration;
         this.InvalidateCache();
     }
         /**

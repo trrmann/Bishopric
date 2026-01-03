@@ -1,42 +1,42 @@
 /* (Reverted organization-toolbar and button custom styles) */
-@import url('header-footer.css');
-@import url('laptop.css');
-@import url('largescreen.css');
-@import url('login.css');
-@import url('mobile.css');
-@import url('site.css');
-@import url('menu.css');
-@import url('tablet.css');
+@import url('/styles/header-footer.css');
+@import url('/styles/laptop.css');
+@import url('/styles/largescreen.css');
+@import url('/styles/login.css');
+@import url('/styles/mobile.css');
+@import url('/styles/site.css');
+@import url('/styles/menu.css');
+@import url('/styles/tablet.css');
 
 /* Organization Table Responsive Whitespace */
 .organization-table {
-	width: 100%;
-	max-width: 1200px;
-	margin: 2em auto 2em auto;
-	padding: 1.5em 2em;
-	background: #fff;
-	border-radius: 1em;
-	box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+  width: 100%;
+  max-width: 1200px;
+  margin: 2em auto 2em auto;
+  padding: 1.5em 2em;
+  background: #fff;
+  border-radius: 1em;
+  box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
 }
 .organization-table table {
-	width: 100%;
-	border-collapse: separate;
-	border-spacing: 0 0.5em;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5em;
 }
 .organization-table th, .organization-table td {
-	padding: 1em 1.2em;
-	font-size: 1.08em;
+  padding: 1em 1.2em;
+  font-size: 1.08em;
 }
 .organization-table th {
-	background: #f5f7fa;
-	color: #234;
-	border-bottom: 2px solid #e3e8f0;
+  background: #f5f7fa;
+  color: #234;
+  border-bottom: 2px solid #e3e8f0;
 }
 .organization-table tr {
-	transition: background 0.2s;
+  transition: background 0.2s;
 }
 .organization-table tr:hover td {
-	background: #f0f4fa !important;
+  background: #f0f4fa !important;
 }
 
 /* Modal improvements - moved to end for cascade */
@@ -95,14 +95,6 @@
   overflow-y: auto;
 }
 /* (Reverted organization-toolbar and button custom styles) */
-@import url('header-footer.css');
-@import url('laptop.css');
-@import url('largescreen.css');
-@import url('login.css');
-@import url('mobile.css');
-@import url('site.css');
-@import url('menu.css');
-@import url('tablet.css');
 
 /* Organization Table Responsive Whitespace */
 .organization-table {
