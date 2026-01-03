@@ -10,13 +10,9 @@ export class Storage {
     #initTimeoutMS = 5000; // default max wait time in ms
     #storage;
     #foundIn = new Set();
-    #keyRegistry = new Map();
-    #secureKeyRegistry = new Map();
     // ===== Instance Accessors =====
-    get KeyRegistry() { return this.#keyRegistry; }
-    set _KeyRegistry(registry) { this.#keyRegistry = registry; }
-    get SecureKeyRegistry() { return this.#secureKeyRegistry; }
-    set _SecureKeyRegistry(registry) { this.#secureKeyRegistry = registry; }
+    get KeyRegistry() { return this._keyRegistry; }
+    get SecureKeyRegistry() { return this._secureKeyRegistry; }
     get RegistryPruneTimer() { return this._registryPruneTimer; }
     get RegistryPruneIntervalMs() { return this._registryPruneIntervalMs; }
     get Cache() { return this._cache; }
@@ -46,7 +42,8 @@ export class Storage {
 
     // ===== Constructor =====
     constructor(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
-        // keyRegistry and secureKeyRegistry are now private fields initialized at declaration
+        this._keyRegistry = new Map();
+        this._secureKeyRegistry = new Map();
         this._registryPruneTimer = null;
         this._registryPruneIntervalMs = null;
         if (storageRegistryPruneIntervalMs > 0) {
@@ -92,20 +89,17 @@ export class Storage {
 
     // Protected: encapsulate registry restoration for maintainability
     _restoreKeyRegistries(keyRegistryArr, secureKeyRegistryArr) {
-        this._KeyRegistry = new Map(keyRegistryArr);
-        this._SecureKeyRegistry = new Map(secureKeyRegistryArr);
+        this._keyRegistry = new Map(keyRegistryArr);
+        this._secureKeyRegistry = new Map(secureKeyRegistryArr);
     }
     static CopyToJSON(instance) {
         return {
-            _keyRegistry: Array.from(instance.#keyRegistry.entries()),
-            _secureKeyRegistry: Array.from(instance.#secureKeyRegistry.entries())
+            _keyRegistry: Array.from(instance._keyRegistry.entries()),
+            _secureKeyRegistry: Array.from(instance._secureKeyRegistry.entries())
         };
     }
     static CopyFromObject(destination, source) {
-        destination._restoreKeyRegistries(
-            Array.from(source.KeyRegistry.entries()),
-            Array.from(source.SecureKeyRegistry.entries())
-        );
+        destination._restoreKeyRegistries(source._keyRegistry, source._secureKeyRegistry);
     }
     static async Factory(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
         const storage = new Storage(storageRegistryPruneIntervalMs);
@@ -163,43 +157,43 @@ export class Storage {
         }
     }
     RegisterKey(key, expire) {
-        this.#keyRegistry.set(key, expire);
+        this._keyRegistry.set(key, expire);
     }
     UnregisterKey(key) {
         if(this.SecureKeyRegistered(key)) {
             this.UnregisterSecureKey(key);
         } else {
-            this.#keyRegistry.delete(key);
+            this._keyRegistry.delete(key);
         }
     }
     KeyRegistered(key) {
-        return this.#keyRegistry.has(key);
+        return this._keyRegistry.has(key);
     }
     GetAllKeys() {
-        return Array.from(this.#keyRegistry.keys());
+        return Array.from(this._keyRegistry.keys());
     }
     RegisterSecureKey(key, expire) {
         this.RegisterKey(key, expire);
-        this.#secureKeyRegistry.set(key, expire);
+        this._secureKeyRegistry.set(key, expire);
     }
     UnregisterSecureKey(key) {
-        this.#secureKeyRegistry.delete(key);
+        this._secureKeyRegistry.delete(key);
         this.UnregisterKey(key);
     }
     SecureKeyRegistered(key) {
-        return this.#secureKeyRegistry.has(key);
+        return this._secureKeyRegistry.has(key);
     }
     GetAllSecureKeys() {
-        return Array.from(this.#secureKeyRegistry.keys());
+        return Array.from(this._secureKeyRegistry.keys());
     }
     RegistryPrune() {
         const now = Date.now();
-        for (const [key, entry] of this.#secureKeyRegistry) {
+        for (const [key, entry] of this._secureKeyRegistry) {
             if (entry && now > entry) {
                 this.UnregisterSecureKey(key);
             }
         }
-        for (const [key, entry] of this.#keyRegistry) {
+        for (const [key, entry] of this._keyRegistry) {
             if (entry && now > entry) {
                 this.UnregisterKey(key);
             }
@@ -242,39 +236,15 @@ export class Storage {
     async Set(key, value, options = {}) {
         const { cacheTtlMs = null, sessionTtlMs = null, localTtlMs = null, googleId = null, githubFilename = null, publicKey = null, secure = false } = options;
         if (secure) {
-            try {
-                await this._cache.setSecure(key, value, publicKey, cacheTtlMs);
-            } catch (err) {
-                console.warn('Cache setSecure error:', err);
-            }
-            try {
-                await this._sessionStorage.setSecureItem(key, value, publicKey, sessionTtlMs);
-            } catch (err) {
-                console.warn('SessionStorage setSecureItem error:', err);
-            }
-            // ...existing code for secure path...
+            await this._cache.setSecure(key, value, publicKey, cacheTtlMs);
+            await this._sessionStorage.setSecureItem(key, value, publicKey, sessionTtlMs);
+            // ...existing code...
         } else {
-            try {
-                if (typeof this._cache.Set === 'function') {
-                    await this._cache.Set(key, value, cacheTtlMs);
-                }
-            } catch (err) {
-                console.warn('Cache Set error:', err);
+            this._cache.Set(key, value, cacheTtlMs);
+            if (typeof this._sessionStorage.Set === 'function') {
+                this._sessionStorage.Set(key, value, sessionTtlMs);
             }
-            try {
-                if (typeof this._sessionStorage.Set === 'function') {
-                    await this._sessionStorage.Set(key, value, sessionTtlMs);
-                }
-            } catch (err) {
-                console.warn('SessionStorage Set error:', err);
-            }
-            try {
-                if (typeof this._localStorage.Set === 'function') {
-                    await this._localStorage.Set(key, value, localTtlMs);
-                }
-            } catch (err) {
-                console.warn('LocalStorage Set error:', err);
-            }
+            this._localStorage.Set(key, value, localTtlMs);
         }
         if (this._googleDrive && googleId) {
             try {
