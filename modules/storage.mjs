@@ -104,7 +104,7 @@ export class Storage {
         storage._sessionStorage = await SessionStorage.Factory(storage._sessionStorage_purge_intervalMS);
         storage._localStorage = await LocalStorage.Factory(storage._localStorage_purge_intervalMS);
         storage._crypto = await PublicKeyCrypto.Factory();
-        storage._gitHub = await GitHubData.Factory("trrmann","UnitManagementTools");
+        storage._gitHub = GitHubData.Factory("trrmann","UnitManagementTools");
         //storage._googleDrive = await GoogleDrive.Factory(storage._gitHub);
         await Storage.testGoogleDrive(storage);
         return storage;
@@ -221,7 +221,11 @@ export class Storage {
         // 4. Google Drive (if available)
         if(found === undefined && this._googleDrive && this._googleDrive.HasKey(key)) found = await this._googleDrive.Get(key);
         // 5. GitHub
-        if(found === undefined && this._gitHub.Has(key)) found = await this._gitHub.Get(key,"json");
+        if(found === undefined && this._gitHub) {
+            if(await this._gitHub.Has(key)) {
+                found = await this._gitHub.Get(key, "json");
+            }
+        }
         if(secure && privateKey) {
             return this._crypto.decrypt(privateKey, found);
         }

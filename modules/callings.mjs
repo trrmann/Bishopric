@@ -126,10 +126,14 @@ export class Callings {
             callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig });
             if (callingsObj !== undefined && callingsObj !== null) foundIn = 'google';
         }
-        // 5. If still not found, fallback to GitHubDataObj for read-only
-        if ((callingsObj === undefined || callingsObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
-            callingsObj = await this.Storage._gitHubDataObj.fetchJsonFile(Callings.CallingsFilename);
-            if (callingsObj !== undefined && callingsObj !== null) foundIn = 'github';
+        // 5. If still not found, fallback to GitHubData (read-only, robust API)
+        if ((callingsObj === undefined || callingsObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
+            try {
+                callingsObj = await this.Storage._gitHubDataObj.get(Callings.CallingsFilename, "json");
+                if (callingsObj !== undefined && callingsObj !== null) foundIn = 'github';
+            } catch (e) {
+                // If file not found or error, leave callingsObj undefined
+            }
         }
 
         // Write to all storage tiers if missing

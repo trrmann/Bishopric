@@ -161,10 +161,14 @@ export class Roles {
             rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig });
             if (rolesObj !== undefined && rolesObj !== null) foundIn = 'google';
         }
-        // 5. If still not found, fallback to GitHubDataObj for read-only
-        if ((rolesObj === undefined || rolesObj === null) && this.Callings.storage && typeof this.Callings.storage._gitHubDataObj === 'object' && typeof this.Callings.storage._gitHubDataObj.fetchJsonFile === 'function') {
-            rolesObj = await this.Callings.storage._gitHubDataObj.fetchJsonFile(Roles.RolesFilename);
-            if (rolesObj !== undefined && rolesObj !== null) foundIn = 'github';
+        // 5. If still not found, fallback to GitHubData (read-only, robust API)
+        if ((rolesObj === undefined || rolesObj === null) && this.Callings.storage && typeof this.Callings.storage._gitHubDataObj === 'object' && typeof this.Callings.storage._gitHubDataObj.get === 'function') {
+            try {
+                rolesObj = await this.Callings.storage._gitHubDataObj.get(Roles.RolesFilename, "json");
+                if (rolesObj !== undefined && rolesObj !== null) foundIn = 'github';
+            } catch (e) {
+                // If file not found or error, leave rolesObj undefined
+            }
         }
 
         // Write to all storage tiers if missing

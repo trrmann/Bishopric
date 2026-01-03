@@ -108,10 +108,14 @@ export class Org {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig });
             if (orgObj !== undefined) foundIn = 'google';
         }
-        // 5. If still not found, fallback to GitHubDataObj for read-only
-        if (orgObj === undefined && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
-            orgObj = await this.Storage._gitHubDataObj.fetchJsonFile(Org.OrgFilename);
-            if (orgObj !== undefined) foundIn = 'github';
+        // 5. If still not found, fallback to GitHubData (read-only, robust API)
+        if (orgObj === undefined && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
+            try {
+                orgObj = await this.Storage._gitHubDataObj.get(Org.OrgFilename, "json");
+                if (orgObj !== undefined) foundIn = 'github';
+            } catch (e) {
+                // If file not found or error, leave orgObj undefined
+            }
         }
 
         // Write to all storage tiers if missing

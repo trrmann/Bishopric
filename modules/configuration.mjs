@@ -179,16 +179,20 @@ export class Configuration {
                 this.#foundIn.delete('google');
             }
         }
-        // 5. Try GitHubDataObj (duck-typed: must have fetchJsonFile function)
+        // 5. Try GitHubData (robust API, not duck-typed)
         if (await storage && '_gitHubDataObj' in storage) {
             const gitHubDataObj = await storage._gitHubDataObj;
-            if (gitHubDataObj && typeof gitHubDataObj.fetchJsonFile === 'function') {
-                configObj = await gitHubDataObj.fetchJsonFile(Configuration.ConfigFilename);
-                if (configObj !== undefined) {
-                    this.#foundIn.add('github');
-                    this.Post(configObj);
-                    return configObj;
-                } else {
+            if (gitHubDataObj && typeof gitHubDataObj.get === 'function') {
+                try {
+                    configObj = await gitHubDataObj.get(Configuration.ConfigFilename, "json");
+                    if (configObj !== undefined) {
+                        this.#foundIn.add('github');
+                        this.Post(configObj);
+                        return configObj;
+                    } else {
+                        this.#foundIn.delete('github');
+                    }
+                } catch (e) {
                     this.#foundIn.delete('github');
                 }
             }

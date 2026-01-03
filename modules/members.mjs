@@ -135,10 +135,14 @@ export class Members {
             membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig });
             if (membersObj !== undefined && membersObj !== null) foundIn = 'google';
         }
-        // 5. If still not found, fallback to GitHubDataObj for read-only
-        if ((membersObj === undefined || membersObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
-            membersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Members.MembersFilename);
-            if (membersObj !== undefined && membersObj !== null) foundIn = 'github';
+        // 5. If still not found, fallback to GitHubData (read-only, robust API)
+        if ((membersObj === undefined || membersObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
+            try {
+                membersObj = await this.Storage._gitHubDataObj.get(Members.MembersFilename, "json");
+                if (membersObj !== undefined && membersObj !== null) foundIn = 'github';
+            } catch (e) {
+                // If file not found or error, leave membersObj undefined
+            }
         }
 
         // Write to all storage tiers if missing

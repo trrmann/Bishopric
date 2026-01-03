@@ -338,9 +338,13 @@ export class Users {
         if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
             usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig });
         }
-        // If not found in GoogleDrive, try GitHubDataObj (read-only)
-        if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
-            usersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Users.UsersFilename);
+        // If not found in GoogleDrive, try GitHubData (read-only, robust API)
+        if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
+            try {
+                usersObj = await this.Storage._gitHubDataObj.get(Users.UsersFilename, "json");
+            } catch (e) {
+                // If file not found or error, leave usersObj undefined
+            }
         }
         this.users = usersObj ? usersObj : undefined;
     }
