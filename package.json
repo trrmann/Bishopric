@@ -8,10 +8,14 @@
     "pnpm": "^10.28.0"
   },
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint dev-server/",
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "vite": "^7.3.1"
   }
 }
