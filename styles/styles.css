@@ -1,12 +1,12 @@
 /* (Reverted organization-toolbar and button custom styles) */
-@import url("/styles/header-footer.css");
-@import url("/styles/laptop.css");
-@import url("/styles/largescreen.css");
-@import url("/styles/login.css");
-@import url("/styles/mobile.css");
-@import url("/styles/site.css");
-@import url("/styles/menu.css");
-@import url("/styles/tablet.css");
+@import url("header-footer.css");
+@import url("laptop.css");
+@import url("largescreen.css");
+@import url("login.css");
+@import url("mobile.css");
+@import url("site.css");
+@import url("menu.css");
+@import url("tablet.css");
 
 /* Organization Table Responsive Whitespace */
 .organization-table {
