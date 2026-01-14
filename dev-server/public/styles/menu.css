@@ -1,0 +1,78 @@
+/* Hide menu items when user lacks access */
+.dashboardmenuitem.hide,
+.membersmenuitem.hide,
+.assignmentsmenuitem.hide,
+.schedulingmenuitem.hide,
+.formsmenuitem.hide,
+.reportsmenuitem.hide {
+    display: none !important;
+}
+
+/* Menu layout and utility styles */
+.user-menu-container {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	position: relative;
+	min-width: 180px;
+	padding-top: 2.5em;
+}
+.user-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: 1em;
+}
+.user-menu {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	margin-top: 3.5em;
+	align-items: center;
+	gap: 15px;
+}
+/* Menu-specific styles go here */
+/* ===== Navigation ===== */
+.navbar {
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 0;
+    padding: 0;
+    box-shadow: var(--box-shadow);
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--light-gray);
+    position: static;
+    margin: 0;
+}
+
+.nav-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 15px 20px;
+    background-color: white;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--dark-gray);
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.nav-btn:hover {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+}
+
+.nav-btn.active {
+    border-bottom-color: var(--secondary-color);
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+

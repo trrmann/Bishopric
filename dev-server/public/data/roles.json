@@ -1,0 +1,143 @@
+{
+  "roles": [
+    {
+      "id": 1,
+      "name": "Bishop",
+      "calling": 9,
+      "subRoles": [2,3,4,6],
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "First Counselor",
+      "subRoles": [3,4,6],
+      "calling": 10,
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Second Counselor",
+      "subRoles": [4,6],
+      "calling": 11,
+      "active": true
+    },
+    {
+      "id": 4,
+      "name": "Secretary",
+      "subRoles": [5],
+      "calling": 12,
+      "active": true
+    },
+    {
+      "id": 5,
+      "name": "Assistant Secretary",
+      "calling": 13,
+      "active": true
+    },
+    {
+      "id": 6,
+      "name": "Clerk",
+      "subRoles": [7,8],
+      "calling": 14,
+      "active": true
+    },
+    {
+      "id": 7,
+      "name": "Assistant Clerk - Membership",
+      "subRoles": [],
+      "calling": 15,
+      "active": true
+    },
+    {
+      "id": 8,
+      "name": "Assistant Clerk - Finance",
+      "subRoles": [],
+      "calling": 16,
+      "active": true
+    },
+    {
+      "id": 9,
+      "name": "Stake President",
+      "calling": 1,
+      "subRoles": [1],
+      "active": true
+    },
+    {
+      "id": -1,
+      "name": "Application Administrator",
+      "subRoles": [],
+      "calling": null,
+      "active": true
+    },
+    {
+      "id": -2,
+      "name": "Application Tester",
+      "subRoles": [-1],
+      "calling": null,
+      "active": true
+    },
+    {
+      "id": -3,
+      "name": "Application Developer",
+      "subRoles": [-2],
+      "calling": null,
+      "active": true
+    },
+    {
+      "id": 18,
+      "name": "Elders Quorum President",
+      "calling": 18,
+      "subRoles": [19,20,21],
+      "active": true
+    },
+    {
+      "id": 19,
+      "name": "Elders Quorum First Counselor",
+      "calling": 19,
+      "subRoles": [20,21],
+      "active": true
+    },
+    {
+      "id": 20,
+      "name": "Elders Quorum Second Counselor",
+      "calling": 20,
+      "subRoles": [21],
+      "active": true
+    },
+    {
+      "id": 21,
+      "name": "Elders Quorum Secretary",
+      "calling": 21,
+      "subRoles": [],
+      "active": true
+    },
+    {
+      "id": 22,
+      "name": "Relief Society President",
+      "calling": 22,
+      "subRoles": [23,24,25],
+      "active": true
+    },
+    {
+      "id": 23,
+      "name": "Relief Society First Counselor",
+      "calling": 23,
+      "subRoles": [24,25],
+      "active": true
+    },
+    {
+      "id": 24,
+      "name": "Relief Society Second Counselor",
+      "calling": 24,
+      "subRoles": [25],
+      "active": true
+    },
+    {
+      "id": 25,
+      "name": "Relief Society Secretary",
+      "calling": 25,
+      "subRoles": [],
+      "active": true
+    }
+  ]
+}

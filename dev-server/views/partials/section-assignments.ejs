@@ -1,0 +1,17 @@
+<section id="assignments" class="section">
+  <h2>Assignments & Responsibilities</h2>
+  <div class="section-toolbar">
+    <button class="btn-primary assignments-AssignTask" onclick="openNewAssignment()">
+      <i class="fas fa-plus"></i> New Assignment
+    </button>
+    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select assignments-FilterTasks" title="Filter assignments">
+      <option value="">All Assignments</option>
+      <option value="active">Active</option>
+      <option value="completed">Completed</option>
+      <option value="overdue">Overdue</option>
+    </select>
+  </div>
+  <div class="assignments-list">
+    <!-- Assignment cards go here (see index.html for structure) -->
+  </div>
+</section>

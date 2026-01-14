@@ -1,0 +1,229 @@
+{
+  "callings": [
+    {
+      "id": 1,
+      "name": "Stake President",
+      "level": "mission",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 1
+    },
+    {
+      "id": 2,
+      "name": "Stake First Counselor",
+      "level": "mission",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 1
+    },
+    {
+      "id": 3,
+      "name": "Stake Second Counselor",
+      "level": "mission",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 1
+    },
+    {
+      "id": 4,
+      "name": "Stake Secretary",
+      "level": "mission",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 5,
+      "name": "Assistant Stake Secretary",
+      "level": "mission",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 6,
+      "name": "Stake Clerk",
+      "level": "mission",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 7,
+      "name": "Assistant Stake Clerk - Membership",
+      "level": "mission",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 8,
+      "name": "Assistant Stake Clerk - Finance",
+      "level": "mission",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 9,
+      "name": "Bishop",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "Bishop",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 10,
+      "name": "First Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 11,
+      "name": "Second Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 12,
+      "name": "Secretary",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 13,
+      "name": "Assistant Secretary",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 14,
+      "name": "Clerk",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 15,
+      "name": "Assistant Clerk - Membership",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 16,
+      "name": "Assistant Clerk - Finance",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 17,
+      "name": "Branch President",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 18,
+      "name": "Elders Quorum President",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 19,
+      "name": "Elders Quorum First Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 20,
+      "name": "Elders Quorum Second Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 21,
+      "name": "Elders Quorum Secretary",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 22,
+      "name": "Relief Society President",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 23,
+      "name": "Relief Society First Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 24,
+      "name": "Relief Society Second Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 25,
+      "name": "Relief Society Secretary",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "users": [
+    { "memberNumber": 1, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 3, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 4, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 5, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 6, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 7, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 8, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 9, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 17, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 18, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 19, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": 20, "password": "demo", "active": true, "roles": [] },
+    { "memberNumber": -1, "password": "demo", "active": true, "roles": [-1] },
+    { "memberNumber": -2, "password": "demo", "active": true, "roles": [-2] },
+    { "memberNumber": -3, "password": "demo", "active": true, "roles": [-3] }
+  ]
+}

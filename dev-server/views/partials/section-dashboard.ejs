@@ -1,0 +1,94 @@
+<%- /* Dashboard Section */ '' %>
+<section id="dashboard" class="section active">
+  <h2>Dashboard</h2>
+  <div class="dashboard-grid">
+    <div class="card dashboard-totalMembers">
+      <div class="card-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="card-content">
+        <h3>Total Members</h3>
+        <p class="stat" id="dashboardTotalMembers">245</p>
+      </div>
+    </div>
+    <div class="card dashboard-thisWeeksEvents">
+      <div class="card-icon">
+        <i class="fas fa-calendar-check"></i>
+      </div>
+      <div class="card-content">
+        <h3>This Week Events</h3>
+        <p class="stat">8</p>
+      </div>
+    </div>
+    <div class="card dashboard-pendingTasks">
+      <div class="card-icon">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="card-content">
+        <h3>Pending Tasks</h3>
+        <p class="stat">12</p>
+      </div>
+    </div>
+    <div class="card dashboard-needsAssistance">
+      <div class="card-icon">
+        <i class="fas fa-hand-holding-heart"></i>
+      </div>
+      <div class="card-content">
+        <h3>Needs Assistance</h3>
+        <p class="stat">5</p>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-section">
+    <h3>Quick Actions</h3>
+    <div class="action-buttons">
+      <button class="action-btn dashboard-QuickActions-ResetPassword" id="resetPasswordBtn" onclick="quickAction('reset-password')">
+        <i class="fas fa-key"></i> Reset Password
+      </button>
+      <button class="action-btn dashboard-QuickActions-AddMember" onclick="quickAction('new-member')">
+        <i class="fas fa-user-plus"></i> Add Member
+      </button>
+      <button class="action-btn dashboard-QuickActions-ScheduleEvent" onclick="quickAction('new-event')">
+        <i class="fas fa-calendar-plus"></i> Schedule Event
+      </button>
+      <button class="action-btn dashboard-QuickActions-AssignTask" onclick="quickAction('assign-task')">
+        <i class="fas fa-clipboard-list"></i> Assign Task
+      </button>
+      <button class="action-btn dashboard-QuickActions-SendMessage" onclick="quickAction('send-message')">
+        <i class="fas fa-envelope"></i> Send Message
+      </button>
+    </div>
+  </div>
+  <div class="dashboard-section">
+    <h3>Recent Activities</h3>
+    <div class="activity-list">
+      <div class="activity-item dashboard-RecentActivities">
+        <div class="activity-icon">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <div class="activity-content">
+          <p>John Smith added to ward</p>
+          <span class="time">2 hours ago</span>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="activity-content">
+          <p>Ward activity scheduled for Saturday</p>
+          <span class="time">5 hours ago</span>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon">
+          <i class="fas fa-clipboard-check"></i>
+        </div>
+        <div class="activity-content">
+          <p>Sacrament preparation assigned to Home Teachers</p>
+          <span class="time">1 day ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

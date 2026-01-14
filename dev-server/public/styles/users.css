@@ -1,0 +1,119 @@
+/* Users Table Styling */
+.users-table {
+  width: 100%;
+  max-width: 1100px;
+  margin: 2em auto 2em auto;
+  padding: 1.5em 2em;
+  background: #fff;
+  border-radius: 1em;
+  box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+}
+.users-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5em;
+}
+.users-table th, .users-table td {
+  padding: 1em 1.2em;
+  font-size: 1.08em;
+  text-align: left;
+}
+.users-table th {
+  background: #f5f7fa;
+  color: #234;
+  border-bottom: 2px solid #e3e8f0;
+}
+.users-table tr {
+  transition: background 0.2s;
+}
+.users-table tr:hover td {
+  background: #f0f4fa !important;
+}
+.users-table td:last-child {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 220px;
+  padding: 1em 0.5em;
+}
+
+/* Action buttons in users table should wrap and match style */
+.users-table .users-edit-btn,
+.users-table .users-delete-btn,
+.users-table .users-reset-btn,
+.users-table .users-superuser-btn {
+  display: inline-block;
+  margin: 2px 2px 2px 0;
+  padding: 0.4em 1em;
+  font-size: 1em;
+  border-radius: 0.4em;
+  border: 1px solid #e3e8f0;
+  background: #f5f7fa;
+  color: #234;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.users-table .users-edit-btn:hover,
+.users-table .users-delete-btn:hover,
+.users-table .users-reset-btn:hover,
+.users-table .users-superuser-btn:hover {
+  background: #e3e8f0;
+  color: #0056b3;
+}
+.users-table .users-superuser-btn {
+  font-weight: 500;
+}
+}
+.users-table button {
+  margin-right: 0.5em;
+  padding: 0.4em 1em;
+  border-radius: 0.4em;
+  border: none;
+  background: #e3e8f0;
+  color: #234;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.users-table button:hover {
+  background: #d0d7e5;
+}
+
+/* Toolbar and Search Bar Styling */
+.users-toolbar {
+  margin-bottom: 1.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.users-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+.users-toolbar-buttons {
+  display: flex;
+  gap: 0.7em;
+}
+.users-search, .members-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 350px;
+  padding: 0.6em 1em;
+  border: 1px solid #d0d7e5;
+  border-radius: 0.4em;
+  font-size: 1em;
+  background: #f8fafc;
+  margin-right: 1em;
+}
+.users-toolbar .btn-secondary {
+  background: #f5f7fa;
+  color: #234;
+  border: 1px solid #e3e8f0;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.users-toolbar .btn-secondary:hover {
+  background: #e3e8f0;
+}

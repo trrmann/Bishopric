@@ -1,0 +1,87 @@
+/* Event Schedule Template Table Styling */
+.eventscheduletemplate-table {
+  width: 100%;
+  max-width: 1100px;
+  margin: 2em auto 2em auto;
+  padding: 1.5em 2em;
+  background: #fff;
+  border-radius: 1em;
+  box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+}
+.eventscheduletemplate-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5em;
+}
+.eventscheduletemplate-table th, .eventscheduletemplate-table td {
+  padding: 1em 1.2em;
+  font-size: 1.08em;
+  text-align: left;
+}
+.eventscheduletemplate-table th {
+  background: #f5f7fa;
+  color: #234;
+  border-bottom: 2px solid #e3e8f0;
+}
+.eventscheduletemplate-table tr {
+  transition: background 0.2s;
+}
+.eventscheduletemplate-table tr:hover td {
+  background: #f0f4fa !important;
+}
+.eventscheduletemplate-table td:last-child {
+  white-space: nowrap;
+}
+.eventscheduletemplate-table button {
+  margin-right: 0.5em;
+  padding: 0.4em 1em;
+  border-radius: 0.4em;
+  border: none;
+  background: #e3e8f0;
+  color: #234;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.eventscheduletemplate-table button:hover {
+  background: #d0d7e5;
+}
+
+/* Toolbar and Search Bar Styling */
+.eventscheduletemplate-toolbar {
+  margin-bottom: 1.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.eventscheduletemplate-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+.eventscheduletemplate-toolbar-buttons {
+  display: flex;
+  gap: 0.7em;
+}
+.eventscheduletemplate-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 350px;
+  padding: 0.6em 1em;
+  border: 1px solid #d0d7e5;
+  border-radius: 0.4em;
+  font-size: 1em;
+  background: #f8fafc;
+  margin-right: 1em;
+}
+.eventscheduletemplate-toolbar .btn-secondary {
+  background: #f5f7fa;
+  color: #234;
+  border: 1px solid #e3e8f0;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.eventscheduletemplate-toolbar .btn-secondary:hover {
+  background: #e3e8f0;
+}

@@ -1,0 +1,41 @@
+{
+  "stakes": [
+    {
+      "unitNumber": 1,
+      "name": "Simpsonville",
+      "units": [
+        {
+          "unitNumber": 101,
+          "type": "ward",
+          "name": "Five Forks"
+        },
+        {
+          "unitNumber": 102,
+          "type": "ward",
+          "name": "Simpsonville"
+        },
+        {
+          "unitNumber": 103,
+          "type": "branch",
+          "name": "Spanish"
+        }
+      ]
+    },
+    {
+      "unitNumber": 2,
+      "name": "Greenville East",
+      "units": [
+        {
+          "unitNumber": 201,
+          "type": "ward",
+          "name": "Green Valley"
+        },
+        {
+          "unitNumber": 202,
+          "type": "ward",
+          "name": "Holly Green"
+        }
+      ]
+    }
+  ]
+}

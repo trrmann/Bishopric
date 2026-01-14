@@ -1,0 +1,200 @@
+@media (max-width: 600px) {
+    .btn-logout {
+        position: fixed;
+        top: 1em;
+        right: 1em;
+        z-index: 1000;
+    }
+    .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+    }
+    .church-logo {
+        width: 96px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+    .container, .main-content {
+        width: 100vw;
+        min-width: 0;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0 4px;
+        box-sizing: border-box;
+    }
+    .dashboard-section h3 {
+        font-size: 1em;
+    }
+    .dashboard-title-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .dashboard-title-col > p:first-of-type {
+        order: 1;
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+        font-size: 1em;
+        font-weight: 600;
+        text-align: center;
+        width: 100%;
+        display: block;
+    }
+    .dashboard-title-col, .dashboard-title-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        text-align: center;
+    }
+    .dashboard-title-row {
+        order: 2;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    .dashboard-title-row h1,
+    h1.dashboard-title {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: auto;
+        display: inline-block;
+    }
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .header-content h1 {
+        font-size: 1.1em;
+        word-break: break-word;
+    }
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin: 2em auto 0.5em auto;
+    }
+    .members-table, .members-table table {
+        display: block;
+        width: 100vw;
+        min-width: 0;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    .members-table table {
+        min-width: 320px;
+    }
+    .modal-content, .login-form-container {
+        width: 98vw !important;
+        min-width: 0;
+        max-width: 98vw;
+        box-sizing: border-box;
+        padding: 8px 2vw !important;
+    }
+    .nav-btn {
+        padding: 12px 10px;
+        font-size: 0.8em;
+    }
+    .navbar {
+        display: none !important;
+        flex-direction: column;
+        gap: 0.5em;
+    }
+    .navbar.collapsed {
+        display: none !important;
+    }
+    .navbar.show {
+        display: flex !important;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 0.5em 1em;
+        min-width: 180px;
+        width: 100%;
+        margin: 0 0 1em 0;
+        margin-bottom: 1em;
+    }
+    .navbar.show ~ .user-menu-container,
+    .navbar.show + .user-menu-container {
+        display: none !important;
+    }
+    .report-stats {
+        grid-template-columns: 1fr;
+    }
+    .role-selector {
+        display: none !important;
+        min-width: 100px;
+        margin-right: 0.5em;
+        margin-bottom: 0;
+    }
+    .role-selector.show-mobile {
+        display: inline-block !important;
+    }
+    .section h2 {
+        font-size: 1.15em;
+    }
+    #selectedRoles {
+        margin-right: 0;
+    }
+    #userName, #selectedRoles {
+        display: inline-block;
+    }
+    .stat-item .value {
+        font-size: 1.4em;
+    }
+    .subtitle {
+        order: 3;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        line-height: 1;
+    }
+    .user-menu {
+        display: flex !important;
+        flex-direction: row;
+        align-items: center;
+        position: static;
+        background: none;
+        box-shadow: none;
+        padding: 0;
+        min-width: 0;
+        gap: 0.5em;
+        width: 100%;
+    }
+    .user-menu-container {
+        order: 3;
+        width: 100%;
+        margin-top: 0;
+        padding-top: 0;
+        line-height: 1;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+    .user-menu-toggle {
+        display: block !important;
+        background: var(--danger-color, #c00);
+        color: #fff;
+        border: none;
+        border-radius: var(--border-radius, 8px);
+        font-size: 2.2em;
+        font-weight: bold;
+        position: fixed;
+        top: 0.5em;
+        left: 0.5em;
+        z-index: 1001;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        padding: 0.1em 0.3em;
+        transition: background 0.2s, color 0.2s, border 0.2s;
+    }
+    .user-menu-toggle:hover, .user-menu-toggle:focus {
+        background: #f0f0f0;
+        color: #0078d7;
+        border-color: #0078d7;
+        outline: none;
+    }
+}
