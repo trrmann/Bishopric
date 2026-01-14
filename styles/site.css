@@ -1,3 +1,25 @@
+/* Utility classes for lint/format compliance */
+.hidden {
+  display: none !important;
+}
+.wide-input {
+  margin-bottom: 0.5em;
+  width: 100%;
+  max-width: 260px;
+}
+.flex-row-wrap {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.centered-margin {
+  margin-top: 1em;
+  text-align: center;
+}
+.margin-x {
+  margin: 0 0.5em;
+}
 /* Access control for dashboard parts */
 .dashboard-totalMembers.hide,
 .dashboard-thisWeeksEvents.hide,

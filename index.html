@@ -14,7 +14,7 @@
     <!-- scripts moved to end of body for proper DOM initialization -->
 </head>
 <body>
-    <div class="container" id="mainContainer" style="display: none;">
+    <div class="container" id="mainContainer" class="hidden">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
@@ -36,7 +36,7 @@
                     <div class="user-menu">
                         <span id="userName">John Smith</span>
                         <!--<select id="roleSelector" class="role-selector" onchange="updateRole()" style="display: none;">-->
-                        <select id="roleSelector" class="role-selector" style="display: none;">
+                        <select id="roleSelector" class="role-selector hidden" title="Select user role">
                             <option value="">Select Role</option>
                         </select>
                         <div id="selectedRoles" class="user-roles"></div>
@@ -156,132 +156,132 @@
                                                                         <button class="btn-primary" id="resetUsersBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewDetailedUsersBtn">View Detailed</button>
                                                                         <button class="btn-secondary" id="importDetailedUsersBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedUsersInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importDetailedUsersInput" class="hidden" accept="application/json" title="Import detailed users JSON file" />
                                                                         <button class="btn-secondary" id="exportDetailedUsersBtn">Export Detailed</button>
                                                                         <button class="btn-secondary" id="viewRawUsersBtn">View Raw</button>
                                                                         <button class="btn-secondary" id="importRawUsersBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawUsersInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importRawUsersInput" class="hidden" accept="application/json" title="Import raw users JSON file" />
                                                                         <button class="btn-secondary" id="exportRawUsersBtn">Export Raw</button>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Users..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Users..." />
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Members</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Members..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Members..." />
                                                                         <button class="btn-primary" id="resetMembersBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewRawMembersBtn">View Raw</button>
                                                                         <button class="btn-secondary" id="viewDetailedMembersBtn">View Detailed</button>
                                                                         <button class="btn-secondary" id="importRawMembersBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawMembersInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importRawMembersInput" class="hidden" accept="application/json" title="Import raw members JSON file" />
                                                                         <button class="btn-secondary" id="exportRawMembersBtn">Export Raw</button>
                                                                         <button class="btn-secondary" id="importDetailedMembersBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedMembersInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importDetailedMembersInput" class="hidden" accept="application/json" title="Import detailed members JSON file" />
                                                                         <button class="btn-secondary" id="exportDetailedMembersBtn">Export Detailed</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Roles</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Roles..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Roles..." />
                                                                         <button class="btn-primary" id="resetRolesBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewRawRolesBtn">View Raw</button>
                                                                         <button class="btn-secondary" id="viewDetailedRolesBtn">View Detailed</button>
                                                                         <button class="btn-secondary" id="importRawRolesBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawRolesInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importRawRolesInput" class="hidden" accept="application/json" title="Import raw roles JSON file" />
                                                                         <button class="btn-secondary" id="exportRawRolesBtn">Export Raw</button>
                                                                         <button class="btn-secondary" id="importDetailedRolesBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedRolesInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importDetailedRolesInput" class="hidden" accept="application/json" title="Import detailed roles JSON file" />
                                                                         <button class="btn-secondary" id="exportDetailedRolesBtn">Export Detailed</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Callings</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Callings..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Callings..." />
                                                                         <button class="btn-primary" id="resetCallingsBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewCallingsBtn">View</button>
                                                                         <button class="btn-secondary" id="importCallingsBtn">Import</button>
-                                                                        <input type="file" id="importCallingsInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importCallingsInput" class="hidden" accept="application/json" title="Import callings JSON file" />
                                                                         <button class="btn-secondary" id="exportCallingsBtn">Export</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Organization</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Organization..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Organization..." />
                                                                         <button class="btn-primary" id="resetOrgBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewOrgBtn">View</button>
                                                                         <button class="btn-secondary" id="importOrgBtn">Import</button>
-                                                                        <input type="file" id="importOrgInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importOrgInput" class="hidden" accept="application/json" title="Import organization JSON file" />
                                                                         <button class="btn-secondary" id="exportOrgBtn">Export</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Event Schedule Templates</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Event Templates..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Event Templates..." />
                                                                         <button class="btn-primary" id="resetEventScheduleTemplatesBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewRawEventScheduleTemplatesBtn">View Raw</button>
                                                                         <button class="btn-secondary" id="viewDetailedEventScheduleTemplatesBtn">View Detailed</button>
                                                                         <button class="btn-secondary" id="importRawEventScheduleTemplatesBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawEventScheduleTemplatesInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importRawEventScheduleTemplatesInput" class="hidden" accept="application/json" title="Import raw event schedule templates JSON file" />
                                                                         <button class="btn-secondary" id="exportRawEventScheduleTemplatesBtn">Export Raw</button>
                                                                         <button class="btn-secondary" id="importDetailedEventScheduleTemplatesBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedEventScheduleTemplatesInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importDetailedEventScheduleTemplatesInput" class="hidden" accept="application/json" title="Import detailed event schedule templates JSON file" />
                                                                         <button class="btn-secondary" id="exportDetailedEventScheduleTemplatesBtn">Export Detailed</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Workflows</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Workflows..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Workflows..." />
                                                                         <button class="btn-primary" id="resetWorkflowsBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewRawWorkflowsBtn">View Raw</button>
                                                                         <button class="btn-secondary" id="viewDetailedWorkflowsBtn">View Detailed</button>
                                                                         <button class="btn-secondary" id="importRawWorkflowsBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawWorkflowsInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importRawWorkflowsInput" class="hidden" accept="application/json" title="Import raw workflows JSON file" />
                                                                         <button class="btn-secondary" id="exportRawWorkflowsBtn">Export Raw</button>
                                                                         <button class="btn-secondary" id="importDetailedWorkflowsBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedWorkflowsInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importDetailedWorkflowsInput" class="hidden" accept="application/json" title="Import detailed workflows JSON file" />
                                                                         <button class="btn-secondary" id="exportDetailedWorkflowsBtn">Export Detailed</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Configuration</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Configuration..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Configuration..." />
                                                                         <button class="btn-primary" id="resetConfigBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewConfigBtn">View</button>
                                                                         <button class="btn-secondary" id="importConfigBtn">Import</button>
-                                                                        <input type="file" id="importConfigInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importConfigInput" class="hidden" accept="application/json" title="Import configuration JSON file" />
                                                                         <button class="btn-secondary" id="exportConfigBtn">Export</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Cache</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Cache..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Cache..." />
                                                                         <button class="btn-primary" id="resetCacheBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewCacheBtn">View</button>
                                                                         <button class="btn-secondary" id="importCacheBtn">Import</button>
-                                                                        <input type="file" id="importCacheInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importCacheInput" class="hidden" accept="application/json" title="Import cache JSON file" />
                                                                         <button class="btn-secondary" id="exportCacheBtn">Export</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Session Storage</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Session Storage..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Session Storage..." />
                                                                         <button class="btn-primary" id="resetSessionStorageBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewSessionStorageBtn">View</button>
                                                                         <button class="btn-secondary" id="importSessionStorageBtn">Import</button>
-                                                                        <input type="file" id="importSessionStorageInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importSessionStorageInput" class="hidden" accept="application/json" title="Import session storage JSON file" />
                                                                         <button class="btn-secondary" id="exportSessionStorageBtn">Export</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Local Storage</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Local Storage..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Local Storage..." />
                                                                         <button class="btn-primary" id="resetLocalStorageBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewLocalStorageBtn">View</button>
                                                                         <button class="btn-secondary" id="importLocalStorageBtn">Import</button>
-                                                                        <input type="file" id="importLocalStorageInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importLocalStorageInput" class="hidden" accept="application/json" title="Import local storage JSON file" />
                                                                         <button class="btn-secondary" id="exportLocalStorageBtn">Export</button>
                                                                     </div>
                                                                     <div class="testing-toolbar-group">
                                                                         <h3>Cloud Storage</h3>
-                                                                        <input type="text" class="testing-group-search" placeholder="Search Cloud Storage..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Cloud Storage..." />
                                                                         <button class="btn-primary" id="resetCloudStorageBtn">Reset</button>
                                                                         <button class="btn-secondary" id="viewCloudStorageBtn">View</button>
                                                                         <button class="btn-secondary" id="importCloudStorageBtn">Import</button>
-                                                                        <input type="file" id="importCloudStorageInput" style="display:none;" accept="application/json" />
+                                                                        <input type="file" id="importCloudStorageInput" class="hidden" accept="application/json" title="Import cloud storage JSON file" />
                                                                         <button class="btn-secondary" id="exportCloudStorageBtn">Export</button>
                                                                                                                                         </div>
                                                                                                                                         <div class="testing-toolbar-group">
                                                                                                                                             <h3>GitHub Data</h3>
-                                                                                                                                            <input type="text" class="testing-group-search" placeholder="Search GitHub..." style="margin-bottom:0.5em; width: 100%; max-width: 260px;" />
+                                                                                                                                            <input type="text" class="testing-group-search wide-input" placeholder="Search GitHub..." />
                                                                                                                                             <button class="btn-secondary" id="viewGitHubBtn">View</button>
                                                                                                                                             <button class="btn-secondary" id="exportGitHubBtn">Export</button>
                                                                     </div>
@@ -302,7 +302,7 @@
                                                                 <button class="btn-secondary" id="importMembersBtn"><i class="fas fa-file-import"></i> Import Members</button>
                                                                 <button class="btn-secondary" id="exportUsersBtn"><i class="fas fa-file-export"></i> Export Users</button>
                                                                 <button class="btn-secondary" id="exportMembersBtn"><i class="fas fa-file-export"></i> Export Members</button>
-                                                                <button class="btn-secondary" id="syncMembersBtn"><i class="fas fa-sync-alt"></i> Sync Members</button>
+                                                                <button class="btn-secondary" id="syncMembersBtnUsers"><i class="fas fa-sync-alt"></i> Sync Members</button>
                                                                 <button class="btn-primary users-AddUser" id="addUserBtn" onclick="openAddUser()"><i class="fas fa-user-plus"></i> Add User</button>
                                                                 <button class="btn-primary users-AddMember" id="addMemberBtn" onclick="openAddMember()"><i class="fas fa-user-plus"></i> Add Member</button>
                                                             </div>
@@ -551,9 +551,9 @@
             <section id="members" class="section">
                 <h2>Member Directory</h2>
                 <div class="section-toolbar">
-                    <div style="display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap;">
+                    <div class="flex-row-wrap">
                         <input type="text members-SearchMember" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
-                        <button class="btn-secondary" id="syncMembersBtn"><i class="fas fa-sync-alt"></i> Sync Members</button>
+                        <button class="btn-secondary" id="syncMembersBtnMembers"><i class="fas fa-sync-alt"></i> Sync Members</button>
                         <button class="btn-primary members-AddMember" onclick="openAddMember()">
                             <i class="fas fa-user-plus"></i> Add Member
                         </button>
@@ -568,7 +568,7 @@
                                 <th id="genderHeader">Gender</th>
                                 <th id="memberNumberHeader">Member #</th>
                                 <th id="phoneHeader">Phone</th>
-                                <th id="unitHeader" style="display:none;">Unit</th>
+                                <th id="unitHeader" class="hidden">Unit</th>
                                 <th id="callingHeader">Calling</th>
                                 <th id="stakeNumberHeader">Stake #</th>
                                 <th id="unitNumberHeader">Unit #</th>
@@ -579,9 +579,9 @@
                             <!-- Member rows will be dynamically generated by JavaScript -->
                         </tbody>
                     </table>
-                    <div style="margin-top:1em; text-align:center;">
+                    <div class="centered-margin">
                         <label for="membersPageSize">Rows per page:</label>
-                        <select id="membersPageSize" onchange="changeMembersPageSize()" style="margin:0 0.5em;">
+                        <select id="membersPageSize" onchange="changeMembersPageSize()" class="margin-x">
                             <option value="5">5</option>
                             <option value="10" selected>10</option>
                             <option value="20">20</option>
@@ -589,7 +589,7 @@
                             <option value="100">100</option>
                         </select>
                     </div>
-                    <div id="membersPagination" class="pagination" style="margin-top:0.5em; text-align:center;"></div>
+                    <div id="membersPagination" class="pagination centered-margin"></div>
                 </div>
             </section>
             <!-- Assignments Section -->
@@ -599,7 +599,7 @@
                     <button class="btn-primary assignments-AssignTask" onclick="openNewAssignment()">
                         <i class="fas fa-plus"></i> New Assignment
                     </button>
-                    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select assignments-FilterTasks">
+                    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select assignments-FilterTasks" title="Filter assignments">
                         <option value="">All Assignments</option>
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>
@@ -665,7 +665,7 @@
                     <button class="btn-primary scheduling-ScheduleEvent" onclick="openScheduleEvent()">
                         <i class="fas fa-calendar-plus"></i> Schedule Event
                     </button>
-                    <select id="scheduleFilter" onchange="filterSchedule()" class="filter-select scheduling-FilterEventTypes scheduling-FilterEventDates">
+                    <select id="scheduleFilter" onchange="filterSchedule()" class="filter-select scheduling-FilterEventTypes scheduling-FilterEventDates" title="Filter events">
                         <option value="">All Events</option>
                         <option value="sacrament">Sacrament Meeting</option>
                         <option value="activities">Activities</option>
