@@ -1,12 +1,12 @@
 /* (Reverted organization-toolbar and button custom styles) */
-@import url('/styles/header-footer.css');
-@import url('/styles/laptop.css');
-@import url('/styles/largescreen.css');
-@import url('/styles/login.css');
-@import url('/styles/mobile.css');
-@import url('/styles/site.css');
-@import url('/styles/menu.css');
-@import url('/styles/tablet.css');
+@import url("header-footer.css");
+@import url("laptop.css");
+@import url("largescreen.css");
+@import url("login.css");
+@import url("mobile.css");
+@import url("site.css");
+@import url("menu.css");
+@import url("tablet.css");
 
 /* Organization Table Responsive Whitespace */
 .organization-table {
@@ -16,14 +16,15 @@
   padding: 1.5em 2em;
   background: #fff;
   border-radius: 1em;
-  box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+  box-shadow: 0 2px 12px 0 rgba(60, 80, 120, 0.07);
 }
 .organization-table table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 0.5em;
 }
-.organization-table th, .organization-table td {
+.organization-table th,
+.organization-table td {
   padding: 1em 1.2em;
   font-size: 1.08em;
 }
@@ -48,7 +49,7 @@
   width: 100vw;
   height: 100vh;
   overflow: auto;
-  background-color: rgba(0,0,0,0.3);
+  background-color: rgba(0, 0, 0, 0.3);
   display: none;
   align-items: center;
   justify-content: center;
@@ -61,7 +62,7 @@
   margin: auto;
   padding: 2em 2.5em 1.5em 2.5em;
   border-radius: 1em;
-  box-shadow: 0 4px 32px rgba(60,80,120,0.18);
+  box-shadow: 0 4px 32px rgba(60, 80, 120, 0.18);
   position: relative;
   min-width: 340px;
   max-width: 600px;
@@ -98,31 +99,32 @@
 
 /* Organization Table Responsive Whitespace */
 .organization-table {
-	width: 100%;
-	max-width: 1200px;
-	margin: 2em auto 2em auto;
-	padding: 1.5em 2em;
-	background: #fff;
-	border-radius: 1em;
-	box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+  width: 100%;
+  max-width: 1200px;
+  margin: 2em auto 2em auto;
+  padding: 1.5em 2em;
+  background: #fff;
+  border-radius: 1em;
+  box-shadow: 0 2px 12px 0 rgba(60, 80, 120, 0.07);
 }
 .organization-table table {
-	width: 100%;
-	border-collapse: separate;
-	border-spacing: 0 0.5em;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5em;
 }
-.organization-table th, .organization-table td {
-	padding: 1em 1.2em;
-	font-size: 1.08em;
+.organization-table th,
+.organization-table td {
+  padding: 1em 1.2em;
+  font-size: 1.08em;
 }
 .organization-table th {
-	background: #f5f7fa;
-	color: #234;
-	border-bottom: 2px solid #e3e8f0;
+  background: #f5f7fa;
+  color: #234;
+  border-bottom: 2px solid #e3e8f0;
 }
 .organization-table tr {
-	transition: background 0.2s;
+  transition: background 0.2s;
 }
 .organization-table tr:hover td {
-	background: #f0f4fa !important;
+  background: #f0f4fa !important;
 }

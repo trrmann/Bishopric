@@ -1,166 +1,171 @@
 .add-unit-btn {
-    min-width: 120px;
-    font-size: 1.01em;
-    padding: 0.5em 1.1em;
-    border-radius: 0.3em;
-    border: 1px solid #c3c8d0;
-    background: #f7f9fc;
-    color: #234;
-    cursor: pointer;
-    transition: background 0.2s, border 0.2s;
-    margin-right: 0.2em;
+  min-width: 120px;
+  font-size: 1.01em;
+  padding: 0.5em 1.1em;
+  border-radius: 0.3em;
+  border: 1px solid #c3c8d0;
+  background: #f7f9fc;
+  color: #234;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border 0.2s;
+  margin-right: 0.2em;
 }
 .add-unit-btn:hover {
-    background: #e3e8f0;
-    border-color: #a3b0c0;
+  background: #e3e8f0;
+  border-color: #a3b0c0;
 }
 /* Improved configuration toolbar layout */
 .improved-toolbar {
-    margin-bottom: 1.2em;
-    background: #f8fafc;
-    border-radius: 0.7em;
-    padding: 1em 1.2em 0.7em 1.2em;
-    box-shadow: 0 1px 6px 0 rgba(60,80,120,0.04);
+  margin-bottom: 1.2em;
+  background: #f8fafc;
+  border-radius: 0.7em;
+  padding: 1em 1.2em 0.7em 1.2em;
+  box-shadow: 0 1px 6px 0 rgba(60, 80, 120, 0.04);
 }
 .config-toolbar-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1.2em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2em;
 }
 .config-search {
-    flex: 1 1 220px;
-    min-width: 180px;
-    max-width: 320px;
-    padding: 0.6em 1em;
-    border: 1px solid #c3c8d0;
-    border-radius: 0.4em;
-    font-size: 1.05em;
-    background: #fff;
-    margin-right: 0.5em;
-    transition: border 0.2s;
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 320px;
+  padding: 0.6em 1em;
+  border: 1px solid #c3c8d0;
+  border-radius: 0.4em;
+  font-size: 1.05em;
+  background: #fff;
+  margin-right: 0.5em;
+  transition: border 0.2s;
 }
 .config-search:focus {
-    border-color: #7baaf7;
-    outline: none;
+  border-color: #7baaf7;
+  outline: none;
 }
 .config-toolbar-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
 }
 .config-toolbar-buttons button {
-    min-width: 120px;
-    font-size: 1.01em;
-    padding: 0.5em 1.1em;
+  min-width: 120px;
+  font-size: 1.01em;
+  padding: 0.5em 1.1em;
 }
 @media (max-width: 700px) {
-    .config-toolbar-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.7em;
-    }
-    .config-toolbar-buttons {
-        justify-content: flex-start;
-    }
-    .config-toolbar-buttons button {
-        min-width: 90px;
-        font-size: 0.98em;
-        padding: 0.45em 0.7em;
-    }
+  .config-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7em;
+  }
+  .config-toolbar-buttons {
+    justify-content: flex-start;
+  }
+  .config-toolbar-buttons button {
+    min-width: 90px;
+    font-size: 0.98em;
+    padding: 0.45em 0.7em;
+  }
 }
 .configuration-table .config-row-actions {
-        display: inline-flex;
-        gap: 0.4em;
-        flex-wrap: wrap;
-        max-width: 100%;
+  display: inline-flex;
+  gap: 0.4em;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 @media (max-width: 600px) {
-    .configuration-table .config-row-actions {
-        gap: 0.2em;
-    }
+  .configuration-table .config-row-actions {
+    gap: 0.2em;
+  }
 }
 /* Configuration Table Styles */
 /* Reduced scroll and padding for configuration table */
 .configuration-table {
-    width: 100%;
-    max-width: 900px;
-    margin: 2em auto 2em auto;
-    padding: 1em 0.5em;
-    background: #fff;
-    border-radius: 1em;
-    box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
-    overflow-x: auto;
+  width: 100%;
+  max-width: 900px;
+  margin: 2em auto 2em auto;
+  padding: 1em 0.5em;
+  background: #fff;
+  border-radius: 1em;
+  box-shadow: 0 2px 12px 0 rgba(60, 80, 120, 0.07);
+  overflow-x: auto;
 }
 .configuration-table table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 0.5em;
-    min-width: 400px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5em;
+  min-width: 400px;
 }
-.configuration-table th, .configuration-table td {
-    padding: 0.6em 0.7em;
-    font-size: 1.03em;
-    text-align: left;
+.configuration-table th,
+.configuration-table td {
+  padding: 0.6em 0.7em;
+  font-size: 1.03em;
+  text-align: left;
 }
 .configuration-table th {
-    background: #f5f7fa;
-    color: #234;
-    border-bottom: 2px solid #e3e8f0;
-    font-weight: 600;
+  background: #f5f7fa;
+  color: #234;
+  border-bottom: 2px solid #e3e8f0;
+  font-weight: 600;
 }
 .configuration-table tr {
-    transition: background 0.2s;
+  transition: background 0.2s;
 }
 .configuration-table tr:hover td {
-    background: #f0f4fa !important;
+  background: #f0f4fa !important;
 }
 .configuration-table td button {
-    margin-right: 0.5em;
-    padding: 0.3em 0.8em;
-    border-radius: 0.3em;
-    border: 1px solid #c3c8d0;
-    background: #f7f9fc;
-    color: #234;
-    cursor: pointer;
-    font-size: 0.98em;
-    transition: background 0.2s, border 0.2s;
+  margin-right: 0.5em;
+  padding: 0.3em 0.8em;
+  border-radius: 0.3em;
+  border: 1px solid #c3c8d0;
+  background: #f7f9fc;
+  color: #234;
+  cursor: pointer;
+  font-size: 0.98em;
+  transition:
+    background 0.2s,
+    border 0.2s;
 }
 .configuration-table td button:hover {
-    background: #e3e8f0;
-    border-color: #a3b0c0;
+  background: #e3e8f0;
+  border-color: #a3b0c0;
 }
 /* Heading/subheading row style */
 .configuration-table tr > td[colspan="3"] {
-    font-size: 1.10em;
-    font-weight: 600;
-    background: #f0f4fa;
-    color: #234;
-    border-radius: 0.5em;
-    padding: 1em 1em 0.7em 0.7em;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e3e8f0;
-    margin-bottom: 0.2em;
-    gap: 1em;
+  font-size: 1.1em;
+  font-weight: 600;
+  background: #f0f4fa;
+  color: #234;
+  border-radius: 0.5em;
+  padding: 1em 1em 0.7em 0.7em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e3e8f0;
+  margin-bottom: 0.2em;
+  gap: 1em;
 }
 .configuration-table .config-heading-actions {
-        display: flex;
-        flex-direction: row;
-        gap: 0.4em;
+  display: flex;
+  flex-direction: row;
+  gap: 0.4em;
 }
 
 @media (max-width: 600px) {
-    .configuration-table .config-heading-actions {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.3em;
-    }
+  .configuration-table .config-heading-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3em;
+  }
 }
 .configuration-table .config-heading-actions button {
-    margin: 0;
-    padding: 0.25em 0.7em;
-    font-size: 0.97em;
+  margin: 0;
+  padding: 0.25em 0.7em;
+  font-size: 0.97em;
 }

@@ -101,394 +101,522 @@ import { Members } from "./members.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
 
 export class Users {
-    // Internal computed result cache for merged user/member details (not a general-purpose cache)
-    #_usersDetailsCache = undefined;
-    // ===== Instance Accessors =====
+  // Internal computed result cache for merged user/member details (not a general-purpose cache)
+  #_usersDetailsCache = undefined;
+  // ===== Instance Accessors =====
 
-    /**
-     * Always use Users.Factory to ensure dependencies are ready before use.
-     */
-    // (Constructor is defined below, only one allowed per class)
+  /**
+   * Always use Users.Factory to ensure dependencies are ready before use.
+   */
+  // (Constructor is defined below, only one allowed per class)
 
-    /**
-     * Async factory. Always use this to ensure members, roles, org, and storage are ready before use.
-     * @param {Object} configuration
-     * @returns {Promise<Users>}
-     */
-    static async Factory(configuration) {
-        const users = new Users();
-        users.members = await Members.Factory(configuration);
-        await users.Fetch?.();
-        return users;
-    }
+  /**
+   * Async factory. Always use this to ensure members, roles, org, and storage are ready before use.
+   * @param {Object} configuration
+   * @returns {Promise<Users>}
+   */
+  static async Factory(configuration) {
+    const users = new Users();
+    users.members = await Members.Factory(configuration);
+    await users.Fetch?.();
+    return users;
+  }
 
-    /**
-     * Explicitly invalidates the cached users details. Call this after any mutation to users or members data.
-     * This ensures that UsersDetails() returns up-to-date information.
-     */
-    InvalidateUsersDetailsCache() {
-        this.#_usersDetailsCache = undefined;
-    }
+  /**
+   * Explicitly invalidates the cached users details. Call this after any mutation to users or members data.
+   * This ensures that UsersDetails() returns up-to-date information.
+   */
+  InvalidateUsersDetailsCache() {
+    this.#_usersDetailsCache = undefined;
+  }
 
-    get Members() { return this.members; }
-    set Members(val) {
-        // If val.members is an array, wrap it in a Proxy to auto-invalidate cache on mutation
-        if (val && Array.isArray(val.members)) {
-            const self = this;
-            val.members = new Proxy(val.members, {
-                set(target, prop, value, receiver) {
-                    if (typeof prop === "string" && !isNaN(prop)) {
-                        self.InvalidateUsersDetailsCache();
-                    }
-                    return Reflect.set(target, prop, value, receiver);
-                },
-                deleteProperty(target, prop) {
-                    if (typeof prop === "string" && !isNaN(prop)) {
-                        self.InvalidateUsersDetailsCache();
-                    }
-                    return Reflect.deleteProperty(target, prop);
-                }
-            });
-        }
-        this.members = val;
-        this.#_usersDetailsCache = undefined;
+  get Members() {
+    return this.members;
+  }
+  set Members(val) {
+    // If val.members is an array, wrap it in a Proxy to auto-invalidate cache on mutation
+    if (val && Array.isArray(val.members)) {
+      const self = this;
+      val.members = new Proxy(val.members, {
+        set(target, prop, value, receiver) {
+          if (typeof prop === "string" && !isNaN(prop)) {
+            self.InvalidateUsersDetailsCache();
+          }
+          return Reflect.set(target, prop, value, receiver);
+        },
+        deleteProperty(target, prop) {
+          if (typeof prop === "string" && !isNaN(prop)) {
+            self.InvalidateUsersDetailsCache();
+          }
+          return Reflect.deleteProperty(target, prop);
+        },
+      });
     }
-    get Org() {
-        return this.members && this.members.Org ? this.members.Org : undefined;
+    this.members = val;
+    this.#_usersDetailsCache = undefined;
+  }
+  get Org() {
+    return this.members && this.members.Org ? this.members.Org : undefined;
+  }
+  get Callings() {
+    return this.members && this.members.Roles && this.members.Roles.Callings
+      ? this.members.Roles.Callings
+      : undefined;
+  }
+  get Storage() {
+    // Always use the central storage object for cache
+    if (this.hasOwnProperty("_testStorage")) {
+      if (!this._testStorage) {
+        throw new Error(
+          "Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.",
+        );
+      }
+      return this._testStorage;
     }
-    get Callings() {
-        return this.members && this.members.Roles && this.members.Roles.Callings ? this.members.Roles.Callings : undefined;
+    if (!this.Callings || !this.Callings.storage) {
+      throw new Error("Callings instance or its storage is not set on Users.");
     }
-    get Storage() {
-        // Always use the central storage object for cache
-        if (this.hasOwnProperty('_testStorage')) {
-            if (!this._testStorage) {
-                throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
-            }
-            return this._testStorage;
-        }
-        if (!this.Callings || !this.Callings.storage) {
-            throw new Error("Callings instance or its storage is not set on Users.");
-        }
-        return this.Callings.storage;
+    return this.Callings.storage;
+  }
+  set Storage(val) {
+    // Allow test injection of storage
+    this._testStorage = val;
+  }
+  get Users() {
+    return this.users;
+  }
+  set Users(val) {
+    // If val.users is an array, wrap it in a Proxy to auto-invalidate cache on mutation
+    if (val && Array.isArray(val.users)) {
+      const self = this;
+      val.users = new Proxy(val.users, {
+        set(target, prop, value, receiver) {
+          // Only invalidate cache for mutating operations (not length reads, etc.)
+          if (typeof prop === "string" && !isNaN(prop)) {
+            self.InvalidateUsersDetailsCache();
+          }
+          return Reflect.set(target, prop, value, receiver);
+        },
+        deleteProperty(target, prop) {
+          if (typeof prop === "string" && !isNaN(prop)) {
+            self.InvalidateUsersDetailsCache();
+          }
+          return Reflect.deleteProperty(target, prop);
+        },
+      });
     }
-    set Storage(val) {
-        // Allow test injection of storage
-        this._testStorage = val;
-    }
-    get Users() { return this.users; }
-    set Users(val) {
-        // If val.users is an array, wrap it in a Proxy to auto-invalidate cache on mutation
-        if (val && Array.isArray(val.users)) {
-            const self = this;
-            val.users = new Proxy(val.users, {
-                set(target, prop, value, receiver) {
-                    // Only invalidate cache for mutating operations (not length reads, etc.)
-                    if (typeof prop === "string" && !isNaN(prop)) {
-                        self.InvalidateUsersDetailsCache();
-                    }
-                    return Reflect.set(target, prop, value, receiver);
-                },
-                deleteProperty(target, prop) {
-                    if (typeof prop === "string" && !isNaN(prop)) {
-                        self.InvalidateUsersDetailsCache();
-                    }
-                    return Reflect.deleteProperty(target, prop);
-                }
-            });
-        }
-        this.users = val;
-        this.#_usersDetailsCache = undefined;
-    }
+    this.users = val;
+    this.#_usersDetailsCache = undefined;
+  }
 
-    /**
-     * Read-only accessor for additional roles from the users record, filtered to exclude roles with callings.
-     * Returns an array of objects: { memberNumber, additionalRoles }
-     * where additionalRoles is an array of role IDs/names (as stored in user.additionalRoles),
-     * but only those roles that do NOT have a calling associated with them.
-     */
-    get AdditionalRoles() {
-        if (!this.users || !Array.isArray(this.users.users)) return [];
-        // Get set of role IDs/names that have callings associated with them
-        // Assumes this.Callings and this.Callings.rolesWithCallings is an array of role IDs/names
-        // If not available, fallback to empty set (no filtering)
-        let rolesWithCallings = [];
-        if (this.Callings && Array.isArray(this.Callings.rolesWithCallings)) {
-            rolesWithCallings = this.Callings.rolesWithCallings;
-        } else if (this.members && this.members.Roles && Array.isArray(this.members.Roles.rolesWithCallings)) {
-            rolesWithCallings = this.members.Roles.rolesWithCallings;
-        }
-        const rolesWithCallingsSet = new Set(rolesWithCallings);
-        return this.users.users
-            .filter(user => Array.isArray(user.additionalRoles) && user.additionalRoles.length > 0)
-            .map(user => {
-                const filteredRoles = user.additionalRoles.filter(role => !rolesWithCallingsSet.has(role));
-                return {
-                    memberNumber: user.memberNumber,
-                    additionalRoles: filteredRoles
-                };
-            })
-            .filter(user => user.additionalRoles.length > 0);
+  /**
+   * Read-only accessor for additional roles from the users record, filtered to exclude roles with callings.
+   * Returns an array of objects: { memberNumber, additionalRoles }
+   * where additionalRoles is an array of role IDs/names (as stored in user.additionalRoles),
+   * but only those roles that do NOT have a calling associated with them.
+   */
+  get AdditionalRoles() {
+    if (!this.users || !Array.isArray(this.users.users)) return [];
+    // Get set of role IDs/names that have callings associated with them
+    // Assumes this.Callings and this.Callings.rolesWithCallings is an array of role IDs/names
+    // If not available, fallback to empty set (no filtering)
+    let rolesWithCallings = [];
+    if (this.Callings && Array.isArray(this.Callings.rolesWithCallings)) {
+      rolesWithCallings = this.Callings.rolesWithCallings;
+    } else if (
+      this.members &&
+      this.members.Roles &&
+      Array.isArray(this.members.Roles.rolesWithCallings)
+    ) {
+      rolesWithCallings = this.members.Roles.rolesWithCallings;
     }
-
-    // ===== Constructor =====
-    constructor() {
-        this.users = undefined;
-        this.members = undefined;
-    }
-
-    // ===== Static Methods =====
-    static CopyFromJSON(dataJSON) {
-        const users = new Users();
-        users.users = dataJSON.users;
-        users.members = dataJSON.members ? Members.CopyFromJSON(dataJSON.members) : undefined;
-        users.lastFetched = dataJSON.lastFetched;
-        return users;
-    }
-
-    static CopyToJSON(instance) {
+    const rolesWithCallingsSet = new Set(rolesWithCallings);
+    return this.users.users
+      .filter(
+        (user) =>
+          Array.isArray(user.additionalRoles) &&
+          user.additionalRoles.length > 0,
+      )
+      .map((user) => {
+        const filteredRoles = user.additionalRoles.filter(
+          (role) => !rolesWithCallingsSet.has(role),
+        );
         return {
-            users: instance.users,
-            members: instance.members ? Members.CopyToJSON(instance.members) : undefined,
-            lastFetched: instance.lastFetched
+          memberNumber: user.memberNumber,
+          additionalRoles: filteredRoles,
         };
-    }
+      })
+      .filter((user) => user.additionalRoles.length > 0);
+  }
 
-    static CopyFromObject(destination, source) {
-        destination.users = source.users;
-        if (destination.members && source.members) {
-            Members.CopyFromObject(destination.members, source.members);
-        } else {
-            destination.members = source.members;
+  // ===== Constructor =====
+  constructor() {
+    this.users = undefined;
+    this.members = undefined;
+  }
+
+  // ===== Static Methods =====
+  static CopyFromJSON(dataJSON) {
+    const users = new Users();
+    users.users = dataJSON.users;
+    users.members = dataJSON.members
+      ? Members.CopyFromJSON(dataJSON.members)
+      : undefined;
+    users.lastFetched = dataJSON.lastFetched;
+    return users;
+  }
+
+  static CopyToJSON(instance) {
+    return {
+      users: instance.users,
+      members: instance.members
+        ? Members.CopyToJSON(instance.members)
+        : undefined,
+      lastFetched: instance.lastFetched,
+    };
+  }
+
+  static CopyFromObject(destination, source) {
+    destination.users = source.users;
+    if (destination.members && source.members) {
+      Members.CopyFromObject(destination.members, source.members);
+    } else {
+      destination.members = source.members;
+    }
+    destination.lastFetched = source.lastFetched;
+  }
+
+  static async Factory(configuration) {
+    const users = new Users();
+    users.members = await Members.Factory(configuration);
+    await users.Fetch();
+    return users;
+  }
+
+  // ===== File/Storage Accessors =====
+  static get UsersFileBasename() {
+    return "users";
+  }
+  static get UsersFileExtension() {
+    return "json";
+  }
+  static get UsersFilename() {
+    return `${Users.UsersFileBasename}.${Users.UsersFileExtension}`;
+  }
+  static get UsersCacheExpireMS() {
+    return 1000 * 60 * 30;
+  }
+  static get UsersSessionExpireMS() {
+    return 1000 * 60 * 60;
+  }
+  static get UsersLocalExpireMS() {
+    return 1000 * 60 * 60 * 2;
+  }
+  static get StorageConfig() {
+    return createStorageConfig({
+      cacheTtlMs: Users.UsersCacheExpireMS,
+      sessionTtlMs: Users.UsersSessionExpireMS,
+      localTtlMs: Users.UsersLocalExpireMS,
+    });
+  }
+
+  // ===== Data Fetching =====
+  async Fetch() {
+    if (!this.Storage) {
+      throw new Error(
+        "Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.",
+      );
+    }
+    let usersObj = await this.Storage.Get(Users.UsersFilename, {
+      ...Users.StorageConfig,
+      cacheTtlMs: Users.UsersCacheExpireMS,
+    });
+    // If not found in cache, try session
+    if (!usersObj) {
+      usersObj = await this.Storage.Get(Users.UsersFilename, {
+        ...Users.StorageConfig,
+        cacheTtlMs: null,
+        sessionTtlMs: Users.UsersSessionExpireMS,
+      });
+      // If found in session, only write to cache if not already present
+      if (
+        usersObj &&
+        this.Storage.Cache &&
+        typeof this.Storage.Cache.Set === "function"
+      ) {
+        let cacheVal;
+        if (this.Storage.Cache.Get) {
+          cacheVal = this.Storage.Cache.Get(Users.UsersFilename);
+          if (cacheVal instanceof Promise) cacheVal = await cacheVal;
         }
-        destination.lastFetched = source.lastFetched;
-    }
-
-    static async Factory(configuration) {
-        const users = new Users();
-        users.members = await Members.Factory(configuration);
-        await users.Fetch();
-        return users;
-    }
-
-    // ===== File/Storage Accessors =====
-    static get UsersFileBasename() { return "users"; }
-    static get UsersFileExtension() { return "json"; }
-    static get UsersFilename() { return `${Users.UsersFileBasename}.${Users.UsersFileExtension}`; }
-    static get UsersCacheExpireMS() { return 1000 * 60 * 30; }
-    static get UsersSessionExpireMS() { return 1000 * 60 * 60; }
-    static get UsersLocalExpireMS() { return 1000 * 60 * 60 * 2; }
-    static get StorageConfig() {
-        return createStorageConfig({
-            cacheTtlMs: Users.UsersCacheExpireMS,
-            sessionTtlMs: Users.UsersSessionExpireMS,
-            localTtlMs: Users.UsersLocalExpireMS
-        });
-    }
-
-    // ===== Data Fetching =====
-    async Fetch() {
-        if (!this.Storage) {
-            throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
+        if (!cacheVal) {
+          this.Storage.Cache.Set(
+            Users.UsersFilename,
+            usersObj,
+            Users.UsersCacheExpireMS,
+          );
         }
-        let usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: Users.UsersCacheExpireMS });
-        // If not found in cache, try session
-        if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS });
-            // If found in session, only write to cache if not already present
-            if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                let cacheVal;
-                if (this.Storage.Cache.Get) {
-                    cacheVal = this.Storage.Cache.Get(Users.UsersFilename);
-                    if (cacheVal instanceof Promise) cacheVal = await cacheVal;
-                }
-                if (!cacheVal) {
-                    this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
-                }
-            }
-        }
-        // If not found in cache/session, try local
-        if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
-            // If found in local, only write to session/cache if not already present
-            if (usersObj) {
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    let sessionVal;
-                    if (this.Storage.SessionStorage.Get) {
-                        sessionVal = this.Storage.SessionStorage.Get(Users.UsersFilename);
-                        if (sessionVal instanceof Promise) sessionVal = await sessionVal;
-                    }
-                    if (!sessionVal) {
-                        this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
-                    }
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    let cacheVal;
-                    if (this.Storage.Cache.Get) {
-                        cacheVal = this.Storage.Cache.Get(Users.UsersFilename);
-                        if (cacheVal instanceof Promise) cacheVal = await cacheVal;
-                    }
-                    if (!cacheVal) {
-                        this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
-                    }
-                }
-            }
-        }
-        // If not found in any local tier, try GoogleDrive
-        if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
-            // Use robust options for GoogleDrive fetch
-            const googleOptions = { ...Users.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
-            usersObj = await this.Storage.Get(Users.UsersFilename, googleOptions);
-        }
-        // If not found in GoogleDrive, try GitHubData (read-only, robust API)
-        if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
-            try {
-                usersObj = await this.Storage._gitHubDataObj.get(Users.UsersFilename, "json", null, {});
-            } catch (e) {
-                // If file not found or error, leave usersObj undefined
-            }
-        }
-        this.users = usersObj ? usersObj : undefined;
+      }
     }
-
-    // ===== Core Data Accessors =====
-    get UserEntries() { return this.users?.users || []; }
-
-    /**
-     * Returns merged user/member details. Do not mutate the returned array or objects.
-     * All mutating operations must call InvalidateUsersDetailsCache().
-     * In development mode, the returned array and objects are frozen to catch accidental mutation.
-     */
-    async UsersDetails() {
-        if (this.#_usersDetailsCache) {
-            return this.#_usersDetailsCache;
+    // If not found in cache/session, try local
+    if (!usersObj) {
+      usersObj = await this.Storage.Get(Users.UsersFilename, {
+        ...Users.StorageConfig,
+        cacheTtlMs: null,
+        sessionTtlMs: null,
+        localTtlMs: Users.UsersLocalExpireMS,
+      });
+      // If found in local, only write to session/cache if not already present
+      if (usersObj) {
+        if (
+          this.Storage.SessionStorage &&
+          typeof this.Storage.SessionStorage.Set === "function"
+        ) {
+          let sessionVal;
+          if (this.Storage.SessionStorage.Get) {
+            sessionVal = this.Storage.SessionStorage.Get(Users.UsersFilename);
+            if (sessionVal instanceof Promise) sessionVal = await sessionVal;
+          }
+          if (!sessionVal) {
+            this.Storage.SessionStorage.Set(
+              Users.UsersFilename,
+              usersObj,
+              Users.UsersSessionExpireMS,
+            );
+          }
         }
-        const userEntries = this.UserEntries;
-        if (!userEntries || userEntries.length === 0) {
-            // In development, freeze the empty array
-            let details = [];
-            if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development") {
-                Object.freeze(details);
-            }
-            this.#_usersDetailsCache = details;
-            return details;
+        if (
+          this.Storage.Cache &&
+          typeof this.Storage.Cache.Set === "function"
+        ) {
+          let cacheVal;
+          if (this.Storage.Cache.Get) {
+            cacheVal = this.Storage.Cache.Get(Users.UsersFilename);
+            if (cacheVal instanceof Promise) cacheVal = await cacheVal;
+          }
+          if (!cacheVal) {
+            this.Storage.Cache.Set(
+              Users.UsersFilename,
+              usersObj,
+              Users.UsersCacheExpireMS,
+            );
+          }
         }
-        const membersData = await this.members.MembersDetails();
-        // Only build additionalRolesMap if there are additional roles
-        let additionalRolesMap = undefined;
-        const additionalRolesArr = this.AdditionalRoles;
-        if (additionalRolesArr.length > 0) {
-            additionalRolesMap = {};
-            additionalRolesArr.forEach(({ memberNumber, additionalRoles }) => {
-                additionalRolesMap[memberNumber] = additionalRoles;
-            });
+      }
+    }
+    // If not found in any local tier, try GoogleDrive
+    if (
+      !usersObj &&
+      this.Storage &&
+      typeof this.Storage.Get === "function" &&
+      this.Storage.constructor.name === "GoogleDrive"
+    ) {
+      // Use robust options for GoogleDrive fetch
+      const googleOptions = {
+        ...Users.StorageConfig,
+        retryCount: 2,
+        retryDelay: 300,
+        debug: true,
+      };
+      usersObj = await this.Storage.Get(Users.UsersFilename, googleOptions);
+    }
+    // If not found in GoogleDrive, try GitHubData (read-only, robust API)
+    if (
+      !usersObj &&
+      this.Storage &&
+      typeof this.Storage._gitHubDataObj === "object" &&
+      typeof this.Storage._gitHubDataObj.get === "function"
+    ) {
+      try {
+        usersObj = await this.Storage._gitHubDataObj.get(
+          Users.UsersFilename,
+          "json",
+          null,
+          {},
+        );
+      } catch (e) {
+        // If file not found or error, leave usersObj undefined
+      }
+    }
+    this.users = usersObj ? usersObj : undefined;
+  }
+
+  // ===== Core Data Accessors =====
+  get UserEntries() {
+    return this.users?.users || [];
+  }
+
+  /**
+   * Returns merged user/member details. Do not mutate the returned array or objects.
+   * All mutating operations must call InvalidateUsersDetailsCache().
+   * In development mode, the returned array and objects are frozen to catch accidental mutation.
+   */
+  async UsersDetails() {
+    if (this.#_usersDetailsCache) {
+      return this.#_usersDetailsCache;
+    }
+    const userEntries = this.UserEntries;
+    if (!userEntries || userEntries.length === 0) {
+      // In development, freeze the empty array
+      let details = [];
+      if (
+        typeof process !== "undefined" &&
+        process.env &&
+        process.env.NODE_ENV === "development"
+      ) {
+        Object.freeze(details);
+      }
+      this.#_usersDetailsCache = details;
+      return details;
+    }
+    const membersData = await this.members.MembersDetails();
+    // Only build additionalRolesMap if there are additional roles
+    let additionalRolesMap = undefined;
+    const additionalRolesArr = this.AdditionalRoles;
+    if (additionalRolesArr.length > 0) {
+      additionalRolesMap = {};
+      additionalRolesArr.forEach(({ memberNumber, additionalRoles }) => {
+        additionalRolesMap[memberNumber] = additionalRoles;
+      });
+    }
+    // Only build roleIdToName if there are roles
+    let roleIdToName = undefined;
+    if (
+      this.members &&
+      this.members.Roles &&
+      Array.isArray(this.members.Roles.roles) &&
+      this.members.Roles.roles.length > 0
+    ) {
+      roleIdToName = {};
+      for (const role of this.members.Roles.roles) {
+        if (role && role.id != null && role.name != null) {
+          roleIdToName[role.id] = role.name;
         }
-        // Only build roleIdToName if there are roles
-        let roleIdToName = undefined;
-        if (this.members && this.members.Roles && Array.isArray(this.members.Roles.roles) && this.members.Roles.roles.length > 0) {
-            roleIdToName = {};
-            for (const role of this.members.Roles.roles) {
-                if (role && role.id != null && role.name != null) {
-                    roleIdToName[role.id] = role.name;
-                }
-            }
-        }
-        const details = userEntries.map(user => {
-            const member = membersData.find(member => member.memberNumber === user.memberNumber);
-            // Merge roleIDs: member.callingRoleIDs + additionalRoles (if any, deduped)
-            const memberRoleIDs = member ? (Array.isArray(member.callingRoleIDs) ? member.callingRoleIDs : []) : [];
-            const addRoles = (additionalRolesMap && Array.isArray(additionalRolesMap[user.memberNumber])) ? additionalRolesMap[user.memberNumber] : [];
-            // Merge and dedupe
-            const roleIDs = Array.from(new Set([...memberRoleIDs, ...addRoles]));
-            // Merge roleNames: member.callingRoleNames + additionalRoleNames (if any, deduped)
-            const memberRoleNames = member ? (Array.isArray(member.callingRoleNames) ? member.callingRoleNames : []) : [];
-            const addRoleNames = (roleIdToName && addRoles.length > 0)
-                ? addRoles.map(roleId => roleIdToName[roleId]).filter(name => name && !memberRoleNames.includes(name))
-                : [];
-            const roleNames = Array.from(new Set([...memberRoleNames, ...addRoleNames]));
-            return {
-                memberNumber: member ? member.memberNumber : user.memberNumber,
-                fullname: member ? member.fullname : '',
-                titlelessFullname: member ? member.titlelessFullname : '',
-                firstName: member ? member.firstName : '',
-                middleName: member ? member.middleName : '',
-                maidenName: member ? member.maidenName : '',
-                maternalLastName: member ? member.maternalLastName : '',
-                paternalLastName: member ? member.paternalLastName : '',
-                maidenNameMaternal: member ? member.maidenNameMaternal : false,
-                genderMale: member ? member.genderMale : false,
-                gender: member ? member.gender : '',
-                password: user.password,
-                email: member ? member.email : user.email,
-                phone: member ? member.phone : '',
-                callingIDs: member ? member.callingIDs : [],
-                callingNames: member ? member.callingNames : [],
-                callingHaveTitles: member ? member.callingHaveTitles : [],
-                callingTitles: member ? member.callingTitles : [],
-                callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
-                roleIDs,
-                roleNames,
-                callingsActive: member ? member.callingsActive : [],
-                allSubRoles: member ? member.callingsAllSubRoles : [],
-                allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
-                subRoles: member ? member.callingsSubRoles : [],
-                subRoleNames: member ? member.callingsSubRoleNames : [],
-                levels: member ? member.levels : [],
-                memberactive: member ? member.active : false,
-                active: user.active,
-                stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
-                unitNumber: member ? member.unitNumber : undefined,
-                stakeName: member ? member.stakeName : '',
-                unitName: member ? member.unitName : '',
-                unitType: member ? member.unitType : ''
-            };
-        });
-        // In development, freeze the array and its objects ONCE, immediately after caching
-        if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development") {
-            details.forEach(obj => Object.freeze(obj));
-            Object.freeze(details);
-        }
-        this.#_usersDetailsCache = details;
-        return details;
+      }
     }
+    const details = userEntries.map((user) => {
+      const member = membersData.find(
+        (member) => member.memberNumber === user.memberNumber,
+      );
+      // Merge roleIDs: member.callingRoleIDs + additionalRoles (if any, deduped)
+      const memberRoleIDs = member
+        ? Array.isArray(member.callingRoleIDs)
+          ? member.callingRoleIDs
+          : []
+        : [];
+      const addRoles =
+        additionalRolesMap &&
+        Array.isArray(additionalRolesMap[user.memberNumber])
+          ? additionalRolesMap[user.memberNumber]
+          : [];
+      // Merge and dedupe
+      const roleIDs = Array.from(new Set([...memberRoleIDs, ...addRoles]));
+      // Merge roleNames: member.callingRoleNames + additionalRoleNames (if any, deduped)
+      const memberRoleNames = member
+        ? Array.isArray(member.callingRoleNames)
+          ? member.callingRoleNames
+          : []
+        : [];
+      const addRoleNames =
+        roleIdToName && addRoles.length > 0
+          ? addRoles
+              .map((roleId) => roleIdToName[roleId])
+              .filter((name) => name && !memberRoleNames.includes(name))
+          : [];
+      const roleNames = Array.from(
+        new Set([...memberRoleNames, ...addRoleNames]),
+      );
+      return {
+        memberNumber: member ? member.memberNumber : user.memberNumber,
+        fullname: member ? member.fullname : "",
+        titlelessFullname: member ? member.titlelessFullname : "",
+        firstName: member ? member.firstName : "",
+        middleName: member ? member.middleName : "",
+        maidenName: member ? member.maidenName : "",
+        maternalLastName: member ? member.maternalLastName : "",
+        paternalLastName: member ? member.paternalLastName : "",
+        maidenNameMaternal: member ? member.maidenNameMaternal : false,
+        genderMale: member ? member.genderMale : false,
+        gender: member ? member.gender : "",
+        password: user.password,
+        email: member ? member.email : user.email,
+        phone: member ? member.phone : "",
+        callingIDs: member ? member.callingIDs : [],
+        callingNames: member ? member.callingNames : [],
+        callingHaveTitles: member ? member.callingHaveTitles : [],
+        callingTitles: member ? member.callingTitles : [],
+        callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
+        roleIDs,
+        roleNames,
+        callingsActive: member ? member.callingsActive : [],
+        allSubRoles: member ? member.callingsAllSubRoles : [],
+        allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
+        subRoles: member ? member.callingsSubRoles : [],
+        subRoleNames: member ? member.callingsSubRoleNames : [],
+        levels: member ? member.levels : [],
+        memberactive: member ? member.active : false,
+        active: user.active,
+        stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
+        unitNumber: member ? member.unitNumber : undefined,
+        stakeName: member ? member.stakeName : "",
+        unitName: member ? member.unitName : "",
+        unitType: member ? member.unitType : "",
+      };
+    });
+    // In development, freeze the array and its objects ONCE, immediately after caching
+    if (
+      typeof process !== "undefined" &&
+      process.env &&
+      process.env.NODE_ENV === "development"
+    ) {
+      details.forEach((obj) => Object.freeze(obj));
+      Object.freeze(details);
+    }
+    this.#_usersDetailsCache = details;
+    return details;
+  }
 
-    // ===== Filtering and Lookup Methods =====
-    /**
-     * Returns the user object for the given id, or null if not found.
-     */
-    async UserById(id) {
-        const users = await this.UsersDetails();
-        return users.find(u => u.memberNumber === id || String(u.memberNumber) === String(id)) || null;
-    }
+  // ===== Filtering and Lookup Methods =====
+  /**
+   * Returns the user object for the given id, or null if not found.
+   */
+  async UserById(id) {
+    const users = await this.UsersDetails();
+    return (
+      users.find(
+        (u) => u.memberNumber === id || String(u.memberNumber) === String(id),
+      ) || null
+    );
+  }
 
-    /**
-     * Returns the user object for the given email, or null if not found.
-     */
-    async UserByEmail(email) {
-        const users = await this.UsersDetails();
-        return users.find(u => u.email === email) || null;
-    }
+  /**
+   * Returns the user object for the given email, or null if not found.
+   */
+  async UserByEmail(email) {
+    const users = await this.UsersDetails();
+    return users.find((u) => u.email === email) || null;
+  }
 
-    get ActiveUsers() {
-        if (!this.users || !Array.isArray(this.users.users)) return [];
-        return this.users.users.filter(user => user.active === true);
-    }
+  get ActiveUsers() {
+    if (!this.users || !Array.isArray(this.users.users)) return [];
+    return this.users.users.filter((user) => user.active === true);
+  }
 
-    async HasUserById(id) {
-        const userById = await this.UserById(id);
-        return userById !== null;
-    }
+  async HasUserById(id) {
+    const userById = await this.UserById(id);
+    return userById !== null;
+  }
 
-    async HasUserByEmail(email) {
-        const userByEmail = await this.UserByEmail(email);
-        return userByEmail !== null;
-    }
+  async HasUserByEmail(email) {
+    const userByEmail = await this.UserByEmail(email);
+    return userByEmail !== null;
+  }
 
-    /**
-     * Returns merged user details (like UsersDetails) for only active users.
-     */
-    async ActiveUserDetails() {
-        const all = await this.UsersDetails();
-        return all.filter(u => u.active === true);
-    }
+  /**
+   * Returns merged user details (like UsersDetails) for only active users.
+   */
+  async ActiveUserDetails() {
+    const all = await this.UsersDetails();
+    return all.filter((u) => u.active === true);
+  }
 }

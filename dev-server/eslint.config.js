@@ -10,16 +10,16 @@ module.exports = [
         console: "readonly",
         module: "readonly",
         require: "readonly",
-        process: "readonly"
-      }
+        process: "readonly",
+      },
     },
     linterOptions: {
-      reportUnusedDisableDirectives: true
+      reportUnusedDisableDirectives: true,
     },
     extends: ["eslint:recommended"],
     rules: {
       "no-unused-vars": "warn",
-      "no-console": "off"
-    }
-  }
+      "no-console": "off",
+    },
+  },
 ];

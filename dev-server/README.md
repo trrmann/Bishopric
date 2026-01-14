@@ -1,9 +1,11 @@
 # dev-server Structure and Conventions
 
 ## Overview
+
 This folder contains the backend server code and related assets for the project. The structure is designed for scalability, maintainability, and clarity.
 
 ## Folder Structure
+
 - **controllers/**: Route handlers, organized by feature/domain.
 - **models/**: Data models, organized by feature/domain.
 - **routes/**: Express route definitions, organized by feature/domain.
@@ -17,6 +19,7 @@ This folder contains the backend server code and related assets for the project.
 - **server.js**: Main server entry point.
 
 ## Conventions
+
 - Use plural names for folders (controllers, models, routes).
 - Group files by feature/domain when possible (e.g., user, org).
 - Place environment-specific settings in `config/`.
@@ -24,6 +27,7 @@ This folder contains the backend server code and related assets for the project.
 - Keep static assets in `public/`.
 
 ## Example Feature Organization
+
 ```
 controllers/
   userController.js
@@ -37,5 +41,6 @@ routes/
 ```
 
 ## Notes
+
 - Remove or flatten folders if they only contain one file or are unlikely to grow.
 - Update this README as the project evolves.
