@@ -6,14 +6,15 @@
   padding: 1.5em 2em;
   background: #fff;
   border-radius: 1em;
-  box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+  box-shadow: 0 2px 12px 0 rgba(60, 80, 120, 0.07);
 }
 .users-table table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 0.5em;
 }
-.users-table th, .users-table td {
+.users-table th,
+.users-table td {
   padding: 1em 1.2em;
   font-size: 1.08em;
   text-align: left;
@@ -51,7 +52,9 @@
   color: #234;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 .users-table .users-edit-btn:hover,
 .users-table .users-delete-btn:hover,
@@ -62,7 +65,6 @@
 }
 .users-table .users-superuser-btn {
   font-weight: 500;
-}
 }
 .users-table button {
   margin-right: 0.5em;
@@ -96,7 +98,8 @@
   display: flex;
   gap: 0.7em;
 }
-.users-search, .members-search {
+.users-search,
+.members-search {
   flex: 1 1 220px;
   min-width: 180px;
   max-width: 350px;

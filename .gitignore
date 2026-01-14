@@ -1,3 +1,6 @@
+# Ignore local development server
+dev-server/
 # Ignore Neon environment file
 neon.env
+netify.env
 data/secrets.json

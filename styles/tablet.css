@@ -1,100 +1,104 @@
 /* Move user info below management tools title in tablet mode */
 @media (min-width: 601px) and (max-width: 1024px) {
-    /* Tablet-specific styles */
-    .user-menu-container {
-        order: 4;
-        width: 100%;
-        margin-top: 0.5em;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .container, .main-content {
-        width: 95vw;
-        min-width: 0;
-        max-width: 980px;
-        margin: 0 auto;
-        box-sizing: border-box;
-    }
-    .dashboard-grid, .forms-grid, .reports-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-    }
-    .members-table, .members-table table {
-        width: 100%;
-        min-width: 600px;
-        overflow-x: auto;
-        box-sizing: border-box;
-    }
-    .header {
-        flex-direction: row;
-        gap: 10px;
-        text-align: left;
-    }
-    .header-content h1 {
-        font-size: 1.3em;
-    }
-    .navbar {
-        flex-direction: row;
-    }
-    .nav-btn.active {
-        border-right-color: var(--secondary-color);
-        border-bottom: none;
-    }
+  /* Tablet-specific styles */
+  .user-menu-container {
+    order: 4;
+    width: 100%;
+    margin-top: 0.5em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .container,
+  .main-content {
+    width: 95vw;
+    min-width: 0;
+    max-width: 980px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  .dashboard-grid,
+  .forms-grid,
+  .reports-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .members-table,
+  .members-table table {
+    width: 100%;
+    min-width: 600px;
+    overflow-x: auto;
+    box-sizing: border-box;
+  }
+  .header {
+    flex-direction: row;
+    gap: 10px;
+    text-align: left;
+  }
+  .header-content h1 {
+    font-size: 1.3em;
+  }
+  .navbar {
+    flex-direction: row;
+  }
+  .nav-btn.active {
+    border-right-color: var(--secondary-color);
+    border-bottom: none;
+  }
 
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .action-buttons {
-        grid-template-columns: 1fr;
-    }
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
 
-    .assignments-list {
-        grid-template-columns: 1fr;
-    }
+  .assignments-list {
+    grid-template-columns: 1fr;
+  }
 
-    .forms-grid {
-        grid-template-columns: 1fr;
-    }
+  .forms-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .reports-grid {
-        grid-template-columns: 1fr;
-    }
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .section-toolbar {
-        flex-direction: column;
-    }
+  .section-toolbar {
+    flex-direction: column;
+  }
 
-    .search-input,
-    .filter-select {
-        min-width: 100%;
-    }
+  .search-input,
+  .filter-select {
+    min-width: 100%;
+  }
 
-    .calendar-grid {
-        grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
-    }
+  .calendar-grid {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
 
-    .calendar-day {
-        font-size: 0.8em;
-    }
+  .calendar-day {
+    font-size: 0.8em;
+  }
 
-    .event-item {
-        flex-wrap: wrap;
-    }
+  .event-item {
+    flex-wrap: wrap;
+  }
 
-    .members-table table {
-        font-size: 0.85em;
-    }
+  .members-table table {
+    font-size: 0.85em;
+  }
 
-    .members-table td,
-    .members-table th {
-        padding: 10px;
-    }
+  .members-table td,
+  .members-table th {
+    padding: 10px;
+  }
 
-    .modal-content {
-        width: 95%;
-        padding: 20px;
-    }
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
 }
